@@ -1,0 +1,131 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\Role;
+use App\Models\Barangay;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+class UserController extends Controller
+{
+    public function index()
+    {
+        $users        = User::with(['role', 'barangayAccount'])->latest()->paginate(15);
+        $totalUsers   = User::count();
+        $admins       = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->count();
+        $staff        = User::whereHas('role', fn($q) => $q->where('name', 'staff'))->count();
+        $barangayReps = User::whereHas('role', fn($q) => $q->where('name', 'barangay_user'))->count();
+
+        return view('users.index', compact('users', 'totalUsers', 'admins', 'staff', 'barangayReps'));
+    }
+
+    public function create()
+    {
+        $roles     = Role::all();
+        $barangays = Barangay::orderBy('name')->get();
+        return view('users.create', compact('roles', 'barangays'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+            'role_id'  => 'required|exists:roles,id',
+        ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'role_id'  => $request->role_id,
+            'status'   => 'active',
+        ]);
+
+        $role = Role::find($request->role_id);
+        if ($role->name === 'barangay_user' && $request->barangay_id) {
+            \App\Models\BarangayAccount::create([
+                'user_id'         => $user->id,
+                'barangay_id'     => $request->barangay_id,
+                'approval_status' => 'approved',
+                'approved_by'     => auth()->id(),
+                'approved_at'     => now(),
+            ]);
+        }
+
+        return redirect()->route('users.index')
+            ->with('success', "User {$request->name} created successfully!");
+    }
+
+    public function edit(User $user)
+    {
+        $roles     = Role::all();
+        $barangays = Barangay::orderBy('name')->get();
+        return view('users.edit', compact('user', 'roles', 'barangays'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name'    => 'required|string|max:100',
+            'email'   => 'required|email|unique:users,email,' . $user->id,
+            'role_id' => 'required|exists:roles,id',
+            'status'  => 'required|in:active,inactive,suspended',
+        ]);
+
+        $data = [
+            'name'    => $request->name,
+            'email'   => $request->email,
+            'role_id' => $request->role_id,
+            'status'  => $request->status,
+        ];
+
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'min:8|confirmed']);
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('users.index')
+            ->with('success', "User {$user->name} updated successfully!");
+    }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->route('users.index')
+                ->with('error', 'You cannot delete your own account!');
+        }
+
+        $user->delete();
+        return redirect()->route('users.index')
+            ->with('success', 'User deleted successfully!');
+    }
+
+    public function resetPassword(User $user)
+    {
+        $user->update(['password' => Hash::make('Password@123')]);
+        return redirect()->route('users.index')
+            ->with('success', "Password for {$user->name} reset to Password@123");
+    }
+
+    public function approvePending(User $user)
+    {
+        $user->update(['status' => 'active']);
+
+        if ($user->barangayAccount) {
+            $user->barangayAccount->update([
+                'approval_status' => 'approved',
+                'approved_by'     => auth()->id(),
+                'approved_at'     => now(),
+            ]);
+        }
+
+        return redirect()->route('users.index')
+            ->with('success', "User {$user->name} has been approved and can now login!");
+    }
+}
