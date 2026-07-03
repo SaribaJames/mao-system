@@ -57,9 +57,24 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
 
-    Route::get('/reports/export/pdf',      [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
-    
-    Route::get('/reports/export/farmers',  [ReportController::class, 'exportFarmersPDF'])->name('reports.export.farmers');
+    Route::get('/reports/export/pdf', [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
+
+    Route::get('/reports/export/farmers', [ReportController::class, 'exportFarmersPDF'])->name('reports.export.farmers');
     Route::get('/reports/export/requests', [ReportController::class, 'exportRequestsPDF'])->name('reports.export.requests');
     Route::get('/reports/export/services', [ReportController::class, 'exportServicesPDF'])->name('reports.export.services');
+
+
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route('login')->with('success', 'Email verified! Please wait for admin approval to login.');
+    })->middleware(['signed'])->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('success', 'Verification link sent!');
+    })->middleware(['throttle:6,1'])->name('verification.send');
 });

@@ -15,15 +15,15 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'     => ['required', 'email'],
-            'password'  => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required'],
             'role_hint' => ['required'],
         ]);
 
         // Map role_hint to actual role names
         $roleMap = [
-            'admin'    => ['admin', 'superadmin'],
-            'staff'    => ['staff'],
+            'admin' => ['admin', 'superadmin'],
+            'staff' => ['staff'],
             'barangay' => ['barangay_user'],
         ];
 
@@ -39,11 +39,19 @@ class AuthController extends Controller
                 ])->onlyInput('email');
             }
 
+            // Check if email is verified
+            if (!$user->hasVerifiedEmail()) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Please verify your email address first. Check your inbox for the verification link.',
+                ])->onlyInput('email');
+            }
+
             // Check if account is active
             if ($user->status !== 'active') {
                 Auth::logout();
                 return back()->withErrors([
-                    'email' => 'Your account is inactive. Please wait for admin approval.',
+                    'email' => 'Your account is pending admin approval. Please wait.',
                 ])->onlyInput('email');
             }
 
@@ -64,30 +72,33 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:100',
-            'email'       => 'required|email|unique:users,email',
-            'password'    => 'required|min:8|confirmed',
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
             'barangay_id' => 'required|exists:barangays,id',
         ]);
 
         $role = \App\Models\Role::where('name', 'barangay_user')->first();
 
         $user = \App\Models\User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role_id'  => $role->id,
-            'status'   => 'inactive',
+            'role_id' => $role->id,
+            'status' => 'inactive',
         ]);
 
         \App\Models\BarangayAccount::create([
-            'user_id'         => $user->id,
-            'barangay_id'     => $request->barangay_id,
+            'user_id' => $user->id,
+            'barangay_id' => $request->barangay_id,
             'approval_status' => 'pending',
         ]);
 
+        // Send verification email
+        $user->sendEmailVerificationNotification();
+
         return redirect()->route('login')
-            ->with('success', 'Registration submitted! Please wait for admin approval before logging in.');
+            ->with('success', 'Registration submitted! Please check your email to verify your account. After verification, wait for admin approval before logging in.');
     }
 
     public function dashboard()
