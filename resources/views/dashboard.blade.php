@@ -26,10 +26,10 @@
     </p>
 </div>
 
-<div class="grid grid-cols-3 gap-4">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
     {{-- Left & Center: Main Content (2/3) --}}
-    <div class="col-span-2 space-y-4">
+    <div class="col-span-1 lg:col-span-2 space-y-4">
 
         {{-- Stat Cards --}}
         @if(Auth::user()->role?->name === 'barangay_user')
@@ -40,7 +40,7 @@
             $myApproved  = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'approved')->count();
             $myCompleted = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'completed')->whereMonth('updated_at', now()->month)->count();
         @endphp
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs text-gray-500">My Submitted Requests</p>
@@ -87,7 +87,7 @@
             $totalServices   = \App\Models\ServiceRecord::count();
             $thisMonthFarmers = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
         @endphp
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs text-gray-500">Total Farmers</p>
