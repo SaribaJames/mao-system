@@ -32,104 +32,103 @@
             <p class="text-xs text-gray-400 mt-0.5">Management System</p>
         </div>
 
-    {{-- Navigation --}}
-<nav class="flex-1 px-3 py-4 space-y-0.5">
+        {{-- Navigation --}}
+        <nav class="flex-1 px-3 py-4 space-y-0.5">
 
-    <a href="{{ route('dashboard') }}"
-       class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-              {{ request()->routeIs('dashboard') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-        <i class="fa-solid fa-gauge-high w-4 text-center"></i>
-        Dashboard
-    </a>
+            <a href="{{ route('dashboard') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('dashboard') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-gauge-high w-4 text-center"></i>
+                Dashboard
+            </a>
 
-    @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-        <a href="{{ route('service-records.index') }}"
-        class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-          {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-        <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
-        Service Records
-        </a>
-    @endif
+            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+            <a href="{{ route('service-records.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
+                Service Records
+            </a>
+            @endif
 
-    <a href="{{ route('farmers.index') }}"
-       class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-              {{ request()->routeIs('farmers.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-        <i class="fa-solid fa-person w-4 text-center"></i>
-        Farmers
-    </a>
+            <a href="{{ route('farmers.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('farmers.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-person w-4 text-center"></i>
+                Farmers
+            </a>
 
-    <a href="{{ route('requests.index') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-          {{ request()->routeIs('requests.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-    <i class="fa-solid fa-file-lines w-4 text-center"></i>
-    Requests
-    </a>
+            <a href="{{ route('requests.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('requests.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-file-lines w-4 text-center"></i>
+                Requests
+            </a>
 
-    @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-<a href="{{ route('stocks.index') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-          {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-    <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
-    Stocks
-</a>
-@endif
+            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+            <a href="{{ route('stocks.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
+                Stocks
+            </a>
+            @endif
 
-        @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-    <a href="{{ route('reports.index') }}"
-    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-            {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-        <i class="fa-solid fa-chart-bar w-4 text-center"></i>
-        Reports
-    </a>
-    @endif
+            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+            <a href="{{ route('reports.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-chart-bar w-4 text-center"></i>
+                Reports
+            </a>
+            @endif
 
-    <a href="{{ route('activities.index') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-          {{ request()->routeIs('activities.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-    <i class="fa-solid fa-calendar-days w-4 text-center"></i>
-    Activities
-</a>
+            <a href="{{ route('activities.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('activities.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-calendar-days w-4 text-center"></i>
+                Activities
+            </a>
 
-    @if(Auth::user()->isAdmin())
-<a href="{{ route('users.index') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-          {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-    <i class="fa-solid fa-users-gear w-4 text-center"></i>
-    User Management
-</a>
-@endif
+            @if(Auth::user()->isAdmin())
+            <a href="{{ route('users.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-users-gear w-4 text-center"></i>
+                User Management
+            </a>
+            @endif
 
-</nav>
+        </nav>
 
-    {{-- User Profile at Bottom of Sidebar --}}
-<div class="border-t border-gray-100 p-3">
-    <div class="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 cursor-pointer transition"
-         onclick="window.location.href='{{ route('profile.show') }}'">
-        {{-- Avatar --}}
-        @if(Auth::user()->photo)
-            <img src="{{ asset('storage/' . Auth::user()->photo) }}"
-                 class="w-8 h-8 rounded-full object-cover flex-shrink-0 border-2 border-primary-light"/>
-        @else
-            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span class="text-white text-xs font-bold">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </span>
-            </div>
-        @endif
-        {{-- Info --}}
-        <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-gray-800 truncate">{{ Auth::user()->name }}</p>
-            <p class="text-xs text-gray-400 truncate capitalize">
-                @if(Auth::user()->role?->name === 'barangay_user')
-                    {{ Auth::user()->barangayAccount?->barangay?->name ?? 'Barangay Rep' }}
+        {{-- User Profile at Bottom of Sidebar --}}
+        <div class="border-t border-gray-100 p-3">
+            <div class="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 cursor-pointer transition"
+                 onclick="window.location.href='{{ route('profile.show') }}'">
+                @if(Auth::user()->photo)
+                    <img src="{{ asset('storage/' . Auth::user()->photo) }}"
+                         class="w-8 h-8 rounded-full object-cover flex-shrink-0 border-2 border-primary-light"/>
                 @else
-                    {{ ucfirst(str_replace('_', ' ', Auth::user()->role?->name ?? 'User')) }}
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-xs font-bold">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </span>
+                    </div>
                 @endif
-            </p>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-gray-800 truncate">{{ Auth::user()->name }}</p>
+                    <p class="text-xs text-gray-400 truncate capitalize">
+                        @if(Auth::user()->role?->name === 'barangay_user')
+                            {{ Auth::user()->barangayAccount?->barangay?->name ?? 'Barangay Rep' }}
+                        @else
+                            {{ ucfirst(str_replace('_', ' ', Auth::user()->role?->name ?? 'User')) }}
+                        @endif
+                    </p>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+            </div>
         </div>
-        <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
-    </div>
-</div>
+
     </aside>
 
     {{-- Main Content --}}
@@ -157,6 +156,21 @@
         </main>
 
     </div>
+
+    {{-- Tawk.to Live Chat --}}
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/6a48a939f522871d4760fac5/1jslta2p1';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
 
 </body>
 </html>
