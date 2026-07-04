@@ -15,14 +15,14 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'     => ['required', 'email'],
-            'password'  => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required'],
             'role_hint' => ['required'],
         ]);
 
         $roleMap = [
-            'admin'    => ['admin', 'superadmin'],
-            'staff'    => ['staff'],
+            'admin' => ['admin'],
+            'staff' => ['staff'],
             'barangay' => ['barangay_user'],
         ];
 
@@ -63,25 +63,25 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:100',
-            'email'       => 'required|email|unique:users,email',
-            'password'    => 'required|min:8|confirmed',
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
             'barangay_id' => 'required|exists:barangays,id',
         ]);
 
         $role = \App\Models\Role::where('name', 'barangay_user')->first();
 
         $user = \App\Models\User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role_id'  => $role->id,
-            'status'   => 'inactive',
+            'role_id' => $role->id,
+            'status' => 'inactive',
         ]);
 
         \App\Models\BarangayAccount::create([
-            'user_id'         => $user->id,
-            'barangay_id'     => $request->barangay_id,
+            'user_id' => $user->id,
+            'barangay_id' => $request->barangay_id,
             'approval_status' => 'pending',
         ]);
 

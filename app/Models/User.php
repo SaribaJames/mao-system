@@ -11,18 +11,24 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role_id', 'status', 'photo',
+        'name',
+        'email',
+        'password',
+        'role_id',
+        'status',
+        'photo',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
@@ -38,7 +44,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return in_array($this->role?->name, ['admin', 'superadmin']);
+        return $this->role?->name === 'admin';
     }
 
     public function isBarangayUser(): bool
@@ -54,6 +60,6 @@ class User extends Authenticatable
     public function isApproved(): bool
     {
         return $this->isAdmin() ||
-               $this->barangayAccount?->approval_status === 'approved';
+            $this->barangayAccount?->approval_status === 'approved';
     }
 }
