@@ -77,4 +77,6 @@ Route::middleware('auth')->group(function () {
         $request->user()->sendEmailVerificationNotification();
         return back()->with('success', 'Verification link sent!');
     })->middleware(['throttle:6,1'])->name('verification.send');
+
+    Route::resource('service-records', ServiceRecordController::class)->only(['index', 'create', 'store', 'show', 'update']);
 });
