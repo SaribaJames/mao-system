@@ -33,7 +33,7 @@
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 px-3 py-4 space-y-0.5">
+        <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
 
             <a href="{{ route('dashboard') }}"
                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
@@ -89,6 +89,34 @@
                 <i class="fa-solid fa-calendar-days w-4 text-center"></i>
                 Activities
             </a>
+
+            {{-- Messages for Barangay Reps --}}
+            @if(Auth::user()->role?->name === 'barangay_user')
+            <a href="{{ route('messages.chat') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-comments w-4 text-center"></i>
+                Messages
+            </a>
+            @endif
+
+            {{-- Messages for Admin/Staff --}}
+            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+            @php
+                $unreadMessages = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count();
+            @endphp
+            <a href="{{ route('messages.index') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-comments w-4 text-center"></i>
+                Messages
+                @if($unreadMessages > 0)
+                <span class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full ml-auto">
+                    {{ $unreadMessages }}
+                </span>
+                @endif
+            </a>
+            @endif
 
             @if(Auth::user()->isAdmin())
             <a href="{{ route('users.index') }}"
@@ -156,21 +184,6 @@
         </main>
 
     </div>
-
-    {{-- Tawk.to Live Chat --}}
-    <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/6a48a939f522871d4760fac5/1jslta2p1';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>
-    <!--End of Tawk.to Script-->
 
 </body>
 </html>

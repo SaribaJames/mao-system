@@ -10,6 +10,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\MessageController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -48,35 +49,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
 
     // Service Records
-    Route::resource('service-records', ServiceRecordController::class)->only(['index', 'create', 'store', 'show']);
+    Route::resource('service-records', ServiceRecordController::class)->only(['index', 'create', 'store', 'show', 'update']);
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-
-    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
-
     Route::get('/reports/export/pdf', [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
-
     Route::get('/reports/export/farmers', [ReportController::class, 'exportFarmersPDF'])->name('reports.export.farmers');
     Route::get('/reports/export/requests', [ReportController::class, 'exportRequestsPDF'])->name('reports.export.requests');
     Route::get('/reports/export/services', [ReportController::class, 'exportServicesPDF'])->name('reports.export.services');
 
-
-    Route::get('/email/verify', function () {
-        return view('auth.verify-email');
-    })->name('verification.notice');
-
-    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
-        $request->fulfill();
-        return redirect()->route('login')->with('success', 'Email verified! Please wait for admin approval to login.');
-    })->middleware(['signed'])->name('verification.verify');
-
-    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
-        $request->user()->sendEmailVerificationNotification();
-        return back()->with('success', 'Verification link sent!');
-    })->middleware(['throttle:6,1'])->name('verification.send');
-
-    Route::resource('service-records', ServiceRecordController::class)->only(['index', 'create', 'store', 'show', 'update']);
+    // Messages
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/chat', [MessageController::class, 'chat'])->name('messages.chat');
+    Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
+    Route::get('/messages/unread', [MessageController::class, 'unreadCount'])->name('messages.unread');
+    Route::get('/messages/{user}', [MessageController::class, 'conversation'])->name('messages.conversation');
 });
