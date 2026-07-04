@@ -12,10 +12,28 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users        = User::with(['role', 'barangayAccount'])->latest()->paginate(15);
-        $totalUsers   = User::count();
-        $admins       = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->count();
-        $staff        = User::whereHas('role', fn($q) => $q->where('name', 'staff'))->count();
+        $query = User::with(['role', 'barangayAccount']);
+
+        // Search by name or email
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by role
+        if (request('role')) {
+            $query->whereHas('role', function ($q) {
+                $q->where('name', request('role'));
+            });
+        }
+
+        $users = $query->latest()->paginate(15);
+        $totalUsers = User::count();
+        $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->count();
+        $staff = User::whereHas('role', fn($q) => $q->where('name', 'staff'))->count();
         $barangayReps = User::whereHas('role', fn($q) => $q->where('name', 'barangay_user'))->count();
 
         return view('users.index', compact('users', 'totalUsers', 'admins', 'staff', 'barangayReps'));
@@ -23,7 +41,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles     = Role::all();
+        $roles = Role::all();
         $barangays = Barangay::orderBy('name')->get();
         return view('users.create', compact('roles', 'barangays'));
     }
@@ -31,28 +49,28 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:100',
-            'email'    => 'required|email|unique:users,email',
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
-            'role_id'  => 'required|exists:roles,id',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id'  => $request->role_id,
-            'status'   => 'active',
+            'role_id' => $request->role_id,
+            'status' => 'active',
         ]);
 
         $role = Role::find($request->role_id);
         if ($role->name === 'barangay_user' && $request->barangay_id) {
             \App\Models\BarangayAccount::create([
-                'user_id'         => $user->id,
-                'barangay_id'     => $request->barangay_id,
+                'user_id' => $user->id,
+                'barangay_id' => $request->barangay_id,
                 'approval_status' => 'approved',
-                'approved_by'     => auth()->id(),
-                'approved_at'     => now(),
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
             ]);
         }
 
@@ -62,7 +80,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles     = Role::all();
+        $roles = Role::all();
         $barangays = Barangay::orderBy('name')->get();
         return view('users.edit', compact('user', 'roles', 'barangays'));
     }
@@ -70,17 +88,17 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'    => 'required|string|max:100',
-            'email'   => 'required|email|unique:users,email,' . $user->id,
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'role_id' => 'required|exists:roles,id',
-            'status'  => 'required|in:active,inactive,suspended',
+            'status' => 'required|in:active,inactive,suspended',
         ]);
 
         $data = [
-            'name'    => $request->name,
-            'email'   => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'role_id' => $request->role_id,
-            'status'  => $request->status,
+            'status' => $request->status,
         ];
 
         if ($request->filled('password')) {
@@ -120,8 +138,8 @@ class UserController extends Controller
         if ($user->barangayAccount) {
             $user->barangayAccount->update([
                 'approval_status' => 'approved',
-                'approved_by'     => auth()->id(),
-                'approved_at'     => now(),
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
             ]);
         }
 
