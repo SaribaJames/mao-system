@@ -96,3 +96,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">Stock Used</h3>
             <p class="text-sm font-medium text-gray-800">{{ $serviceRecord->stock->item_name }}</p>
+            <p class="text-xs text-gray-400 mt-1 capitalize">{{ $serviceRecord->stock->category }}</p>
+        </div>
+        @endif
+
+    </div>
+</div>
+
+@endsection
