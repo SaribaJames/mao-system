@@ -62,4 +62,14 @@ class User extends Authenticatable
         return $this->isAdmin() ||
             $this->barangayAccount?->approval_status === 'approved';
     }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(\App\Models\Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(\App\Models\Message::class, 'receiver_id');
+    }
 }
