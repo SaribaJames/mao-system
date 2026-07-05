@@ -67,4 +67,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
     Route::get('/messages/unread', [MessageController::class, 'unreadCount'])->name('messages.unread');
     Route::get('/messages/{user}', [MessageController::class, 'conversation'])->name('messages.conversation');
+
+    Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
 });
