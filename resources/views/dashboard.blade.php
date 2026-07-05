@@ -166,7 +166,7 @@
                         <div class="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
                             <div class="flex items-center gap-3">
                                 <div class="w-2 h-2 rounded-full
-                                                {{ $req->status === 'pending' ? 'bg-yellow-400' :
+                                                                        {{ $req->status === 'pending' ? 'bg-yellow-400' :
                     ($req->status === 'approved' ? 'bg-blue-400' :
                         ($req->status === 'completed' ? 'bg-green-500' : 'bg-red-400')) }}">
                                 </div>
@@ -180,7 +180,7 @@
                             <div class="text-right">
                                 <span
                                     class="text-xs px-2 py-0.5 rounded-full font-medium
-                                                {{ $req->status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                                        {{ $req->status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                     ($req->status === 'approved' ? 'bg-blue-100 text-blue-700' :
                         ($req->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')) }}">
                                     {{ ucfirst($req->status) }}
@@ -324,30 +324,31 @@
 
     <script>
         // Official Philippine Holidays 2026 (Proclamation No. 1006)
-        const regularHolidays = [
-            '2026-01-01', // New Year's Day
-            '2026-04-02', // Maundy Thursday
-            '2026-04-03', // Good Friday
-            '2026-04-09', // Araw ng Kagitingan
-            '2026-05-01', // Labor Day
-            '2026-05-27', // Eid'l Adha
-            '2026-06-12', // Independence Day
-            '2026-08-31', // National Heroes Day
-            '2026-11-30', // Bonifacio Day
-            '2026-12-25', // Christmas Day
-            '2026-12-30', // Rizal Day
-        ];
+        // Official Philippine Holidays 2026
+        const regularHolidays = {
+            '2026-01-01': "New Year's Day",
+            '2026-04-02': 'Maundy Thursday',
+            '2026-04-03': 'Good Friday',
+            '2026-04-09': 'Araw ng Kagitingan',
+            '2026-05-01': 'Labor Day',
+            '2026-05-27': "Eid'l Adha",
+            '2026-06-12': 'Independence Day',
+            '2026-08-31': 'National Heroes Day',
+            '2026-11-30': 'Bonifacio Day',
+            '2026-12-25': 'Christmas Day',
+            '2026-12-30': 'Rizal Day',
+        };
 
-        const specialHolidays = [
-            '2026-02-17', // Chinese New Year
-            '2026-04-04', // Black Saturday
-            '2026-08-21', // Ninoy Aquino Day
-            '2026-11-01', // All Saints Day
-            '2026-11-02', // All Souls Day
-            '2026-12-08', // Feast of Immaculate Conception
-            '2026-12-24', // Christmas Eve
-            '2026-12-31', // Last Day of Year
-        ];
+        const specialHolidays = {
+            '2026-02-17': 'Chinese New Year',
+            '2026-04-04': 'Black Saturday',
+            '2026-08-21': 'Ninoy Aquino Day',
+            '2026-11-01': "All Saints' Day",
+            '2026-11-02': "All Souls' Day",
+            '2026-12-08': 'Feast of the Immaculate Conception',
+            '2026-12-24': 'Christmas Eve',
+            '2026-12-31': 'Last Day of the Year',
+        };
         // Live Clock
         function updateClock() {
             const now = new Date();
@@ -391,8 +392,8 @@
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const isToday = today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear;
                 const hasEvent = eventDates.includes(dateStr);
-                const isRegularHoliday = regularHolidays.includes(dateStr);
-                const isSpecialHoliday = specialHolidays.includes(dateStr);
+                const regularHolidayName = regularHolidays[dateStr];
+                const specialHolidayName = specialHolidays[dateStr];
 
                 cell.className = 'relative text-center py-1 text-xs rounded-full cursor-default transition';
 
@@ -402,12 +403,12 @@
                 } else if (hasEvent) {
                     cell.className += ' bg-red-100 text-red-700 font-semibold';
                     cell.title = 'Scheduled Event/Activity';
-                } else if (isRegularHoliday) {
-                    cell.className += ' bg-red-500 text-white font-semibold';
-                    cell.title = 'Regular Holiday';
-                } else if (isSpecialHoliday) {
-                    cell.className += ' bg-orange-200 text-orange-700 font-semibold';
-                    cell.title = 'Special Non-Working Day';
+                } else if (regularHolidayName) {
+                    cell.className += ' bg-red-500 text-white font-semibold cursor-pointer';
+                    cell.title = '🇵🇭 ' + regularHolidayName + ' (Regular Holiday)';
+                } else if (specialHolidayName) {
+                    cell.className += ' bg-orange-200 text-orange-700 font-semibold cursor-pointer';
+                    cell.title = '📅 ' + specialHolidayName + ' (Special Non-Working Day)';
                 } else {
                     cell.className += ' text-gray-600 hover:bg-gray-100';
                 }
