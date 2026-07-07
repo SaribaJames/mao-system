@@ -47,7 +47,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('service-records.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                  {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                                  {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
                     Service Records
                 </a>
@@ -70,7 +70,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('stocks.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                  {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                                  {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
                     Stocks
                 </a>
@@ -79,7 +79,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('reports.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                  {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                                  {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-chart-bar w-4 text-center"></i>
                     Reports
                 </a>
@@ -100,7 +100,7 @@
                 @endphp
                 <a href="{{ route('messages.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                  {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                                  {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                     @if($unreadMessages > 0)
@@ -114,7 +114,7 @@
             @if(Auth::user()->isAdmin())
                 <a href="{{ route('users.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                  {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                                  {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
                     User Management
                 </a>
@@ -243,13 +243,13 @@
                         </div>
                         <div class="max-h-80 overflow-y-auto">
                             @forelse($notifications as $notif)
-                                <div
-                                    class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                                <a href="{{ $notif['link'] }}"
+                                    class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition">
                                     <div class="{{ $notif['bg'] }} p-2 rounded-lg flex-shrink-0">
                                         <i class="fa-solid {{ $notif['icon'] }} {{ $notif['color'] }} text-sm"></i>
                                     </div>
                                     <p class="text-xs text-gray-700 mt-1">{{ $notif['text'] }}</p>
-                                </div>
+                                </a>
                             @empty
                                 <div class="px-4 py-8 text-center">
                                     <i class="fa-solid fa-bell-slash text-gray-300 text-2xl mb-2"></i>
@@ -281,6 +281,10 @@
             function toggleNotif() {
                 const panel = document.getElementById('notifPanel');
                 panel.classList.toggle('hidden');
+
+                // Hide the red badge when opened
+                const badge = document.querySelector('#notifDropdown .bg-red-500');
+                if (badge) badge.classList.add('hidden');
             }
 
             // Close when clicking outside
@@ -305,6 +309,61 @@
         @php
             $admin = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->first();
             $unreadFromAdmin = $admin ? \App\Models\Message::where('sender_id', $admin->id)->where('receiver_id', Auth::id())->where('is_read', false)->count() : 0;
+
+            // New farmers today
+            $newFarmers = \App\Models\Farmer::whereDate('created_at', today())->count();
+            if ($newFarmers > 0)
+                $notifications->push(['icon' => 'fa-person', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$newFarmers} new farmer(s) registered today", 'link' => route('farmers.index')]);
+
+            // Pending requests
+            $pendingReqs = \App\Models\FarmerRequest::where('status', 'pending')->count();
+            if ($pendingReqs > 0)
+                $notifications->push(['icon' => 'fa-file-lines', 'color' => 'text-yellow-500', 'bg' => 'bg-yellow-100', 'text' => "{$pendingReqs} pending request(s) need attention", 'link' => route('requests.index')]);
+
+            // New requests today
+            $newReqs = \App\Models\FarmerRequest::whereDate('created_at', today())->count();
+            if ($newReqs > 0)
+                $notifications->push(['icon' => 'fa-file-circle-plus', 'color' => 'text-blue-500', 'bg' => 'bg-blue-100', 'text' => "{$newReqs} new request(s) submitted today", 'link' => route('requests.index')]);
+
+            // Services today
+            $newServices = \App\Models\ServiceRecord::whereDate('created_at', today())->count();
+            if ($newServices > 0)
+                $notifications->push(['icon' => 'fa-clipboard-list', 'color' => 'text-purple-500', 'bg' => 'bg-purple-100', 'text' => "{$newServices} service record(s) created today", 'link' => route('service-records.index')]);
+
+            // Unread messages
+            $unreadMsgs = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count();
+            if ($unreadMsgs > 0)
+                $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s)", 'link' => route('messages.index')]);
+
+            // Pending user approvals
+            $pendingUsers = \App\Models\User::where('status', 'inactive')->whereHas('barangayAccount', fn($q) => $q->where('approval_status', 'pending'))->count();
+            if ($pendingUsers > 0)
+                $notifications->push(['icon' => 'fa-user-clock', 'color' => 'text-orange-500', 'bg' => 'bg-orange-100', 'text' => "{$pendingUsers} pending user registration(s)", 'link' => route('users.index')]);
+
+            // Pending requests
+            $myPending = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'pending')->count();
+            if ($myPending > 0)
+                $notifications->push(['icon' => 'fa-clock', 'color' => 'text-yellow-500', 'bg' => 'bg-yellow-100', 'text' => "{$myPending} request(s) still pending", 'link' => route('requests.index')]);
+
+            // Approved requests
+            $myApproved = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'approved')->count();
+            if ($myApproved > 0)
+                $notifications->push(['icon' => 'fa-circle-check', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$myApproved} request(s) approved", 'link' => route('requests.index')]);
+
+            // Unread messages
+            $admin = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->first();
+            if ($admin) {
+                $unreadMsgs = \App\Models\Message::where('sender_id', $admin->id)->where('receiver_id', Auth::id())->where('is_read', false)->count();
+                if ($unreadMsgs > 0)
+                    $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s) from MAO", 'link' => route('messages.chat')]);
+            }
+
+            // New activities
+            $newActivities = \App\Models\Activity::whereDate('created_at', today())->where('status', 'active')->count();
+            if ($newActivities > 0)
+                $notifications->push(['icon' => 'fa-bullhorn', 'color' => 'text-red-500', 'bg' => 'bg-red-100', 'text' => "{$newActivities} new announcement(s) posted today", 'link' => route('activities.index')]);
+
+
         @endphp
 
         {{-- Chat Bubble Button --}}
@@ -356,7 +415,7 @@
                             <div class="max-w-48">
                                 <div
                                     class="px-3 py-2 rounded-2xl text-xs
-                                                        {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
+                                                                                                        {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
                                     {{ $msg->message }}
                                 </div>
                                 <p class="text-xs text-gray-400 mt-0.5 {{ $isMine ? 'text-right' : 'text-left' }}">
