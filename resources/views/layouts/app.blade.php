@@ -47,7 +47,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('service-records.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                  {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
                     Service Records
                 </a>
@@ -70,7 +70,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('stocks.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                  {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
                     Stocks
                 </a>
@@ -79,7 +79,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('reports.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                  {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-chart-bar w-4 text-center"></i>
                     Reports
                 </a>
@@ -100,7 +100,7 @@
                 @endphp
                 <a href="{{ route('messages.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                  {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                     @if($unreadMessages > 0)
@@ -114,7 +114,7 @@
             @if(Auth::user()->isAdmin())
                 <a href="{{ route('users.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                                  {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
                     User Management
                 </a>
@@ -157,7 +157,113 @@
 
         {{-- Top Bar --}}
         <header class="bg-white shadow-sm px-6 py-3 flex items-center justify-end sticky top-0 z-10">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-4">
+
+                {{-- Notification Bell --}}
+                @php
+                    $notifications = collect();
+
+                    if (Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff') {
+                        // New farmers today
+                        $newFarmers = \App\Models\Farmer::whereDate('created_at', today())->count();
+                        if ($newFarmers > 0)
+                            $notifications->push(['icon' => 'fa-person', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$newFarmers} new farmer(s) registered today"]);
+
+                        // Pending requests
+                        $pendingReqs = \App\Models\FarmerRequest::where('status', 'pending')->count();
+                        if ($pendingReqs > 0)
+                            $notifications->push(['icon' => 'fa-file-lines', 'color' => 'text-yellow-500', 'bg' => 'bg-yellow-100', 'text' => "{$pendingReqs} pending request(s) need attention"]);
+
+                        // New requests today
+                        $newReqs = \App\Models\FarmerRequest::whereDate('created_at', today())->count();
+                        if ($newReqs > 0)
+                            $notifications->push(['icon' => 'fa-file-circle-plus', 'color' => 'text-blue-500', 'bg' => 'bg-blue-100', 'text' => "{$newReqs} new request(s) submitted today"]);
+
+                        // Services today
+                        $newServices = \App\Models\ServiceRecord::whereDate('created_at', today())->count();
+                        if ($newServices > 0)
+                            $notifications->push(['icon' => 'fa-clipboard-list', 'color' => 'text-purple-500', 'bg' => 'bg-purple-100', 'text' => "{$newServices} service record(s) created today"]);
+
+                        // Unread messages
+                        $unreadMsgs = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count();
+                        if ($unreadMsgs > 0)
+                            $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s)"]);
+
+                        // Pending user approvals
+                        $pendingUsers = \App\Models\User::where('status', 'inactive')->whereHas('barangayAccount', fn($q) => $q->where('approval_status', 'pending'))->count();
+                        if ($pendingUsers > 0)
+                            $notifications->push(['icon' => 'fa-user-clock', 'color' => 'text-orange-500', 'bg' => 'bg-orange-100', 'text' => "{$pendingUsers} pending user registration(s)"]);
+
+                    } elseif (Auth::user()->role?->name === 'barangay_user') {
+                        $barangayId = Auth::user()->barangayAccount?->barangay_id;
+
+                        // Pending requests
+                        $myPending = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'pending')->count();
+                        if ($myPending > 0)
+                            $notifications->push(['icon' => 'fa-clock', 'color' => 'text-yellow-500', 'bg' => 'bg-yellow-100', 'text' => "{$myPending} request(s) still pending"]);
+
+                        // Approved requests
+                        $myApproved = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'approved')->count();
+                        if ($myApproved > 0)
+                            $notifications->push(['icon' => 'fa-circle-check', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$myApproved} request(s) approved"]);
+
+                        // Unread messages
+                        $admin = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->first();
+                        if ($admin) {
+                            $unreadMsgs = \App\Models\Message::where('sender_id', $admin->id)->where('receiver_id', Auth::id())->where('is_read', false)->count();
+                            if ($unreadMsgs > 0)
+                                $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s) from MAO"]);
+                        }
+
+                        // New activities
+                        $newActivities = \App\Models\Activity::whereDate('created_at', today())->where('status', 'active')->count();
+                        if ($newActivities > 0)
+                            $notifications->push(['icon' => 'fa-bullhorn', 'color' => 'text-red-500', 'bg' => 'bg-red-100', 'text' => "{$newActivities} new announcement(s) posted today"]);
+                    }
+                @endphp
+
+                <div class="relative" id="notifDropdown">
+                    <button onclick="toggleNotif()"
+                        class="relative text-gray-400 hover:text-gray-600 transition p-2 rounded-full hover:bg-gray-100">
+                        <i class="fa-solid fa-bell text-lg"></i>
+                        @if($notifications->count() > 0)
+                            <span
+                                class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                {{ $notifications->count() }}
+                            </span>
+                        @endif
+                    </button>
+
+                    {{-- Notification Dropdown --}}
+                    <div id="notifPanel"
+                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-gray-800">Notifications</h3>
+                            <span class="text-xs text-gray-400">{{ now()->format('M d, Y') }}</span>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto">
+                            @forelse($notifications as $notif)
+                                <div
+                                    class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                                    <div class="{{ $notif['bg'] }} p-2 rounded-lg flex-shrink-0">
+                                        <i class="fa-solid {{ $notif['icon'] }} {{ $notif['color'] }} text-sm"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-700 mt-1">{{ $notif['text'] }}</p>
+                                </div>
+                            @empty
+                                <div class="px-4 py-8 text-center">
+                                    <i class="fa-solid fa-bell-slash text-gray-300 text-2xl mb-2"></i>
+                                    <p class="text-xs text-gray-400">No new notifications</p>
+                                </div>
+                            @endforelse
+                        </div>
+                        <div class="px-4 py-2 border-t border-gray-100 bg-gray-50">
+                            <p class="text-xs text-gray-400 text-center">{{ $notifications->count() }} notification(s)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="text-right">
                     <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>
                     <p class="text-xs text-gray-400 capitalize">{{ Auth::user()->role?->name ?? 'User' }}</p>
@@ -170,6 +276,22 @@
                 </form>
             </div>
         </header>
+
+        <script>
+            function toggleNotif() {
+                const panel = document.getElementById('notifPanel');
+                panel.classList.toggle('hidden');
+            }
+
+            // Close when clicking outside
+            document.addEventListener('click', function (e) {
+                const dropdown = document.getElementById('notifDropdown');
+                const panel = document.getElementById('notifPanel');
+                if (dropdown && !dropdown.contains(e.target)) {
+                    panel.classList.add('hidden');
+                }
+            });
+        </script>
 
         {{-- Page Content --}}
         <main class="flex-1 p-6">
@@ -234,7 +356,7 @@
                             <div class="max-w-48">
                                 <div
                                     class="px-3 py-2 rounded-2xl text-xs
-                                            {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
+                                                        {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
                                     {{ $msg->message }}
                                 </div>
                                 <p class="text-xs text-gray-400 mt-0.5 {{ $isMine ? 'text-right' : 'text-left' }}">
