@@ -69,4 +69,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages/{user}', [MessageController::class, 'conversation'])->name('messages.conversation');
 
     Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
+    Route::get('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 });
