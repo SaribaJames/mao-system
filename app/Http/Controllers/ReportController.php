@@ -154,8 +154,16 @@ class ReportController extends Controller
     public function generate()
     {
         $data = $this->getReportData();
+
+        // Add missing stockByCategory
+        $data['stockByCategory'] = \App\Models\Stock::select('category', \Illuminate\Support\Facades\DB::raw('sum(remaining_stock) as total'))
+            ->groupBy('category')
+            ->get();
+
         $month = now()->format('F Y');
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.generate', array_merge($data, ['month' => $month]))
+        $data['month'] = $month;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.generate', $data)
             ->setPaper('a4', 'portrait');
         return $pdf->stream('MAO-Statement-Report-' . date('Y-m') . '.pdf');
     }
