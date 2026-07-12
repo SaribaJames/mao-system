@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
 
     // Farmers
     Route::resource('farmers', FarmerController::class);
+    Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
 
     // Stocks
     Route::resource('stocks', StockController::class)->only(['index', 'store', 'destroy']);
@@ -56,6 +57,8 @@ Route::middleware('auth')->group(function () {
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/generate', [ReportController::class, 'generateForm'])->name('reports.generate');
+    Route::post('/reports/generate', [ReportController::class, 'generatePDF'])->name('reports.generate.pdf');
     Route::get('/reports/export/pdf', [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
     Route::get('/reports/export/farmers', [ReportController::class, 'exportFarmersPDF'])->name('reports.export.farmers');
     Route::get('/reports/export/requests', [ReportController::class, 'exportRequestsPDF'])->name('reports.export.requests');
@@ -67,7 +70,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
     Route::get('/messages/unread', [MessageController::class, 'unreadCount'])->name('messages.unread');
     Route::get('/messages/{user}', [MessageController::class, 'conversation'])->name('messages.conversation');
-
-    Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
-    Route::get('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 });

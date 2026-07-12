@@ -219,4 +219,88 @@ class ReportController extends Controller
             'servicesByType'
         );
     }
+
+
+    public function generateForm()
+    {
+        $totalFarmers = \App\Models\Farmer::count();
+        $activeFarmers = \App\Models\Farmer::where('status', 'active')->count();
+        $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
+        $totalRequests = \App\Models\FarmerRequest::count();
+        $pendingRequests = \App\Models\FarmerRequest::where('status', 'pending')->count();
+        $completedRequests = \App\Models\FarmerRequest::where('status', 'completed')->count();
+        $totalServices = \App\Models\ServiceRecord::count();
+        $completedServices = \App\Models\ServiceRecord::where('status', 'completed')->count();
+        $totalStock = \App\Models\Stock::sum('total_stock');
+        $releasedStock = \App\Models\Stock::sum('released_stock');
+        $remainingStock = \App\Models\Stock::sum('remaining_stock');
+
+        return view('reports.generate-form', compact(
+            'totalFarmers',
+            'activeFarmers',
+            'newThisMonth',
+            'totalRequests',
+            'pendingRequests',
+            'completedRequests',
+            'totalServices',
+            'completedServices',
+            'totalStock',
+            'releasedStock',
+            'remainingStock'
+        ));
+    }
+
+    public function generatePDF(Request $request)
+    {
+        $totalFarmers = \App\Models\Farmer::count();
+        $activeFarmers = \App\Models\Farmer::where('status', 'active')->count();
+        $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
+        $totalRequests = \App\Models\FarmerRequest::count();
+        $pendingRequests = \App\Models\FarmerRequest::where('status', 'pending')->count();
+        $completedRequests = \App\Models\FarmerRequest::where('status', 'completed')->count();
+        $totalServices = \App\Models\ServiceRecord::count();
+        $completedServices = \App\Models\ServiceRecord::where('status', 'completed')->count();
+        $totalStock = \App\Models\Stock::sum('total_stock');
+        $releasedStock = \App\Models\Stock::sum('released_stock');
+        $remainingStock = \App\Models\Stock::sum('remaining_stock');
+        $stockByCategory = \App\Models\Stock::select('category', \Illuminate\Support\Facades\DB::raw('sum(remaining_stock) as total'))->groupBy('category')->get();
+        $servicesByType = \App\Models\ServiceRecord::select('service_type', \Illuminate\Support\Facades\DB::raw('count(*) as total'))->groupBy('service_type')->get();
+        $farmersByBarangay = \App\Models\Farmer::with('barangay')->select('barangay_id', \Illuminate\Support\Facades\DB::raw('count(*) as total'))->groupBy('barangay_id')->orderByDesc('total')->take(10)->get();
+
+        $month = $request->input('report_month', now()->format('F Y'));
+        $preparedBy = $request->input('prepared_by', Auth()->user()->name);
+        $introduction = $request->input('introduction');
+        $accomplishments = $request->input('accomplishments');
+        $challenges = $request->input('challenges');
+        $recommendations = $request->input('recommendations');
+        $conclusion = $request->input('conclusion');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.generate', compact(
+            'totalFarmers',
+            'activeFarmers',
+            'newThisMonth',
+            'totalRequests',
+            'pendingRequests',
+            'completedRequests',
+            'totalServices',
+            'completedServices',
+            'totalStock',
+            'releasedStock',
+            'remainingStock',
+            'stockByCategory',
+            'servicesByType',
+            'farmersByBarangay',
+            'month',
+            'preparedBy',
+            'introduction',
+            'accomplishments',
+            'challenges',
+            'recommendations',
+            'conclusion'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->stream('MAO-Narrative-Report-' . date('Y-m') . '.pdf');
+    }
+
+
 }
