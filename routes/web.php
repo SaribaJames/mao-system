@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\FormController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -70,4 +71,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
     Route::get('/messages/unread', [MessageController::class, 'unreadCount'])->name('messages.unread');
     Route::get('/messages/{user}', [MessageController::class, 'conversation'])->name('messages.conversation');
+
+    // Forms & Documents
+    Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
+    Route::get('/forms/pcic-adss', [FormController::class, 'pcicAdss'])->name('forms.pcic-adss');
+    Route::post('/forms/pcic-adss', [FormController::class, 'pcicAdssPDF'])->name('forms.pcic-adss.pdf');
 });
