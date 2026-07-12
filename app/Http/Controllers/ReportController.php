@@ -257,15 +257,30 @@ class ReportController extends Controller
         $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
         $totalRequests = \App\Models\FarmerRequest::count();
         $pendingRequests = \App\Models\FarmerRequest::where('status', 'pending')->count();
+        $approvedRequests = \App\Models\FarmerRequest::where('status', 'approved')->count();
         $completedRequests = \App\Models\FarmerRequest::where('status', 'completed')->count();
+        $rejectedRequests = \App\Models\FarmerRequest::where('status', 'rejected')->count();
         $totalServices = \App\Models\ServiceRecord::count();
         $completedServices = \App\Models\ServiceRecord::where('status', 'completed')->count();
         $totalStock = \App\Models\Stock::sum('total_stock');
         $releasedStock = \App\Models\Stock::sum('released_stock');
         $remainingStock = \App\Models\Stock::sum('remaining_stock');
-        $stockByCategory = \App\Models\Stock::select('category', \Illuminate\Support\Facades\DB::raw('sum(remaining_stock) as total'))->groupBy('category')->get();
-        $servicesByType = \App\Models\ServiceRecord::select('service_type', \Illuminate\Support\Facades\DB::raw('count(*) as total'))->groupBy('service_type')->get();
-        $farmersByBarangay = \App\Models\Farmer::with('barangay')->select('barangay_id', \Illuminate\Support\Facades\DB::raw('count(*) as total'))->groupBy('barangay_id')->orderByDesc('total')->take(10)->get();
+
+        $stockByCategory = \App\Models\Stock::select('category', DB::raw('sum(remaining_stock) as total'))
+            ->groupBy('category')->get();
+
+        $servicesByType = \App\Models\ServiceRecord::select('service_type', DB::raw('count(*) as total'))
+            ->groupBy('service_type')->orderByDesc('total')->get();
+
+        $farmersByBarangay = \App\Models\Farmer::with('barangay')
+            ->select('barangay_id', DB::raw('count(*) as total'))
+            ->groupBy('barangay_id')->orderByDesc('total')->take(10)->get();
+
+        $farmersBySex = \App\Models\Farmer::select('sex', DB::raw('count(*) as total'))
+            ->groupBy('sex')->get();
+
+        $farmersByLivelihood = \App\Models\Farmer::select('main_livelihood', DB::raw('count(*) as total'))
+            ->whereNotNull('main_livelihood')->groupBy('main_livelihood')->get();
 
         $month = $request->input('report_month', now()->format('F Y'));
         $preparedBy = $request->input('prepared_by', Auth()->user()->name);
@@ -281,7 +296,9 @@ class ReportController extends Controller
             'newThisMonth',
             'totalRequests',
             'pendingRequests',
+            'approvedRequests',
             'completedRequests',
+            'rejectedRequests',
             'totalServices',
             'completedServices',
             'totalStock',
@@ -290,6 +307,8 @@ class ReportController extends Controller
             'stockByCategory',
             'servicesByType',
             'farmersByBarangay',
+            'farmersBySex',
+            'farmersByLivelihood',
             'month',
             'preparedBy',
             'introduction',
