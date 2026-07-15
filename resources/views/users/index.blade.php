@@ -178,7 +178,7 @@
 
 {{-- Add User Modal --}}
 <div id="addUserModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-bold text-gray-800">Add User</h3>
             <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
@@ -200,7 +200,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Role</label>
-                    <select name="role_id" id="roleSelect" required onchange="toggleBarangayField()"
+                    <select name="role_id" id="roleSelect" required onchange="toggleRoleFields()"
                             class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Select Role</option>
                         @foreach(\App\Models\Role::all() as $role)
@@ -219,6 +219,22 @@
                             <option value="{{ $barangay->id }}">{{ $barangay->name }}</option>
                         @endforeach
                     </select>
+                </div>
+                <div id="programsField" style="display:none;">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Assign Program(s)</label>
+                    <div class="border border-gray-300 rounded-md p-2 max-h-36 overflow-y-auto space-y-1">
+                        @foreach(\App\Models\Program::orderBy('name')->get() as $program)
+                        <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
+                            <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
+                                   class="rounded border-gray-300 text-primary focus:ring-primary"/>
+                            {{ $program->name }}
+                            @if($program->assignedUser)
+                                <span class="text-xs text-gray-400">(currently: {{ $program->assignedUser->name }})</span>
+                            @endif
+                        </label>
+                        @endforeach
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Selecting a program here reassigns it to this staff member.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Password</label>
@@ -259,16 +275,13 @@ function closeAddUserModal() {
     document.getElementById('addUserModal').style.display = 'none';
 }
 
-function toggleBarangayField() {
+function toggleRoleFields() {
     const roleSelect = document.getElementById('roleSelect');
     const selectedOption = roleSelect.options[roleSelect.selectedIndex];
     const roleName = selectedOption.getAttribute('data-name');
-    const barangayField = document.getElementById('barangayField');
-    if (roleName === 'barangay_user') {
-        barangayField.style.display = 'block';
-    } else {
-        barangayField.style.display = 'none';
-    }
+
+    document.getElementById('barangayField').style.display = (roleName === 'barangay_user') ? 'block' : 'none';
+    document.getElementById('programsField').style.display = (roleName === 'staff') ? 'block' : 'none';
 }
 
 document.getElementById('addUserModal').addEventListener('click', function(e) {

@@ -45,10 +45,10 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Role</label>
-            <select name="role_id" required
+            <select name="role_id" id="roleSelect" required onchange="toggleProgramsField()"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 @foreach($roles as $role)
-                    <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                    <option value="{{ $role->id }}" data-name="{{ $role->name }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
                         {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                     </option>
                 @endforeach
@@ -63,6 +63,24 @@
                 <option value="suspended" {{ $user->status == 'suspended' ? 'selected' : '' }}>Suspended</option>
             </select>
         </div>
+    </div>
+
+    <div id="programsField" class="mb-4" style="display:none;">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Assign Program(s)</label>
+        <div class="border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
+            @foreach($programs as $program)
+            <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
+                <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
+                       {{ in_array($program->id, $assignedProgramIds) ? 'checked' : '' }}
+                       class="rounded border-gray-300 text-primary focus:ring-primary"/>
+                {{ $program->name }}
+                @if($program->assignedUser && $program->assignedUser->id !== $user->id)
+                    <span class="text-xs text-gray-400">(currently: {{ $program->assignedUser->name }})</span>
+                @endif
+            </label>
+            @endforeach
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Unchecking a program removes this user as its assigned personnel.</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4 mb-4">
@@ -105,4 +123,16 @@
 </div>
 
 </form>
+
+<script>
+function toggleProgramsField() {
+    const roleSelect = document.getElementById('roleSelect');
+    const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+    const roleName = selectedOption.getAttribute('data-name');
+    document.getElementById('programsField').style.display = (roleName === 'staff') ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', toggleProgramsField);
+</script>
+
 @endsection

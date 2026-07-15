@@ -27,6 +27,14 @@ class ProgramController extends Controller
 
     public function show(Program $program)
     {
+        // Only admins and this program's assigned personnel may view it.
+        // Any other staff member gets blocked entirely, not just "manage".
+        abort_unless(
+            Auth::user()->isAdmin() || $program->isManagedBy(Auth::user()),
+            403,
+            'You are not assigned to this program.'
+        );
+
         $query = $program->enrollments()->with(['farmer', 'farmer.barangay', 'processedBy']);
 
         if (request('search')) {
@@ -51,20 +59,6 @@ class ProgramController extends Controller
         return view('programs.show', compact(
             'program', 'enrollments', 'farmers', 'staffUsers', 'isAssignedUser', 'isUnlocked'
         ));
-    }
-
-    public function assignPersonnel(Request $request, Program $program)
-    {
-        abort_unless(Auth::user()->isAdmin(), 403, 'Only admins can assign program personnel.');
-
-        $request->validate([
-            'assigned_user_id' => 'nullable|exists:users,id',
-        ]);
-
-        $program->update(['assigned_user_id' => $request->assigned_user_id]);
-
-        return redirect()->route('programs.show', $program)
-            ->with('success', 'Program personnel updated!');
     }
 
     public function unlock(Request $request, Program $program)

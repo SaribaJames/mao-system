@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Barangay;
+use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -43,7 +44,8 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $barangays = Barangay::orderBy('name')->get();
-        return view('users.create', compact('roles', 'barangays'));
+        $programs = Program::orderBy('name')->get();
+        return view('users.create', compact('roles', 'barangays', 'programs'));
     }
 
     public function store(Request $request)
@@ -54,6 +56,8 @@ class UserController extends Controller
             'password' => 'required|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
             'pin' => 'nullable|digits_between:4,6',
+            'assigned_programs' => 'nullable|array',
+            'assigned_programs.*' => 'exists:programs,id',
         ]);
 
         $user = User::create([
@@ -76,6 +80,11 @@ class UserController extends Controller
             ]);
         }
 
+        if ($role->name === 'staff' && $request->filled('assigned_programs')) {
+            Program::whereIn('id', $request->assigned_programs)
+                ->update(['assigned_user_id' => $user->id]);
+        }
+
         return redirect()->route('users.index')
             ->with('success', "User {$request->name} created successfully!");
     }
@@ -84,7 +93,9 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $barangays = Barangay::orderBy('name')->get();
-        return view('users.edit', compact('user', 'roles', 'barangays'));
+        $programs = Program::orderBy('name')->get();
+        $assignedProgramIds = $user->assignedPrograms()->pluck('id')->toArray();
+        return view('users.edit', compact('user', 'roles', 'barangays', 'programs', 'assignedProgramIds'));
     }
 
     public function update(Request $request, User $user)
@@ -94,6 +105,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive,suspended',
+            'assigned_programs' => 'nullable|array',
+            'assigned_programs.*' => 'exists:programs,id',
         ]);
 
         $data = [
@@ -114,6 +127,15 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        // Unassign any programs this user currently manages that weren't
+        // reselected, then assign whichever ones were checked.
+        Program::where('assigned_user_id', $user->id)->update(['assigned_user_id' => null]);
+
+        if ($request->filled('assigned_programs')) {
+            Program::whereIn('id', $request->assigned_programs)
+                ->update(['assigned_user_id' => $user->id]);
+        }
 
         return redirect()->route('users.index')
             ->with('success', "User {$user->name} updated successfully!");

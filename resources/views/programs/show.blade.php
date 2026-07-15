@@ -8,34 +8,15 @@
             <i class="fa-solid fa-arrow-left"></i> Back to Programs
         </a>
         <h2 class="text-2xl font-bold text-gray-800 mt-1">{{ $program->name }}</h2>
-        <p class="text-gray-500 text-sm mt-1">Coordinator: {{ $program->coordinator_name }}</p>
-
-        @if(Auth::user()->isAdmin())
-        <form method="POST" action="{{ route('programs.assign', $program) }}" class="mt-2 flex items-center gap-2">
-            @csrf
-            <label class="text-xs text-gray-500">Assigned Personnel:</label>
-            <select name="assigned_user_id" onchange="this.form.submit()"
-                    class="border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary">
-                <option value="">Unassigned</option>
-                @foreach($staffUsers as $staff)
-                <option value="{{ $staff->id }}" {{ $program->assigned_user_id == $staff->id ? 'selected' : '' }}>{{ $staff->name }}</option>
-                @endforeach
-            </select>
-        </form>
-        @else
-        <p class="text-gray-500 text-xs mt-1">Assigned Personnel: {{ $program->assignedUser?->name ?? 'Unassigned' }}</p>
-        @endif
+        <p class="text-gray-500 text-sm mt-1">
+            Assigned Personnel: {{ $program->assignedUser?->name ?? 'Unassigned' }}
+        </p>
     </div>
 
     @if($isAssignedUser && $isUnlocked)
     <button onclick="document.getElementById('enroll-modal').classList.remove('hidden')"
        class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
         <i class="fa-solid fa-plus"></i> Enroll Farmer
-    </button>
-    @elseif($isAssignedUser && !$isUnlocked)
-    <button onclick="document.getElementById('pin-modal').classList.remove('hidden')"
-       class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
-        <i class="fa-solid fa-lock"></i> Unlock to Manage
     </button>
     @endif
 </div>
@@ -45,6 +26,81 @@
     <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
+@endif
+
+{{-- PIN Card — shown automatically to the assigned personnel until unlocked --}}
+@if($isAssignedUser && !$isUnlocked)
+<div class="max-w-sm mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 text-center">
+    <div class="w-14 h-14 rounded-full bg-primary-light flex items-center justify-center mx-auto mb-3">
+        <i class="fa-solid fa-lock text-primary text-xl"></i>
+    </div>
+    <h3 class="font-semibold text-gray-800 mb-1">Enter Your PIN</h3>
+    <p class="text-xs text-gray-400 mb-4">Unlock management access for {{ $program->name }}</p>
+
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-600 text-xs rounded-md p-2 mb-3">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('programs.unlock', $program) }}" id="pinForm">
+        @csrf
+        <div class="flex items-center justify-center gap-2 mb-5" id="pinBoxes">
+            @for ($i = 0; $i < 6; $i++)
+            <input type="password" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                   class="pin-box w-10 h-12 text-center text-lg font-bold border-2 border-gray-200 rounded-lg
+                          focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition"
+                   {{ $i === 0 ? 'autofocus' : '' }} />
+            @endfor
+        </div>
+        <input type="hidden" name="pin" id="pinHidden">
+        <button type="submit"
+                class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+            Unlock
+        </button>
+    </form>
+</div>
+
+<script>
+(function () {
+    const boxes = document.querySelectorAll('.pin-box');
+    const hidden = document.getElementById('pinHidden');
+    const form = document.getElementById('pinForm');
+
+    function updateHidden() {
+        hidden.value = Array.from(boxes).map(b => b.value).join('');
+    }
+
+    boxes.forEach((box, i) => {
+        box.addEventListener('input', () => {
+            box.value = box.value.replace(/[^0-9]/g, '');
+            if (box.value && i < boxes.length - 1) {
+                boxes[i + 1].focus();
+            }
+            updateHidden();
+        });
+
+        box.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !box.value && i > 0) {
+                boxes[i - 1].focus();
+            }
+        });
+
+        box.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const digits = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').split('');
+            digits.forEach((d, idx) => {
+                if (boxes[i + idx]) boxes[i + idx].value = d;
+            });
+            const next = boxes[Math.min(i + digits.length, boxes.length - 1)];
+            next.focus();
+            updateHidden();
+        });
+    });
+
+    form.addEventListener('submit', updateHidden);
+})();
+</script>
 @endif
 
 {{-- Filter --}}
@@ -146,34 +202,6 @@
                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
             <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
                 Enroll
-            </button>
-        </form>
-    </div>
-</div>
-@endif
-
-@if($isAssignedUser && !$isUnlocked)
-{{-- PIN Unlock Modal --}}
-<div id="pin-modal" class="{{ session('error') ? '' : 'hidden' }} fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold text-gray-800">Enter PIN — {{ $program->name }}</h3>
-            <button onclick="document.getElementById('pin-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        @if(session('error'))
-            <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-2 mb-3">
-                {{ session('error') }}
-            </div>
-        @endif
-        <form method="POST" action="{{ route('programs.unlock', $program) }}">
-            @csrf
-            <label class="block text-xs text-gray-500 mb-1">Personal PIN</label>
-            <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" required autofocus
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-4 tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
-            <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
-                Unlock
             </button>
         </form>
     </div>

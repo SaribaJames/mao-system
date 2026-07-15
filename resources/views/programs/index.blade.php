@@ -31,25 +31,55 @@
 {{-- Program Cards --}}
 <div class="grid grid-cols-3 gap-4">
     @foreach($programs as $program)
-    <a href="{{ route('programs.show', $program) }}"
-       class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition block">
-        <div class="flex items-start justify-between mb-3">
-            <i class="fa-solid fa-seedling text-primary text-lg"></i>
-            <span class="px-2 py-1 rounded-full text-xs font-medium {{ $program->status_color }}">
-                {{ ucfirst($program->status) }}
-            </span>
+        @php
+            $isMine = $program->isManagedBy(Auth::user());
+            $canOpen = Auth::user()->isAdmin() || $isMine;
+        @endphp
+
+        @if($canOpen)
+        <a href="{{ route('programs.show', $program) }}"
+           class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition block
+                  {{ $isMine ? 'border-2 border-primary ring-1 ring-primary-light' : 'border border-gray-100' }}">
+            <div class="flex items-start justify-between mb-3">
+                <i class="fa-solid fa-seedling text-primary text-lg"></i>
+                <div class="flex items-center gap-1">
+                    @if($isMine)
+                    <span class="px-2 py-1 rounded-full text-xs font-medium bg-primary text-white">
+                        <i class="fa-solid fa-star text-[10px]"></i> Your Program
+                    </span>
+                    @endif
+                    <span class="px-2 py-1 rounded-full text-xs font-medium {{ $program->status_color }}">
+                        {{ ucfirst($program->status) }}
+                    </span>
+                </div>
+            </div>
+            <p class="font-semibold text-gray-800 mb-1">{{ $program->name }}</p>
+            <p class="text-xs text-gray-400 mb-3">
+                <i class="fa-solid fa-user-shield w-4 text-center"></i>
+                Assigned: {{ $program->assignedUser?->name ?? 'Unassigned' }}
+            </p>
+            <p class="text-xs text-gray-500">
+                <i class="fa-solid fa-users w-4 text-center"></i>
+                {{ $program->active_enrollments_count }} active farmer(s)
+            </p>
+        </a>
+        @else
+        <div class="bg-gray-50 rounded-lg border border-gray-100 p-5 opacity-70 cursor-not-allowed relative"
+             title="You are not assigned to this program">
+            <div class="flex items-start justify-between mb-3">
+                <i class="fa-solid fa-seedling text-gray-300 text-lg"></i>
+                <span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                    <i class="fa-solid fa-lock text-[10px]"></i> Restricted
+                </span>
+            </div>
+            <p class="font-semibold text-gray-500 mb-1">{{ $program->name }}</p>
+            <p class="text-xs text-gray-400 mb-3">
+                <i class="fa-solid fa-user-shield w-4 text-center"></i>
+                Assigned: {{ $program->assignedUser?->name ?? 'Unassigned' }}
+            </p>
+            <p class="text-xs text-gray-400">Not assigned to you</p>
         </div>
-        <p class="font-semibold text-gray-800 mb-1">{{ $program->name }}</p>
-        <p class="text-xs text-gray-400 mb-1">Coordinator: {{ $program->coordinator_name }}</p>
-        <p class="text-xs text-gray-400 mb-3">
-            <i class="fa-solid fa-user-shield w-4 text-center"></i>
-            Assigned: {{ $program->assignedUser?->name ?? 'Unassigned' }}
-        </p>
-        <p class="text-xs text-gray-500">
-            <i class="fa-solid fa-users w-4 text-center"></i>
-            {{ $program->active_enrollments_count }} active farmer(s)
-        </p>
-    </a>
+        @endif
     @endforeach
 </div>
 
