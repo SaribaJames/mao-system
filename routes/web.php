@@ -12,6 +12,7 @@ use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\ProgramController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -76,4 +77,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
     Route::get('/forms/pcic-adss', [FormController::class, 'pcicAdss'])->name('forms.pcic-adss');
     Route::post('/forms/pcic-adss', [FormController::class, 'pcicAdssPDF'])->name('forms.pcic-adss.pdf');
+
+    // Programs
+    Route::resource('programs', ProgramController::class)->only(['index', 'show']);
+    Route::post('/programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
+    Route::post('/program-enrollments/{enrollment}/status', [ProgramController::class, 'updateEnrollment'])->name('program-enrollments.status');
+
+
+
+
+
 });

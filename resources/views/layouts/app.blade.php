@@ -47,7 +47,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('service-records.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                          {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                              {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
                     Service Records
                 </a>
@@ -70,7 +70,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('stocks.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                          {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                              {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
                     Stocks
                 </a>
@@ -79,7 +79,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('reports.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                          {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                              {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-chart-bar w-4 text-center"></i>
                     Reports
                 </a>
@@ -92,19 +92,27 @@
                 Activities
             </a>
 
+            <a href="{{ route('programs.index') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('programs.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                <i class="fa-solid fa-seedling w-4 text-center"></i>
+                Programs
+            </a>
+
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                    <a href="{{ route('forms.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                  {{ request()->routeIs('forms.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-                        <i class="fa-solid fa-file-invoice w-4 text-center"></i>
-                        Forms & Documents
-                    </a>
+                <a href="{{ route('forms.index') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                      {{ request()->routeIs('forms.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i>
+                    Forms & Documents
+                </a>
             @endif
 
             {{-- Messages for Barangay Reps --}}
             @if(Auth::user()->role?->name === 'barangay_user')
                 <a href="{{ route('messages.chat') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                          {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                              {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                 </a>
@@ -115,7 +123,7 @@
                 @php $unreadMessages = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count(); @endphp
                 <a href="{{ route('messages.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                          {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                              {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                     @if($unreadMessages > 0)
@@ -129,7 +137,7 @@
             @if(Auth::user()->isAdmin())
                 <a href="{{ route('users.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                          {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                              {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
                     User Management
                 </a>
@@ -194,6 +202,10 @@
                         $newServices = \App\Models\ServiceRecord::whereDate('created_at', today())->count();
                         if ($newServices > 0)
                             $notifications->push(['icon' => 'fa-clipboard-list', 'color' => 'text-purple-500', 'bg' => 'bg-purple-100', 'text' => "{$newServices} service record(s) created today", 'link' => route('service-records.index')]);
+
+                        $newEnrollments = \App\Models\ProgramEnrollment::whereDate('created_at', today())->count();
+                        if ($newEnrollments > 0)
+                            $notifications->push(['icon' => 'fa-seedling', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$newEnrollments} farmer(s) enrolled in programs today", 'link' => route('programs.index')]);
 
                         $unreadMsgs = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count();
                         if ($unreadMsgs > 0)
@@ -338,7 +350,7 @@
                         <div class="max-w-48">
                             <div
                                 class="px-3 py-2 rounded-2xl text-xs
-                                {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
+                                        {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
                                 {{ $msg->message }}
                             </div>
                             <p class="text-xs text-gray-400 mt-0.5 {{ $isMine ? 'text-right' : 'text-left' }}">
