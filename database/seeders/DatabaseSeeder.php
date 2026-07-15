@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             BarangaySeeder::class,
             AdminSeeder::class,
+            ProgramSeeder::class,
         ]);
     }
 }
