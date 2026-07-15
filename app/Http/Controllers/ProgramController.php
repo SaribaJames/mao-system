@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Program;
 use App\Models\ProgramEnrollment;
 use App\Models\Farmer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,7 +17,7 @@ class ProgramController extends Controller
             'enrollments as active_enrollments_count' => function ($q) {
                 $q->where('status', 'active');
             }
-        ])->orderBy('name')->get();
+        ])->with('assignedUser')->orderBy('name')->get();
 
         $totalPrograms = $programs->count();
         $totalActiveEnrollments = ProgramEnrollment::where('status', 'active')->count();
@@ -42,12 +43,52 @@ class ProgramController extends Controller
 
         $enrollments = $query->latest()->paginate(15);
         $farmers = Farmer::orderBy('surname')->get();
+        $staffUsers = User::whereHas('role', fn($q) => $q->where('name', 'staff'))->orderBy('name')->get();
 
-        return view('programs.show', compact('program', 'enrollments', 'farmers'));
+        $isAssignedUser = $program->isManagedBy(Auth::user());
+        $isUnlocked = $isAssignedUser && session()->get("unlocked_programs.{$program->id}", false);
+
+        return view('programs.show', compact(
+            'program', 'enrollments', 'farmers', 'staffUsers', 'isAssignedUser', 'isUnlocked'
+        ));
+    }
+
+    public function assignPersonnel(Request $request, Program $program)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Only admins can assign program personnel.');
+
+        $request->validate([
+            'assigned_user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $program->update(['assigned_user_id' => $request->assigned_user_id]);
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Program personnel updated!');
+    }
+
+    public function unlock(Request $request, Program $program)
+    {
+        abort_unless($program->isManagedBy(Auth::user()), 403, 'You are not the assigned personnel for this program.');
+
+        $request->validate([
+            'pin' => 'required|digits_between:4,6',
+        ]);
+
+        if (! Auth::user()->verifyPin($request->pin)) {
+            return back()->with('error', 'Incorrect PIN.');
+        }
+
+        $request->session()->put("unlocked_programs.{$program->id}", true);
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Program unlocked for this session.');
     }
 
     public function enroll(Request $request, Program $program)
     {
+        $this->authorizeManage($program);
+
         $request->validate([
             'farmer_id' => 'required|exists:farmers,id',
             'remarks' => 'nullable|string',
@@ -67,6 +108,8 @@ class ProgramController extends Controller
 
     public function updateEnrollment(Request $request, ProgramEnrollment $enrollment)
     {
+        $this->authorizeManage($enrollment->program);
+
         $request->validate([
             'status' => 'required|in:active,completed,dropped',
             'remarks' => 'nullable|string',
@@ -79,5 +122,11 @@ class ProgramController extends Controller
 
         return redirect()->route('programs.show', $enrollment->program)
             ->with('success', 'Enrollment status updated!');
+    }
+
+    protected function authorizeManage(Program $program): void
+    {
+        abort_unless($program->isManagedBy(Auth::user()), 403, 'Only the assigned personnel can manage this program.');
+        abort_unless(session()->get("unlocked_programs.{$program->id}", false), 403, 'Enter your PIN to unlock this program before managing it.');
     }
 }

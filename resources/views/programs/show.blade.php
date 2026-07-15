@@ -9,11 +9,33 @@
         </a>
         <h2 class="text-2xl font-bold text-gray-800 mt-1">{{ $program->name }}</h2>
         <p class="text-gray-500 text-sm mt-1">Coordinator: {{ $program->coordinator_name }}</p>
+
+        @if(Auth::user()->isAdmin())
+        <form method="POST" action="{{ route('programs.assign', $program) }}" class="mt-2 flex items-center gap-2">
+            @csrf
+            <label class="text-xs text-gray-500">Assigned Personnel:</label>
+            <select name="assigned_user_id" onchange="this.form.submit()"
+                    class="border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Unassigned</option>
+                @foreach($staffUsers as $staff)
+                <option value="{{ $staff->id }}" {{ $program->assigned_user_id == $staff->id ? 'selected' : '' }}>{{ $staff->name }}</option>
+                @endforeach
+            </select>
+        </form>
+        @else
+        <p class="text-gray-500 text-xs mt-1">Assigned Personnel: {{ $program->assignedUser?->name ?? 'Unassigned' }}</p>
+        @endif
     </div>
-    @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+
+    @if($isAssignedUser && $isUnlocked)
     <button onclick="document.getElementById('enroll-modal').classList.remove('hidden')"
        class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
         <i class="fa-solid fa-plus"></i> Enroll Farmer
+    </button>
+    @elseif($isAssignedUser && !$isUnlocked)
+    <button onclick="document.getElementById('pin-modal').classList.remove('hidden')"
+       class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+        <i class="fa-solid fa-lock"></i> Unlock to Manage
     </button>
     @endif
 </div>
@@ -53,7 +75,7 @@
                 <th class="text-left px-4 py-3 text-gray-600 font-medium">Processed By</th>
                 <th class="text-left px-4 py-3 text-gray-600 font-medium">Remarks</th>
                 <th class="text-left px-4 py-3 text-gray-600 font-medium">Status</th>
-                @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+                @if($isAssignedUser && $isUnlocked)
                 <th class="text-left px-4 py-3 text-gray-600 font-medium">Action</th>
                 @endif
             </tr>
@@ -73,7 +95,7 @@
                         {{ ucfirst($enrollment->status) }}
                     </span>
                 </td>
-                @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+                @if($isAssignedUser && $isUnlocked)
                 <td class="px-4 py-3">
                     <form method="POST" action="{{ route('program-enrollments.status', $enrollment) }}" class="flex items-center gap-2">
                         @csrf
@@ -99,6 +121,7 @@
     </div>
 </div>
 
+@if($isAssignedUser && $isUnlocked)
 {{-- Enroll Modal --}}
 <div id="enroll-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
@@ -127,5 +150,34 @@
         </form>
     </div>
 </div>
+@endif
+
+@if($isAssignedUser && !$isUnlocked)
+{{-- PIN Unlock Modal --}}
+<div id="pin-modal" class="{{ session('error') ? '' : 'hidden' }} fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-gray-800">Enter PIN — {{ $program->name }}</h3>
+            <button onclick="document.getElementById('pin-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        @if(session('error'))
+            <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-2 mb-3">
+                {{ session('error') }}
+            </div>
+        @endif
+        <form method="POST" action="{{ route('programs.unlock', $program) }}">
+            @csrf
+            <label class="block text-xs text-gray-500 mb-1">Personal PIN</label>
+            <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" required autofocus
+                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-4 tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+            <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
+                Unlock
+            </button>
+        </form>
+    </div>
+</div>
+@endif
 
 @endsection

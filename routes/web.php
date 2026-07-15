@@ -80,6 +80,8 @@ Route::middleware('auth')->group(function () {
 
     // Programs
     Route::resource('programs', ProgramController::class)->only(['index', 'show']);
+    Route::post('/programs/{program}/assign', [ProgramController::class, 'assignPersonnel'])->name('programs.assign');
+    Route::post('/programs/{program}/unlock', [ProgramController::class, 'unlock'])->name('programs.unlock');
     Route::post('/programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
     Route::post('/program-enrollments/{enrollment}/status', [ProgramController::class, 'updateEnrollment'])->name('program-enrollments.status');
 

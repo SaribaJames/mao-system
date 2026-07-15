@@ -230,6 +230,11 @@
                     <input type="password" name="password_confirmation" required
                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Program Access PIN <span class="text-gray-400">(optional, 4-6 digits)</span></label>
+                    <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                </div>
             </div>
             <div class="flex gap-3 mt-4">
                 <button type="submit"

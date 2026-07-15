@@ -53,6 +53,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
+            'pin' => 'nullable|digits_between:4,6',
         ]);
 
         $user = User::create([
@@ -61,6 +62,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => $request->role_id,
             'status' => 'active',
+            'pin' => $request->filled('pin') ? Hash::make($request->pin) : null,
         ]);
 
         $role = Role::find($request->role_id);
@@ -104,6 +106,11 @@ class UserController extends Controller
         if ($request->filled('password')) {
             $request->validate(['password' => 'min:8|confirmed']);
             $data['password'] = Hash::make($request->password);
+        }
+
+        if ($request->filled('pin')) {
+            $request->validate(['pin' => 'digits_between:4,6']);
+            $data['pin'] = Hash::make($request->pin);
         }
 
         $user->update($data);

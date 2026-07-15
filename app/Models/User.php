@@ -17,10 +17,12 @@ class User extends Authenticatable
         'role_id',
         'status',
         'photo',
+        'pin',
     ];
 
     protected $hidden = [
         'password',
+        'pin',
         'remember_token',
     ];
 
@@ -29,6 +31,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'pin' => 'hashed',
         ];
     }
 
@@ -71,5 +74,20 @@ class User extends Authenticatable
     public function receivedMessages()
     {
         return $this->hasMany(\App\Models\Message::class, 'receiver_id');
+    }
+
+    public function assignedPrograms()
+    {
+        return $this->hasMany(Program::class, 'assigned_user_id');
+    }
+
+    public function hasPin(): bool
+    {
+        return ! empty($this->pin);
+    }
+
+    public function verifyPin(?string $pin): bool
+    {
+        return $this->hasPin() && $pin && \Illuminate\Support\Facades\Hash::check($pin, $this->pin);
     }
 }

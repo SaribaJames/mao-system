@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">New Password <span class="text-gray-400">(leave blank to keep current)</span></label>
             <input type="password" name="password"
@@ -75,6 +75,20 @@
             <label class="block text-xs font-medium text-gray-600 mb-1">Confirm New Password</label>
             <input type="password" name="password_confirmation"
                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+                Program Access PIN <span class="text-gray-400">(4-6 digits, leave blank to keep current)</span>
+            </label>
+            <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+            <p class="text-xs text-gray-400 mt-1">
+                {{ $user->hasPin() ? 'A PIN is currently set.' : 'No PIN set yet.' }}
+                Used to unlock program management for assigned personnel.
+            </p>
         </div>
     </div>
 </div>

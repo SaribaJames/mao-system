@@ -40,7 +40,11 @@
             </span>
         </div>
         <p class="font-semibold text-gray-800 mb-1">{{ $program->name }}</p>
-        <p class="text-xs text-gray-400 mb-3">Coordinator: {{ $program->coordinator_name }}</p>
+        <p class="text-xs text-gray-400 mb-1">Coordinator: {{ $program->coordinator_name }}</p>
+        <p class="text-xs text-gray-400 mb-3">
+            <i class="fa-solid fa-user-shield w-4 text-center"></i>
+            Assigned: {{ $program->assignedUser?->name ?? 'Unassigned' }}
+        </p>
         <p class="text-xs text-gray-500">
             <i class="fa-solid fa-users w-4 text-center"></i>
             {{ $program->active_enrollments_count }} active farmer(s)
