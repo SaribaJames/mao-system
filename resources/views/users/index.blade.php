@@ -220,22 +220,34 @@
                         @endforeach
                     </select>
                 </div>
-                <div id="programsField" style="display:none;">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Assign Program(s)</label>
-                    <div class="border border-gray-300 rounded-md p-2 max-h-36 overflow-y-auto space-y-1">
-                        @foreach(\App\Models\Program::orderBy('name')->get() as $program)
-                        <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
-                            <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
-                                   class="rounded border-gray-300 text-primary focus:ring-primary"/>
-                            {{ $program->name }}
-                            @if($program->assignedUser)
-                                <span class="text-xs text-gray-400">(currently: {{ $program->assignedUser->name }})</span>
-                            @endif
-                        </label>
-                        @endforeach
+
+                {{-- Module Assignment: mutually exclusive Programs vs Stocks --}}
+                <div id="moduleField" style="display:none;">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Module Assignment</label>
+                    <select name="module_assignment" id="moduleSelect" onchange="toggleProgramsCheckboxes()"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">None</option>
+                        <option value="programs">Programs (choose specific program(s))</option>
+                        <option value="stocks">Stocks</option>
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">A staff member can be assigned to Programs OR Stocks, not both.</p>
+
+                    <div id="programsCheckboxes" style="display:none;" class="mt-2">
+                        <div class="border border-gray-300 rounded-md p-2 max-h-36 overflow-y-auto space-y-1">
+                            @foreach(\App\Models\Program::orderBy('name')->get() as $program)
+                            <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
+                                <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
+                                       class="rounded border-gray-300 text-primary focus:ring-primary"/>
+                                {{ $program->name }}
+                                @if($program->assignedUser)
+                                    <span class="text-xs text-gray-400">(currently: {{ $program->assignedUser->name }})</span>
+                                @endif
+                            </label>
+                            @endforeach
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Selecting a program here reassigns it to this staff member.</p>
                 </div>
+
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Password</label>
                     <input type="password" name="password" required
@@ -281,7 +293,17 @@ function toggleRoleFields() {
     const roleName = selectedOption.getAttribute('data-name');
 
     document.getElementById('barangayField').style.display = (roleName === 'barangay_user') ? 'block' : 'none';
-    document.getElementById('programsField').style.display = (roleName === 'staff') ? 'block' : 'none';
+    document.getElementById('moduleField').style.display = (roleName === 'staff') ? 'block' : 'none';
+
+    if (roleName !== 'staff') {
+        document.getElementById('moduleSelect').value = '';
+        document.getElementById('programsCheckboxes').style.display = 'none';
+    }
+}
+
+function toggleProgramsCheckboxes() {
+    const moduleSelect = document.getElementById('moduleSelect');
+    document.getElementById('programsCheckboxes').style.display = (moduleSelect.value === 'programs') ? 'block' : 'none';
 }
 
 document.getElementById('addUserModal').addEventListener('click', function(e) {

@@ -12,15 +12,31 @@ class StockController extends Controller
 {
     public function index()
     {
+        // The link stays visible to all staff — access is enforced with an
+        // in-page note instead of hiding the nav item or throwing a 403 page.
+        $canAccess = Auth::user()->isAdmin() || Auth::user()->managesStocks();
+
+        if (! $canAccess) {
+            return view('stocks.index', [
+                'canAccess' => false,
+                'stocks' => collect(),
+                'totalStock' => 0,
+                'releasedStock' => 0,
+                'remainingStock' => 0,
+            ]);
+        }
+
         $stocks = Stock::latest()->paginate(15);
         $totalStock     = Stock::sum('total_stock');
         $releasedStock  = Stock::sum('released_stock');
         $remainingStock = Stock::sum('remaining_stock');
-        return view('stocks.index', compact('stocks', 'totalStock', 'releasedStock', 'remainingStock'));
+        return view('stocks.index', compact('stocks', 'totalStock', 'releasedStock', 'remainingStock', 'canAccess'));
     }
 
     public function store(Request $request)
     {
+        $this->authorizeAccess();
+
         $request->validate([
             'item_name' => 'required|string|max:100',
             'category'  => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
@@ -64,6 +80,8 @@ class StockController extends Controller
 
     public function release(Request $request, Stock $stock)
     {
+        $this->authorizeAccess();
+
         $request->validate([
             'quantity'  => 'required|numeric|min:0.01|max:' . $stock->remaining_stock,
             'recipient' => 'required|string|max:100',
@@ -89,8 +107,24 @@ class StockController extends Controller
 
     public function destroy(Stock $stock)
     {
+        $this->authorizeAccess();
+
         $stock->delete();
         return redirect()->route('stocks.index')
             ->with('success', 'Stock item deleted successfully!');
+    }
+
+    /**
+     * Actions (add/release/delete) still hard-block via abort — only index()
+     * shows a soft in-page note, since those aren't reachable from the UI
+     * anyway for restricted users, but this covers direct requests too.
+     */
+    protected function authorizeAccess(): void
+    {
+        abort_unless(
+            Auth::user()->isAdmin() || Auth::user()->managesStocks(),
+            403,
+            'You are not assigned to manage Stocks.'
+        );
     }
 }

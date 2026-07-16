@@ -56,9 +56,13 @@ class UserController extends Controller
             'password' => 'required|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
             'pin' => 'nullable|digits_between:4,6',
+            'module_assignment' => 'nullable|in:programs,stocks',
             'assigned_programs' => 'nullable|array',
             'assigned_programs.*' => 'exists:programs,id',
         ]);
+
+        $role = Role::find($request->role_id);
+        $managesStocks = $role->name === 'staff' && $request->module_assignment === 'stocks';
 
         $user = User::create([
             'name' => $request->name,
@@ -67,9 +71,9 @@ class UserController extends Controller
             'role_id' => $request->role_id,
             'status' => 'active',
             'pin' => $request->filled('pin') ? Hash::make($request->pin) : null,
+            'manages_stocks' => $managesStocks,
         ]);
 
-        $role = Role::find($request->role_id);
         if ($role->name === 'barangay_user' && $request->barangay_id) {
             \App\Models\BarangayAccount::create([
                 'user_id' => $user->id,
@@ -80,7 +84,7 @@ class UserController extends Controller
             ]);
         }
 
-        if ($role->name === 'staff' && $request->filled('assigned_programs')) {
+        if ($role->name === 'staff' && $request->module_assignment === 'programs' && $request->filled('assigned_programs')) {
             Program::whereIn('id', $request->assigned_programs)
                 ->update(['assigned_user_id' => $user->id]);
         }
@@ -105,15 +109,20 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive,suspended',
+            'module_assignment' => 'nullable|in:programs,stocks',
             'assigned_programs' => 'nullable|array',
             'assigned_programs.*' => 'exists:programs,id',
         ]);
+
+        $role = Role::find($request->role_id);
+        $managesStocks = $role->name === 'staff' && $request->module_assignment === 'stocks';
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role_id' => $request->role_id,
             'status' => $request->status,
+            'manages_stocks' => $managesStocks,
         ];
 
         if ($request->filled('password')) {
@@ -128,11 +137,11 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // Unassign any programs this user currently manages that weren't
-        // reselected, then assign whichever ones were checked.
+        // Reset: unassign any programs this user currently manages...
         Program::where('assigned_user_id', $user->id)->update(['assigned_user_id' => null]);
 
-        if ($request->filled('assigned_programs')) {
+        // ...then reassign only if "programs" was chosen (mutually exclusive with stocks)
+        if ($role->name === 'staff' && $request->module_assignment === 'programs' && $request->filled('assigned_programs')) {
             Program::whereIn('id', $request->assigned_programs)
                 ->update(['assigned_user_id' => $user->id]);
         }

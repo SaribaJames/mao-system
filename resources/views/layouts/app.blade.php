@@ -47,7 +47,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('service-records.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                          {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
                     Service Records
                 </a>
@@ -60,17 +60,21 @@
                 Farmers
             </a>
 
-            <a href="{{ route('requests.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                      {{ request()->routeIs('requests.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-                <i class="fa-solid fa-file-lines w-4 text-center"></i>
-                Requests
-            </a>
+            {{-- Requests: hidden from staff who have a Program assigned to them --}}
+            @unless(Auth::user()->role?->name === 'staff' && Auth::user()->hasAssignedProgram())
+                <a href="{{ route('requests.index') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                          {{ request()->routeIs('requests.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fa-solid fa-file-lines w-4 text-center"></i>
+                    Requests
+                </a>
+            @endunless
 
+            {{-- Stocks: visible to all staff/admin; access itself is enforced on the page --}}
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('stocks.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                          {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
                     Stocks
                 </a>
@@ -79,7 +83,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('reports.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                          {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-chart-bar w-4 text-center"></i>
                     Reports
                 </a>
@@ -100,19 +104,18 @@
             </a>
 
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                <a href="{{ route('forms.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                      {{ request()->routeIs('forms.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fa-solid fa-file-invoice w-4 text-center"></i>
-                    Forms & Documents
-                </a>
+                    <a href="{{ route('forms.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
+                  {{ request()->routeIs('forms.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                        <i class="fa-solid fa-file-invoice w-4 text-center"></i>
+                        Forms & Documents
+                    </a>
             @endif
 
             {{-- Messages for Barangay Reps --}}
             @if(Auth::user()->role?->name === 'barangay_user')
                 <a href="{{ route('messages.chat') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                          {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                 </a>
@@ -123,7 +126,7 @@
                 @php $unreadMessages = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count(); @endphp
                 <a href="{{ route('messages.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                          {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                     @if($unreadMessages > 0)
@@ -137,7 +140,7 @@
             @if(Auth::user()->isAdmin())
                 <a href="{{ route('users.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                              {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
+                          {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-100' }}">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
                     User Management
                 </a>
@@ -350,7 +353,7 @@
                         <div class="max-w-48">
                             <div
                                 class="px-3 py-2 rounded-2xl text-xs
-                                        {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
+                                {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
                                 {{ $msg->message }}
                             </div>
                             <p class="text-xs text-gray-400 mt-0.5 {{ $isMine ? 'text-right' : 'text-left' }}">

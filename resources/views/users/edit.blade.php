@@ -23,6 +23,10 @@
     </div>
 @endif
 
+@php
+    $currentModule = $user->manages_stocks ? 'stocks' : (count($assignedProgramIds) > 0 ? 'programs' : '');
+@endphp
+
 <form method="POST" action="{{ route('users.update', $user) }}">
 @csrf @method('PUT')
 
@@ -45,7 +49,7 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Role</label>
-            <select name="role_id" id="roleSelect" required onchange="toggleProgramsField()"
+            <select name="role_id" id="roleSelect" required onchange="toggleModuleField()"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 @foreach($roles as $role)
                     <option value="{{ $role->id }}" data-name="{{ $role->name }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
@@ -65,22 +69,32 @@
         </div>
     </div>
 
-    <div id="programsField" class="mb-4" style="display:none;">
-        <label class="block text-xs font-medium text-gray-600 mb-1">Assign Program(s)</label>
-        <div class="border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
-            @foreach($programs as $program)
-            <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
-                <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
-                       {{ in_array($program->id, $assignedProgramIds) ? 'checked' : '' }}
-                       class="rounded border-gray-300 text-primary focus:ring-primary"/>
-                {{ $program->name }}
-                @if($program->assignedUser && $program->assignedUser->id !== $user->id)
-                    <span class="text-xs text-gray-400">(currently: {{ $program->assignedUser->name }})</span>
-                @endif
-            </label>
-            @endforeach
+    {{-- Module Assignment: mutually exclusive Programs vs Stocks --}}
+    <div id="moduleField" class="mb-4" style="display:none;">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Module Assignment</label>
+        <select name="module_assignment" id="moduleSelect" onchange="toggleProgramsCheckboxes()"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="" {{ $currentModule === '' ? 'selected' : '' }}>None</option>
+            <option value="programs" {{ $currentModule === 'programs' ? 'selected' : '' }}>Programs (choose specific program(s))</option>
+            <option value="stocks" {{ $currentModule === 'stocks' ? 'selected' : '' }}>Stocks</option>
+        </select>
+        <p class="text-xs text-gray-400 mt-1">A staff member can be assigned to Programs OR Stocks, not both. Changing this reassigns them — e.g. if a program coordinator retired, pick the new person here.</p>
+
+        <div id="programsCheckboxes" style="display:none;" class="mt-2">
+            <div class="border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
+                @foreach($programs as $program)
+                <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
+                    <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
+                           {{ in_array($program->id, $assignedProgramIds) ? 'checked' : '' }}
+                           class="rounded border-gray-300 text-primary focus:ring-primary"/>
+                    {{ $program->name }}
+                    @if($program->assignedUser && $program->assignedUser->id !== $user->id)
+                        <span class="text-xs text-gray-400">(currently: {{ $program->assignedUser->name }})</span>
+                    @endif
+                </label>
+                @endforeach
+            </div>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Unchecking a program removes this user as its assigned personnel.</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4 mb-4">
@@ -125,14 +139,20 @@
 </form>
 
 <script>
-function toggleProgramsField() {
+function toggleModuleField() {
     const roleSelect = document.getElementById('roleSelect');
     const selectedOption = roleSelect.options[roleSelect.selectedIndex];
     const roleName = selectedOption.getAttribute('data-name');
-    document.getElementById('programsField').style.display = (roleName === 'staff') ? 'block' : 'none';
+    document.getElementById('moduleField').style.display = (roleName === 'staff') ? 'block' : 'none';
+    toggleProgramsCheckboxes();
 }
 
-document.addEventListener('DOMContentLoaded', toggleProgramsField);
+function toggleProgramsCheckboxes() {
+    const moduleSelect = document.getElementById('moduleSelect');
+    document.getElementById('programsCheckboxes').style.display = (moduleSelect.value === 'programs') ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', toggleModuleField);
 </script>
 
 @endsection

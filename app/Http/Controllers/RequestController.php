@@ -12,6 +12,8 @@ class RequestController extends Controller
 {
     public function index()
     {
+        $this->blockProgramStaff();
+
         $query = FarmerRequest::with(['farmer', 'farmer.barangay', 'submittedBy']);
 
         // Barangay rep can only see requests from their own barangay
@@ -63,6 +65,8 @@ class RequestController extends Controller
 
     public function create()
     {
+        $this->blockProgramStaff();
+
         $farmersQuery = Farmer::orderBy('surname');
 
         if (Auth::user()->isBarangayUser()) {
@@ -77,6 +81,8 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
+        $this->blockProgramStaff();
+
         $request->validate([
             'farmer_id'    => 'required|exists:farmers,id',
             'request_type' => 'required',
@@ -102,14 +108,18 @@ class RequestController extends Controller
             ->with('success', "Request {$reqNumber} submitted successfully!");
     }
 
-        public function show(FarmerRequest $farmerRequest)
+    public function show(FarmerRequest $farmerRequest)
     {
+        $this->blockProgramStaff();
+
         $farmerRequest->load(['farmer', 'farmer.barangay', 'stock', 'submittedBy', 'processedBy']);
         return view('requests.show', ['request' => $farmerRequest]);
     }
 
     public function updateStatus(Request $req, FarmerRequest $farmerRequest)
     {
+        $this->blockProgramStaff();
+
         $req->validate([
             'status'  => 'required|in:approved,rejected,completed',
             'remarks' => 'nullable|string',
@@ -124,5 +134,18 @@ class RequestController extends Controller
 
         return redirect()->route('requests.index')
             ->with('success', "Request {$farmerRequest->request_number} has been {$req->input('status')}!");
+    }
+
+    /**
+     * Staff assigned to a Program are not allowed anywhere in Requests.
+     * Admins and barangay reps are never affected by this check.
+     */
+    protected function blockProgramStaff(): void
+    {
+        abort_if(
+            Auth::user()->role?->name === 'staff' && Auth::user()->hasAssignedProgram(),
+            403,
+            'Staff assigned to a program cannot access Requests.'
+        );
     }
 }
