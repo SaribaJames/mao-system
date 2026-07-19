@@ -96,6 +96,23 @@
             margin-bottom: 4px;
         }
 
+        /* Font-independent checkbox — a plain CSS square instead of a
+           unicode glyph, since DomPDF's font substitution doesn't
+           reliably support ✓ and was rendering it as "?". */
+        .chk {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border: 1px solid #333;
+            margin-right: 3px;
+            vertical-align: middle;
+            background: #fff;
+        }
+
+        .chk.checked {
+            background: #333;
+        }
+
         .signature-box {
             text-align: center;
         }
@@ -156,7 +173,7 @@
     </div>
 
     <div style="display:table; width:100%; margin-bottom:5px;">
-        <div style="display:table-cell; font-size:9px;">Kindly fill out all entries and tick all boxes (✓) as
+        <div style="display:table-cell; font-size:9px;">Kindly fill out all entries and tick all boxes as
             appropriate</div>
         <div style="display:table-cell; text-align:right; font-size:9px;">Date of Application:
             <strong>{{ $request->date_application }}</strong></div>
@@ -229,19 +246,22 @@
             {{-- Sex & Special Sector --}}
             <div class="checkbox-area">
                 <strong>A.5 Sex:</strong>
-                [{{ $request->sex_male ? '✓' : ' ' }}] Male &nbsp;
-                [{{ $request->sex_female ? '✓' : ' ' }}] Female &nbsp;&nbsp;
+                <span class="chk {{ $request->sex_male ? 'checked' : '' }}"></span> Male &nbsp;
+                <span class="chk {{ $request->sex_female ? 'checked' : '' }}"></span> Female &nbsp;&nbsp;
                 <strong>A.6 Special Sector:</strong>
-                [{{ $request->is_pwd ? '✓' : ' ' }}] PWD &nbsp;
-                [ ] Senior Citizen &nbsp;
-                [ ] Youth (18-30 y/o) &nbsp;
-                [{{ $request->is_indigenous ? '✓' : ' ' }}] Indigenous People
+                <span class="chk {{ $request->is_pwd ? 'checked' : '' }}"></span> PWD &nbsp;
+                <span class="chk"></span> Senior Citizen &nbsp;
+                <span class="chk"></span> Youth (18-30 y/o) &nbsp;
+                <span class="chk {{ $request->is_indigenous ? 'checked' : '' }}"></span> Indigenous People
             </div>
 
             {{-- Civil Status --}}
             <div class="checkbox-area">
                 <strong>A.7 Civil Status:</strong>
-                [ ] Single &nbsp; [ ] Married &nbsp; [ ] Widow/er &nbsp; [ ] Separated &nbsp;&nbsp;
+                <span class="chk"></span> Single &nbsp;
+                <span class="chk"></span> Married &nbsp;
+                <span class="chk"></span> Widow/er &nbsp;
+                <span class="chk"></span> Separated &nbsp;&nbsp;
                 If married, Name of Spouse: <strong>{{ $request->spouse_name }}</strong>
             </div>
 
@@ -257,7 +277,7 @@
                     thousand pesos)</p>
                 <div style="font-size:9px;">
                     @foreach(['15t', '20t', '25t', '30t', '35t', '40t', '45t', '50t', '55t', '60t', '65t', '70t', '75t', '80t', '85t', '90t', '95t', '100t'] as $plan)
-                        [{{ $request->input('plan_' . $plan) ? '✓' : ' ' }}] Plan {{ strtoupper($plan) }} &nbsp;
+                        <span class="chk {{ $request->input('plan_' . $plan) ? 'checked' : '' }}"></span> Plan {{ strtoupper($plan) }} &nbsp;
                     @endforeach
                 </div>
             </div>
@@ -321,17 +341,17 @@
             {{-- Payment Method --}}
             <div class="checkbox-area">
                 <strong>A.11 Preferred Payment Method:</strong>
-                [{{ $request->payment_landbank ? '✓' : ' ' }}] LandBank or DBP &nbsp;
-                [{{ $request->payment_palawan ? '✓' : ' ' }}] Palawan Express &nbsp;
-                [{{ $request->payment_gcash ? '✓' : ' ' }}] GCash &nbsp;
-                [{{ $request->payment_others ? '✓' : ' ' }}] Others: {{ $request->payment_others_specify }}
+                <span class="chk {{ $request->payment_landbank ? 'checked' : '' }}"></span> LandBank or DBP &nbsp;
+                <span class="chk {{ $request->payment_palawan ? 'checked' : '' }}"></span> Palawan Express &nbsp;
+                <span class="chk {{ $request->payment_gcash ? 'checked' : '' }}"></span> GCash &nbsp;
+                <span class="chk {{ $request->payment_others ? 'checked' : '' }}"></span> Others: {{ $request->payment_others_specify }}
             </div>
 
             {{-- A.12 --}}
             <div class="checkbox-area">
                 <strong>A.12 Family member of insured farmer?</strong>
-                [{{ $request->is_family_yes ? '✓' : ' ' }}] Yes &nbsp;
-                [{{ $request->is_family_no ? '✓' : ' ' }}] No &nbsp;
+                <span class="chk {{ $request->is_family_yes ? 'checked' : '' }}"></span> Yes &nbsp;
+                <span class="chk {{ $request->is_family_no ? 'checked' : '' }}"></span> No &nbsp;
                 Name of Farmer: {{ $request->farmer_name_insured }} &nbsp;
                 Relationship: {{ $request->farmer_relationship }}
             </div>
@@ -344,14 +364,17 @@
         <div class="section-body">
             <div style="display:table; width:100%;">
                 <div style="display:table-cell; width:65%; padding-right:10px; font-size:9px; line-height:1.4;">
-                    <p style="margin-bottom:5px;">[{{ $request->has('cert_true') ? '✓' : ' ' }}] I hereby certify that
-                        the foregoing answers and statements are complete, true and correct. If the application is
-                        approved, the insurance shall be deemed based upon the statements contained herein. I further
-                        agree that PCIC reserves the right to reject and/or void the insurance if found that there is
-                        fraud/concealment/misrepresentation on this statement material to the risk.</p>
-                    <p>[{{ $request->has('cert_privacy') ? '✓' : ' ' }}] By submitting this application, I hereby
-                        consent to the collection, use, processing, and disclosure of my sensitive personal data in
-                        accordance with the Data Privacy Act of 2012.</p>
+                    <p style="margin-bottom:5px;">
+                        <span class="chk {{ $request->has('cert_true') ? 'checked' : '' }}"></span>
+                        I hereby certify that the foregoing answers and statements are complete, true and correct. If
+                        the application is approved, the insurance shall be deemed based upon the statements
+                        contained herein. I further agree that PCIC reserves the right to reject and/or void the
+                        insurance if found that there is fraud/concealment/misrepresentation on this statement
+                        material to the risk.</p>
+                    <p>
+                        <span class="chk {{ $request->has('cert_privacy') ? 'checked' : '' }}"></span>
+                        By submitting this application, I hereby consent to the collection, use, processing, and
+                        disclosure of my sensitive personal data in accordance with the Data Privacy Act of 2012.</p>
                 </div>
                 <div style="display:table-cell; width:35%; text-align:center; vertical-align:bottom;">
                     <div class="signature-line">
@@ -364,7 +387,7 @@
             <div style="display:table; width:100%; margin-top:10px; border-top:1px solid #ccc; padding-top:5px;">
                 <div style="display:table-cell; width:65%; font-size:9px;">
                     <strong>Parental consent for minor applicants only</strong><br>
-                    [ ] By signing, I'm allowing my child to avail the ADSS Insurance.
+                    <span class="chk"></span> By signing, I'm allowing my child to avail the ADSS Insurance.
                 </div>
                 <div style="display:table-cell; width:35%; text-align:center;">
                     <div class="signature-line">

@@ -84,7 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
     Route::post('/program-enrollments/{enrollment}/status', [ProgramController::class, 'updateEnrollment'])->name('program-enrollments.status');
 
-
+    Route::get('/farmers/create/db', [FarmerController::class, 'createDb'])->name('farmers.create.db');
 
 
 
