@@ -88,9 +88,6 @@ class FarmerController extends Controller
             'barangay_id' => 'nullable|exists:barangays,id',
         ]);
 
-        // Generate reference number
-        $refNumber = 'FMR-' . date('Y') . '-' . str_pad(Farmer::count() + 1, 5, '0', STR_PAD_LEFT);
-
         // If barangay rep, automatically assign their barangay
         $barangayId = $request->barangay_id;
         if (Auth::user()->isBarangayUser()) {
@@ -100,7 +97,6 @@ class FarmerController extends Controller
         $farmer = Farmer::create(array_merge(
             $request->except('_token'),
             [
-                'reference_number' => $refNumber,
                 'registered_by' => Auth::id(),
                 'barangay_id' => $barangayId,
                 'religion' => $request->religion === 'others' ? $request->religion_other : $request->religion,
@@ -137,7 +133,7 @@ class FarmerController extends Controller
         $this->saveCoconutProfile($request, $farmer);
 
         return redirect()->route('farmers.index')
-            ->with('success', "Farmer {$farmer->full_name} registered successfully! Reference: {$refNumber}");
+            ->with('success', "Farmer {$farmer->full_name} registered successfully!");
     }
 
     public function show(Farmer $farmer)
@@ -220,7 +216,6 @@ class FarmerController extends Controller
         $pdf->SetFont('helvetica', 'B', 9);
         $pdf->SetTextColor(0, 0, 0);
 
-        // For text sitting on a blank underline
         $write = function ($x, $y, $text, $size = 9) use ($pdf) {
             $pdf->SetFont('helvetica', 'B', $size);
             $yAdjusted = $y + max(0, (9 - $size) * 1.3);
@@ -228,38 +223,52 @@ class FarmerController extends Controller
             $pdf->Cell(0, 10, $text, 0, 0, 'L');
         };
 
-        // For digits sitting inside a bordered box (mobile/landline/DOB/contact)
         $writeBoxed = function ($x, $y, $text, $size = 9) use ($pdf) {
             $pdf->SetFont('helvetica', 'B', $size);
             $pdf->SetXY($x, $y);
             $pdf->Cell(0, 13, $text, 0, 0, 'L', false, '', 0, false, 'T', 'M');
         };
 
-        // For an X mark inside a checkbox
         $mark = function ($x, $y) use ($pdf) {
             $pdf->SetFont('helvetica', 'B', 9);
             $pdf->SetXY($x, $y);
             $pdf->Cell(13, 13, 'X', 0, 0, 'C');
         };
 
-        // Enrollment type
-        if ($farmer->enrollment_type === 'new') $mark(108.6, 114.4);
-        if ($farmer->enrollment_type === 'updating') $mark(151.1, 114.1);
+        if ($farmer->enrollment_type === 'new')
+            $mark(108.6, 114.4);
+        if ($farmer->enrollment_type === 'updating')
+            $mark(151.1, 114.1);
 
-        // Reference number (system format doesn't match the digit-box grid, so show as plain text)
-        $write(150, 133, $farmer->reference_number, 8);
+        // Reference Number and Date Administered — real database fields, edited via edit.blade.php after DA approval
+        // Date Administered (8 boxed digits: MMDDYYYY)
+        if ($farmer->date_administered) {
+            $dateAdminLefts = [211.5, 223.2, 235.3, 247.0, 258.8, 271.0, 282.5, 294.5];
+            $dateAdminDigits = str_split($farmer->date_administered->format('mdY'));
+            foreach ($dateAdminDigits as $i => $d) {
+                $writeBoxed($dateAdminLefts[$i], 112.2, $d, 8);
+            }
+        }
 
-        // Name
+        // Reference Number (15 boxed digits: Region-Province-CityMuni-Barangay)
+        $refLefts = [109.4, 121.5, 136.7, 148.9, 164.5, 176.5, 191.9, 204.2, 216.6, 231.7, 244.1, 256.5, 268.7, 281.0, 293.6];
+        $refDigits = str_split(preg_replace('/\D/', '', $farmer->reference_number ?? ''));
+        foreach ($refDigits as $i => $d) {
+            if (isset($refLefts[$i])) {
+                $writeBoxed($refLefts[$i], 130.7, $d, 8);
+            }
+        }
+
         $write(33.2, 166.5, strtoupper($farmer->surname));
         $write(311.8, 165.1, strtoupper($farmer->first_name));
         $write(33.4, 191.1, strtoupper($farmer->middle_name));
         $write(303.3, 191.5, strtoupper($farmer->extension_name));
 
-        // Sex
-        if ($farmer->sex === 'male') $mark(455.5, 209.9);
-        if ($farmer->sex === 'female') $mark(504.2, 209.3);
+        if ($farmer->sex === 'male')
+            $mark(455.5, 209.9);
+        if ($farmer->sex === 'female')
+            $mark(504.2, 209.3);
 
-        // Address
         $write(70.8, 228.1, $farmer->house_lot_number, 8);
         $write(239.1, 228.5, $farmer->street, 8);
         $write(406.9, 228.2, $farmer->barangay?->name, 8);
@@ -267,67 +276,69 @@ class FarmerController extends Controller
         $write(239.1, 256.2, $farmer->province, 8);
         $write(406.9, 256.7, $farmer->region, 8);
 
-        // Mobile / Landline digits (boxed)
         $mobile = str_split(preg_replace('/\D/', '', $farmer->mobile_number ?? ''));
-        foreach ($mobile as $i => $d) $writeBoxed(32.07 + $i*8.33, 292.7, $d, 8);
+        foreach ($mobile as $i => $d)
+            $writeBoxed(32.07 + $i * 8.33, 292.7, $d, 8);
         $landline = str_split(preg_replace('/\D/', '', $farmer->landline_number ?? ''));
-        foreach ($landline as $i => $d) $writeBoxed(176.24 + $i*9.52, 292.2, $d, 8);
+        foreach ($landline as $i => $d)
+            $writeBoxed(176.24 + $i * 9.52, 292.2, $d, 8);
 
-        // Highest education
         $eduMap = [
-            'pre_school'=>[315.2,299.8], 'junior_high_k12'=>[403.5,299.8], 'vocational'=>[499.1,299.9],
-            'elementary'=>[315.4,310.9], 'senior_high_k12'=>[403.2,311.2], 'post_graduate'=>[498.9,311.3],
-            'high_school_non_k12'=>[315.2,323.3], 'college'=>[403.7,323.3], 'none'=>[499.1,323.4],
+            'pre_school' => [315.2, 299.8],
+            'junior_high_k12' => [403.5, 299.8],
+            'vocational' => [499.1, 299.9],
+            'elementary' => [315.4, 310.9],
+            'senior_high_k12' => [403.2, 311.2],
+            'post_graduate' => [498.9, 311.3],
+            'high_school_non_k12' => [315.2, 323.3],
+            'college' => [403.7, 323.3],
+            'none' => [499.1, 323.4],
         ];
         if (isset($eduMap[$farmer->highest_education])) {
             [$x, $y] = $eduMap[$farmer->highest_education];
             $mark($x, $y);
         }
 
-        // Date of birth digits (boxed)
         if ($farmer->date_of_birth) {
             $dob = str_split($farmer->date_of_birth->format('mdY'));
-            foreach ($dob as $i => $d) $writeBoxed(32.43 + $i*12.5, 322.0, $d, 8);
+            foreach ($dob as $i => $d)
+                $writeBoxed(32.43 + $i * 12.5, 322.0, $d, 8);
         }
 
-        // Place of birth
         $pob = $farmer->place_of_birth ? explode(', ', $farmer->place_of_birth) : [];
         $write(152.0, 319.2, $pob[0] ?? '', 7);
         $write(151.3, 330.7, $pob[1] ?? '', 7);
         $write(223.1, 330.8, $pob[2] ?? '', 7);
 
-        // PWD
         $farmer->is_pwd ? $mark(452.1, 344.0) : $mark(494.5, 344.0);
 
-        // Religion
         $rel = $farmer->religion;
-        if ($rel === 'Christianity') $mark(77.5, 359.9);
-        elseif ($rel === 'Islam') $mark(136.6, 360.7);
-        elseif ($rel) { $mark(172.1, 360.4); $write(236.4, 359.2, $rel, 7); }
+        if ($rel === 'Christianity')
+            $mark(77.5, 359.9);
+        elseif ($rel === 'Islam')
+            $mark(136.6, 360.7);
+        elseif ($rel) {
+            $mark(172.1, 360.4);
+            $write(236.4, 359.2, $rel, 7);
+        }
 
-        // 4Ps
         $farmer->is_4ps_beneficiary ? $mark(450.4, 366.9) : $mark(491.8, 367.0);
 
-        // Civil status
-        $csMap = ['single'=>93.7,'married'=>139.0,'widowed'=>187.5,'separated'=>241.9];
-        if (isset($csMap[$farmer->civil_status])) $mark($csMap[$farmer->civil_status], 379.3);
+        $csMap = ['single' => 93.7, 'married' => 139.0, 'widowed' => 187.5, 'separated' => 241.9];
+        if (isset($csMap[$farmer->civil_status]))
+            $mark($csMap[$farmer->civil_status], 379.3);
 
-        // Indigenous
         $farmer->is_indigenous ? $mark(450.2, 381.8) : $mark(491.8, 381.8);
         $write(359.4, 393.5, $farmer->indigenous_group_name, 7);
 
-        // Spouse
         $write(101.3, 400.4, $farmer->spouse_name, 9);
 
-        // Government ID
         $farmer->has_government_id ? $mark(397.1, 416.3) : $mark(439.5, 416.3);
         $write(396.6, 426.0, $farmer->government_id_type, 7);
         $write(396.5, 436.7, $farmer->government_id_number, 7);
 
-        // Mother's maiden name
         $write(101.2, 428.6, $farmer->mother_maiden_name, 9);
 
-        // Household head
         $farmer->is_household_head ? $mark(134.3, 449.7) : $mark(176.8, 450.2);
         if (!$farmer->is_household_head) {
             $write(143.3, 463.1, $farmer->household_head_name, 7);
@@ -337,53 +348,79 @@ class FarmerController extends Controller
         $write(78.5, 515.4, $farmer->household_male_count, 7);
         $write(225.7, 515.7, $farmer->household_female_count, 7);
 
-        // Farmers association
         $farmer->is_farmers_association_member ? $mark(501.6, 455.8) : $mark(537.1, 455.8);
         $write(358.7, 469.5, $farmer->farmers_association_name, 7);
 
-        // Emergency contact
         $write(390.9, 496.6, $farmer->emergency_contact_name, 7);
         $contact = str_split(preg_replace('/\D/', '', $farmer->emergency_contact_number ?? ''));
-        foreach ($contact as $i => $d) $writeBoxed(390.86 + $i*14.88, 514.6, $d, 8);
+        foreach ($contact as $i => $d)
+            $writeBoxed(390.86 + $i * 14.88, 514.6, $d, 8);
 
-        // Main livelihood
-        $lhMap = ['farmer'=>121.6,'farmworker'=>210.2,'fisherfolk'=>359.5,'agri_youth'=>479.0];
-        if (isset($lhMap[$farmer->main_livelihood])) $mark($lhMap[$farmer->main_livelihood], 553.0);
+        $lhMap = ['farmer' => 121.6, 'farmworker' => 210.2, 'fisherfolk' => 359.5, 'agri_youth' => 479.0];
+        if (isset($lhMap[$farmer->main_livelihood]))
+            $mark($lhMap[$farmer->main_livelihood], 553.0);
 
-        // Farming activities
-        if ($farmer->farming_rice) $mark(33.3, 600.4);
-        if ($farmer->farming_corn) $mark(33.1, 617.9);
-        if ($farmer->farming_other_crops) { $mark(33.5, 635.5); $write(100.5, 641.8, $farmer->farming_other_crops_specify, 7); }
-        if ($farmer->farming_livestock) { $mark(32.8, 659.7); $write(100.3, 667.4, $farmer->farming_livestock_specify, 7); }
-        if ($farmer->farming_poultry) { $mark(32.7, 683.1); $write(101.3, 691.0, $farmer->farming_poultry_specify, 7); }
+        if ($farmer->farming_rice)
+            $mark(33.3, 600.4);
+        if ($farmer->farming_corn)
+            $mark(33.1, 617.9);
+        if ($farmer->farming_other_crops) {
+            $mark(33.5, 635.5);
+            $write(100.5, 641.8, $farmer->farming_other_crops_specify, 7);
+        }
+        if ($farmer->farming_livestock) {
+            $mark(32.8, 659.7);
+            $write(100.3, 667.4, $farmer->farming_livestock_specify, 7);
+        }
+        if ($farmer->farming_poultry) {
+            $mark(32.7, 683.1);
+            $write(101.3, 691.0, $farmer->farming_poultry_specify, 7);
+        }
 
-        // Farmworker
-        if ($farmer->farmwork_land_preparation) $mark(214.0, 602.1);
-        if ($farmer->farmwork_planting) $mark(213.9, 619.2);
-        if ($farmer->farmwork_cultivation) $mark(214.1, 636.3);
-        if ($farmer->farmwork_harvesting) $mark(213.4, 653.3);
-        if ($farmer->farmwork_others) { $mark(214.2, 670.3); $write(215.3, 690.7, $farmer->farmwork_others_specify, 7); }
+        if ($farmer->farmwork_land_preparation)
+            $mark(214.0, 602.1);
+        if ($farmer->farmwork_planting)
+            $mark(213.9, 619.2);
+        if ($farmer->farmwork_cultivation)
+            $mark(214.1, 636.3);
+        if ($farmer->farmwork_harvesting)
+            $mark(213.4, 653.3);
+        if ($farmer->farmwork_others) {
+            $mark(214.2, 670.3);
+            $write(215.3, 690.7, $farmer->farmwork_others_specify, 7);
+        }
 
-        // Fisherfolk
-        if ($farmer->fishing_capture) $mark(331.1, 645.8);
-        if ($farmer->fishing_processing) $mark(396.8, 645.6);
-        if ($farmer->fishing_aquaculture) $mark(330.7, 658.0);
-        if ($farmer->fishing_vending) $mark(396.6, 657.7);
-        if ($farmer->fishing_gleaning) $mark(330.4, 669.7);
-        if ($farmer->fishing_others) { $mark(330.9, 681.1); $write(326.1, 689.5, $farmer->fishing_others_specify, 7); }
+        if ($farmer->fishing_capture)
+            $mark(331.1, 645.8);
+        if ($farmer->fishing_processing)
+            $mark(396.8, 645.6);
+        if ($farmer->fishing_aquaculture)
+            $mark(330.7, 658.0);
+        if ($farmer->fishing_vending)
+            $mark(396.6, 657.7);
+        if ($farmer->fishing_gleaning)
+            $mark(330.4, 669.7);
+        if ($farmer->fishing_others) {
+            $mark(330.9, 681.1);
+            $write(326.1, 689.5, $farmer->fishing_others_specify, 7);
+        }
 
-        // Agri youth
-        if ($farmer->agri_youth_farming_household) $mark(471.7, 629.7);
-        if ($farmer->agri_youth_formal_course) $mark(471.9, 639.7);
-        if ($farmer->agri_youth_nonformal_course) $mark(472.0, 655.6);
-        if ($farmer->agri_youth_participated_program) $mark(471.7, 673.2);
-        if ($farmer->agri_youth_others) { $mark(472.1, 690.6); $write(471.7, 695.3, $farmer->agri_youth_others_specify, 6); }
+        if ($farmer->agri_youth_farming_household)
+            $mark(471.7, 629.7);
+        if ($farmer->agri_youth_formal_course)
+            $mark(471.9, 639.7);
+        if ($farmer->agri_youth_nonformal_course)
+            $mark(472.0, 655.6);
+        if ($farmer->agri_youth_participated_program)
+            $mark(471.7, 673.2);
+        if ($farmer->agri_youth_others) {
+            $mark(472.1, 690.6);
+            $write(471.7, 695.3, $farmer->agri_youth_others_specify, 6);
+        }
 
-        // Gross income
         $write(213.3, 711.1, $farmer->gross_annual_income_farming ? number_format($farmer->gross_annual_income_farming, 2) : '', 7);
         $write(432.5, 711.5, $farmer->gross_annual_income_non_farming ? number_format($farmer->gross_annual_income_non_farming, 2) : '', 7);
 
-        // Stub
         $write(29.0, 808.6, strtoupper($farmer->surname));
         $write(305.0, 808.6, strtoupper($farmer->first_name));
         $write(28.9, 837.0, strtoupper($farmer->middle_name));

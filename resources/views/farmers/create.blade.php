@@ -56,17 +56,21 @@
     onchange="if(this.checked){document.getElementById('cb_new').checked=false; document.getElementById('enroll_type').value='updating';}">
 <input type="hidden" name="enrollment_type" id="enroll_type" value="new">
 
-{{-- DATE ADMINISTERED (8 digit boxes) --}}
-@php $dateAdminLefts = [35.54,37.51,39.54,41.52,43.49,45.53,47.47,49.49]; @endphp
-@foreach($dateAdminLefts as $left)
-<input type="text" maxlength="1" class="dg" autocomplete="off" style="top:12.56%;left:{{ $left }}%;width:1.99%;height:1.24%;">
-@endforeach
+{{-- DATE ADMINISTERED (8 real, individually-typeable boxes: MMDDYYYY) --}}
+<div style="position:absolute;top:12.56%;left:35.54%;width:16%;height:1.24%;display:flex;">
+@for($i=0;$i<8;$i++)
+<input type="text" maxlength="1" style="width:12%;height:100%;text-align:center;border:1px solid #999;background:rgba(255,255,255,0.4);font-size:10px;font-weight:bold;padding:0;outline:none;" class="dateadmin-d" autocomplete="off">
+@endfor
+</div>
+<input type="hidden" name="date_administered" id="dateAdminH">
 
-{{-- REFERENCE NUMBER (TOP) — 15 individual digit boxes --}}
-@php $refTopLefts = [18.38,20.42,22.97,25.03,27.65,29.66,32.24,34.32,36.40,38.94,41.02,43.11,45.16,47.22,49.33]; @endphp
-@foreach($refTopLefts as $left)
-<input type="text" maxlength="1" class="dg" autocomplete="off" style="top:14.64%;left:{{ $left }}%;width:2.08%;height:1.33%;">
-@endforeach
+{{-- REFERENCE NUMBER (15 real, individually-typeable boxes) --}}
+<div style="position:absolute;top:14.64%;left:18.38%;width:33%;height:1.33%;display:flex;">
+@for($i=0;$i<15;$i++)
+<input type="text" maxlength="1" style="width:6.6%;height:100%;text-align:center;border:1px solid #999;background:rgba(255,255,255,0.4);font-size:10px;font-weight:bold;padding:0;outline:none;" class="refnum-d" autocomplete="off">
+@endfor
+</div>
+<input type="hidden" name="reference_number" id="refH">
 
 {{-- SURNAME --}}
 <input type="text" name="surname" id="mainSurname" value="{{ old('surname') }}" required autocomplete="off"
@@ -325,12 +329,6 @@ $eduMap = [
 <input type="hidden" name="farm_location_province" value="{{ old('farm_location_province','Albay') }}">
 <input type="hidden" name="land_area_hectares" value="{{ old('land_area_hectares') }}">
 
-{{-- REFERENCE NUMBER (STUB/BOTTOM) — 15 individual digit boxes --}}
-@php $refBotLefts = [18.19,20.23,22.87,24.91,27.47,29.52,32.07,34.12,36.22,38.80,40.84,42.88,44.99,47.04,49.09]; @endphp
-@foreach($refBotLefts as $left)
-<input type="text" maxlength="1" class="dg" autocomplete="off" style="top:88.01%;left:{{ $left }}%;width:2.08%;height:1.40%;">
-@endforeach
-
 {{-- STUB (bottom of page — auto-mirrors main fields, read-only) --}}
 <input type="text" id="stubSurname" readonly tabindex="-1"
     class="f" style="top:90.55%;left:4.87%;width:43.16%;height:1.43%;color:#333;">
@@ -388,6 +386,8 @@ function mkDig(sel, hiddenId) {
 mkDig('.mob-d', 'mobH');
 mkDig('.land-d', 'landH');
 mkDig('.con-d', 'conH');
+mkDig('.dateadmin-d', 'dateAdminH');
+mkDig('.refnum-d', 'refH');
 const dobBoxes = mkDig('.dob-d', 'dobH');
 document.getElementById('farmerForm').addEventListener('submit', () => {
     const v = dobBoxes.map(b=>b.value).join('');

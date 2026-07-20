@@ -41,6 +41,10 @@
     $pobParts = old('place_of_birth', $farmer->place_of_birth) ? explode(', ', old('place_of_birth', $farmer->place_of_birth)) : [];
     $religionVal = old('religion', $farmer->religion);
     $isOtherReligion = $religionVal && !in_array($religionVal, ['Christianity', 'Islam']);
+
+    $dateAdminVal = old('date_administered', $farmer->date_administered?->format('Y-m-d'));
+    $dateAdminDigits = $dateAdminVal ? str_split(\Carbon\Carbon::parse($dateAdminVal)->format('mdY')) : [];
+    $refDigits = str_split(preg_replace('/\D/', '', old('reference_number', $farmer->reference_number) ?? ''));
 @endphp
 
 <form method="POST" action="{{ route('farmers.update', $farmer) }}" enctype="multipart/form-data" id="farmerForm" autocomplete="off">
@@ -64,6 +68,22 @@
     {{ old('enrollment_type', $farmer->enrollment_type) === 'updating' ? 'checked' : '' }}
     onchange="if(this.checked){document.getElementById('cb_new').checked=false; document.getElementById('enroll_type').value='updating';}">
 <input type="hidden" name="enrollment_type" id="enroll_type" value="{{ old('enrollment_type', $farmer->enrollment_type) }}">
+
+{{-- DATE ADMINISTERED (8 real, individually-typeable boxes: MMDDYYYY) --}}
+<div style="position:absolute;top:12.56%;left:35.54%;width:16%;height:1.24%;display:flex;">
+@for($i=0;$i<8;$i++)
+<input type="text" maxlength="1" style="width:12%;height:100%;text-align:center;border:1px solid #999;background:rgba(255,255,255,0.4);font-size:10px;font-weight:bold;padding:0;outline:none;" class="dateadmin-d" autocomplete="off" value="{{ $dateAdminDigits[$i] ?? '' }}">
+@endfor
+</div>
+<input type="hidden" name="date_administered" id="dateAdminH" value="{{ $dateAdminVal }}">
+
+{{-- REFERENCE NUMBER (15 real, individually-typeable boxes) --}}
+<div style="position:absolute;top:14.64%;left:18.38%;width:33%;height:1.33%;display:flex;">
+@for($i=0;$i<15;$i++)
+<input type="text" maxlength="1" style="width:6.6%;height:100%;text-align:center;border:1px solid #999;background:rgba(255,255,255,0.4);font-size:10px;font-weight:bold;padding:0;outline:none;" class="refnum-d" autocomplete="off" value="{{ $refDigits[$i] ?? '' }}">
+@endfor
+</div>
+<input type="hidden" name="reference_number" id="refH" value="{{ old('reference_number', $farmer->reference_number) }}">
 
 <input type="text" name="surname" id="mainSurname" value="{{ old('surname', $farmer->surname) }}" required autocomplete="off"
     class="f" style="top:18.64%;left:5.58%;width:42.06%;height:2.05%;">
@@ -290,11 +310,6 @@ $eduVal = old('highest_education', $farmer->highest_education);
 <input type="hidden" name="land_holding_status" value="{{ old('land_holding_status', $farmer->land_holding_status) }}">
 <input type="hidden" name="status" value="{{ old('status', $farmer->status) }}">
 
-@php $refTopLefts = [18.38,20.42,22.97,25.03,27.65,29.66,32.24,34.32,36.40,38.94,41.02,43.11,45.16,47.22,49.33]; @endphp
-@foreach($refTopLefts as $left)
-<input type="text" readonly tabindex="-1" class="dg" style="top:14.64%;left:{{ $left }}%;width:2.08%;height:1.33%;color:#888;">
-@endforeach
-
 <input type="text" id="stubSurname" readonly tabindex="-1"
     class="f" style="top:90.55%;left:4.87%;width:43.16%;height:1.43%;color:#333;" value="{{ strtoupper($farmer->surname) }}">
 <input type="text" id="stubFirstName" readonly tabindex="-1"
@@ -336,6 +351,20 @@ document.querySelectorAll('.rel-cb').forEach(cb => cb.addEventListener('change',
     document.getElementById('religionOther').style.display = (cb.checked && cb.dataset.val==='others') ? 'block' : 'none';
 }));
 
+function mkDig(sel, hiddenId) {
+    const bs = Array.from(document.querySelectorAll(sel));
+    bs.forEach((b,i) => {
+        b.addEventListener('input', () => { b.value=b.value.replace(/\D/g,''); if(b.value && i<bs.length-1) bs[i+1].focus(); });
+        b.addEventListener('keydown', e => { if(e.key==='Backspace' && !b.value && i>0) bs[i-1].focus(); });
+    });
+    document.getElementById('farmerForm').addEventListener('submit', () => {
+        document.getElementById(hiddenId).value = bs.map(b=>b.value).join('');
+    });
+    return bs;
+}
+mkDig('.dateadmin-d', 'dateAdminH');
+mkDig('.refnum-d', 'refH');
+
 function setupDigitRow(boxesId, realId, hiddenId, length, boxWidthPct) {
     const boxesDiv = document.getElementById(boxesId);
     const real = document.getElementById(realId);
@@ -376,6 +405,11 @@ document.getElementById('farmerForm').addEventListener('submit', () => {
     const p2 = document.getElementById('pob2').value;
     const p3 = document.getElementById('pob3').value;
     document.getElementById('pobH').value = [p1,p2,p3].filter(Boolean).join(', ');
+});
+document.getElementById('farmerForm').addEventListener('submit', () => {
+    const v = document.querySelectorAll('.dateadmin-d');
+    const digits = Array.from(v).map(b => b.value).join('');
+    if (digits.length === 8) document.getElementById('dateAdminH').value = `${digits.slice(4,8)}-${digits.slice(0,2)}-${digits.slice(2,4)}`;
 });
 
 document.getElementById('photoInput').addEventListener('change', function() {
