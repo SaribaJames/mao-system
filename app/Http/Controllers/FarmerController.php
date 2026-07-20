@@ -213,7 +213,7 @@ class FarmerController extends Controller
         $pdf->setPrintFooter(false);
         $pdf->SetAutoPageBreak(false, 0);
         $pdf->AddPage();
-        $templateId = $pdf->setSourceFile(storage_path('app/rsbsa_template.pdf'));
+        $templateId = $pdf->setSourceFile(resource_path('pdf/rsbsa_template.pdf'));
         $tpl = $pdf->importPage(1);
         $pdf->useTemplate($tpl, 0, 0, 595, 893);
 
