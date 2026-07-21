@@ -57,7 +57,12 @@ class ProgramController extends Controller
         $isUnlocked = $isAssignedUser && session()->get("unlocked_programs.{$program->id}", false);
 
         return view('programs.show', compact(
-            'program', 'enrollments', 'farmers', 'staffUsers', 'isAssignedUser', 'isUnlocked'
+            'program',
+            'enrollments',
+            'farmers',
+            'staffUsers',
+            'isAssignedUser',
+            'isUnlocked'
         ));
     }
 
@@ -65,11 +70,10 @@ class ProgramController extends Controller
     {
         abort_unless($program->isManagedBy(Auth::user()), 403, 'You are not the assigned personnel for this program.');
 
-        $request->validate([
-            'pin' => 'required|digits_between:4,6',
-        ]);
+        
 
-        if (! Auth::user()->verifyPin($request->pin)) {
+
+        if (!Auth::user()->verifyPin($request->pin)) {
             return back()->with('error', 'Incorrect PIN.');
         }
 
@@ -123,4 +127,200 @@ class ProgramController extends Controller
         abort_unless($program->isManagedBy(Auth::user()), 403, 'Only the assigned personnel can manage this program.');
         abort_unless(session()->get("unlocked_programs.{$program->id}", false), 403, 'Enter your PIN to unlock this program before managing it.');
     }
+
+
+    public function storeActivity(Request $request, Program $program)
+    {
+        $this->authorizeManage($program);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'performance_achieved' => 'nullable|string',
+            'achieved_value' => 'nullable|numeric',
+            'challenges_encountered' => 'nullable|string',
+            'proposed_intervention' => 'nullable|string',
+            'target_performance' => 'nullable|string',
+            'target_value' => 'nullable|numeric',
+            'value_unit' => 'nullable|string|max:50',
+            'expenditure_item' => 'nullable|string|max:255',
+            'budget_years' => 'nullable|array',
+            'budget_amounts' => 'nullable|array',
+        ]);
+
+        $budgetBreakdown = [];
+        if ($request->filled('budget_years')) {
+            foreach ($request->budget_years as $i => $year) {
+                if (blank($year))
+                    continue;
+                $amount = $request->budget_amounts[$i] ?? null;
+                $budgetBreakdown[$year] = $amount !== null ? str_replace(',', '', $amount) : 0;
+            }
+        }
+
+        $activity = $program->activities()->create([
+            'name' => $request->name,
+            'performance_achieved' => $request->performance_achieved,
+            'achieved_value' => $request->achieved_value,
+            'challenges_encountered' => $request->challenges_encountered,
+            'proposed_intervention' => $request->proposed_intervention,
+            'target_performance' => $request->target_performance,
+            'target_value' => $request->target_value,
+            'value_unit' => $request->value_unit,
+            'expenditure_item' => $request->expenditure_item,
+            'budget_breakdown' => $budgetBreakdown,
+            'created_by' => Auth::id(),
+        ]);
+
+        $this->applyStockUsage($request, $activity);
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Activity added successfully!');
+    }
+
+    public function updateActivity(Request $request, \App\Models\ProgramActivity $activity)
+    {
+        $this->authorizeManage($activity->program);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'performance_achieved' => 'nullable|string',
+            'achieved_value' => 'nullable|numeric',
+            'challenges_encountered' => 'nullable|string',
+            'proposed_intervention' => 'nullable|string',
+            'target_performance' => 'nullable|string',
+            'target_value' => 'nullable|numeric',
+            'value_unit' => 'nullable|string|max:50',
+            'expenditure_item' => 'nullable|string|max:255',
+            'budget_years' => 'nullable|array',
+            'budget_amounts' => 'nullable|array',
+        ]);
+    
+        $budgetBreakdown = [];
+        if ($request->filled('budget_years')) {
+            foreach ($request->budget_years as $i => $year) {
+                if (blank($year))
+                    continue;
+                $amount = $request->budget_amounts[$i] ?? null;
+                $budgetBreakdown[$year] = $amount !== null ? str_replace(',', '', $amount) : 0;
+            }
+        }
+
+        $activity->update([
+            'name' => $request->name,
+            'performance_achieved' => $request->performance_achieved,
+            'achieved_value' => $request->achieved_value,
+            'challenges_encountered' => $request->challenges_encountered,
+            'proposed_intervention' => $request->proposed_intervention,
+            'target_performance' => $request->target_performance,
+            'target_value' => $request->target_value,
+            'value_unit' => $request->value_unit,
+            'expenditure_item' => $request->expenditure_item,
+            'budget_breakdown' => $budgetBreakdown,
+        ]);
+
+        $this->applyStockUsage($request, $activity);
+
+        return redirect()->route('programs.show', $activity->program)
+            ->with('success', 'Activity updated successfully!');
+    }
+
+    public function destroyActivity(\App\Models\ProgramActivity $activity)
+    {
+        $this->authorizeManage($activity->program);
+        $program = $activity->program;
+        $activity->delete();
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Activity deleted.');
+    }
+
+    private function applyStockUsage(Request $request, \App\Models\ProgramActivity $activity): void
+    {
+        if (!$request->filled('stock_ids')) {
+            return;
+        }
+
+        foreach ($request->stock_ids as $i => $stockId) {
+            if (blank($stockId))
+                continue;
+            $qty = (int) ($request->stock_quantities[$i] ?? 0);
+            if ($qty <= 0)
+                continue;
+
+            $stock = \App\Models\Stock::find($stockId);
+            if (!$stock || $stock->remaining_stock < $qty)
+                continue;
+
+            $transaction = $stock->transactions()->create([
+                'type' => 'released',
+                'quantity' => $qty,
+                'recipient' => $activity->program->name . ' — ' . $activity->name,
+                'notes' => 'Auto-released for program activity',
+                'processed_by' => Auth::id(),
+            ]);
+
+            $stock->remaining_stock -= $qty;
+            $stock->released_stock += $qty;
+            $stock->save();
+            $stock->updateStatus();
+
+            $activity->stockUsages()->create([
+                'stock_id' => $stock->id,
+                'quantity_used' => $qty,
+                'stock_transaction_id' => $transaction->id,
+            ]);
+        }
+    }
+
+
+    public function report(Program $program)
+    {
+        $this->authorizeManage($program);
+        $program->load('activities');
+
+        // Build a budget-distribution pie chart (as a static image, since dompdf can't run JS/Chart.js)
+        $pieLabels = [];
+        $pieData = [];
+        foreach ($program->activities as $activity) {
+            $total = array_sum($activity->budget_breakdown ?? []);
+            if ($total > 0) {
+                $pieLabels[] = $activity->name;
+                $pieData[] = $total;
+            }
+        }
+
+        $chartUrl = null;
+        if (count($pieData) > 0) {
+            $chartConfig = [
+                'type' => 'pie',
+                'data' => [
+                    'labels' => $pieLabels,
+                    'datasets' => [
+                        [
+                            'data' => $pieData,
+                            'backgroundColor' => ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#7c3aed', '#0891b2', '#db2777', '#65a30d'],
+                        ]
+                    ],
+                ],
+                'options' => [
+                    'plugins' => [
+                        'title' => ['display' => true, 'text' => 'Budget Distribution by Activity'],
+                        'legend' => ['position' => 'bottom'],
+                    ],
+                ],
+            ];
+            $chartUrl = 'https://quickchart.io/chart?width=500&height=350&c=' . urlencode(json_encode($chartConfig));
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('programs.report', compact('program', 'chartUrl'))
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->stream($program->name . '-Report.pdf');
+    }
+
+
+
 }
+
+

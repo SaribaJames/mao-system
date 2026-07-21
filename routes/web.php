@@ -86,6 +86,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/farmers/create/db', [FarmerController::class, 'createDb'])->name('farmers.create.db');
 
+    Route::post('/programs/{program}/activities', [ProgramController::class, 'storeActivity'])->name('programs.activities.store');
+    Route::put('/programs/activities/{activity}', [ProgramController::class, 'updateActivity'])->name('programs.activities.update');
+    Route::delete('/programs/activities/{activity}', [ProgramController::class, 'destroyActivity'])->name('programs.activities.destroy');
 
+    Route::get('/programs/{program}/report', [ProgramController::class, 'report'])->name('programs.report');
 
 });

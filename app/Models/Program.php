@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Program extends Model
 {
     protected $fillable = [
-        'name', 'coordinator_name', 'description', 'status', 'assigned_user_id',
+        'name',
+        'coordinator_name',
+        'description',
+        'status',
+        'assigned_user_id',
     ];
 
     public function enrollments()
@@ -35,9 +39,16 @@ class Program extends Model
     public function getStatusColorAttribute()
     {
         return match ($this->status) {
-            'active'   => 'bg-green-100 text-green-700',
+            'active' => 'bg-green-100 text-green-700',
             'inactive' => 'bg-gray-100 text-gray-600',
-            default    => 'bg-gray-100 text-gray-600',
+            default => 'bg-gray-100 text-gray-600',
         };
     }
+
+    public function activities()
+    {
+        return $this->hasMany(ProgramActivity::class);
+    }
+
+    
 }
