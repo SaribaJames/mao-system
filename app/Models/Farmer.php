@@ -141,4 +141,9 @@ class Farmer extends Model
     {
         return "{$this->first_name} {$this->middle_name} {$this->surname}";
     }
+
+    public function farmParcels()
+    {
+        return $this->hasMany(FarmParcel::class)->orderBy('parcel_number');
+    }
 }

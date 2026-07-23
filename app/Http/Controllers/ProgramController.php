@@ -70,7 +70,7 @@ class ProgramController extends Controller
     {
         abort_unless($program->isManagedBy(Auth::user()), 403, 'You are not the assigned personnel for this program.');
 
-        
+
 
 
         if (!Auth::user()->verifyPin($request->pin)) {
@@ -194,7 +194,7 @@ class ProgramController extends Controller
             'budget_years' => 'nullable|array',
             'budget_amounts' => 'nullable|array',
         ]);
-    
+
         $budgetBreakdown = [];
         if ($request->filled('budget_years')) {
             foreach ($request->budget_years as $i => $year) {
@@ -319,7 +319,71 @@ class ProgramController extends Controller
         return $pdf->stream($program->name . '-Report.pdf');
     }
 
+    public function storeDispersalRecord(Request $request, Program $program)
+    {
+        $this->authorizeManage($program);
 
+        $request->validate([
+            'farmer_id' => 'required|exists:farmers,id',
+            'piglets_received' => 'nullable|integer|min:0',
+            'date_received' => 'nullable|date',
+            'piglets_returned' => 'nullable|integer|min:0',
+            'date_returned' => 'nullable|date',
+            'status' => 'required|in:waitlisted,received,compliant',
+            'notes' => 'nullable|string',
+        ]);
+
+        \App\Models\SwineDispersalRecord::create([
+            'program_id' => $program->id,
+            'farmer_id' => $request->farmer_id,
+            'piglets_received' => $request->piglets_received ?? 0,
+            'date_received' => $request->date_received,
+            'piglets_returned' => $request->piglets_returned ?? 0,
+            'date_returned' => $request->date_returned,
+            'status' => $request->status,
+            'notes' => $request->notes,
+            'recorded_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Dispersal record added successfully!');
+    }
+
+    public function updateDispersalRecord(Request $request, \App\Models\SwineDispersalRecord $record)
+    {
+        $this->authorizeManage($record->program);
+
+        $request->validate([
+            'piglets_received' => 'nullable|integer|min:0',
+            'date_received' => 'nullable|date',
+            'piglets_returned' => 'nullable|integer|min:0',
+            'date_returned' => 'nullable|date',
+            'status' => 'required|in:waitlisted,received,compliant',
+            'notes' => 'nullable|string',
+        ]);
+
+        $record->update([
+            'piglets_received' => $request->piglets_received ?? 0,
+            'date_received' => $request->date_received,
+            'piglets_returned' => $request->piglets_returned ?? 0,
+            'date_returned' => $request->date_returned,
+            'status' => $request->status,
+            'notes' => $request->notes,
+        ]);
+
+        return redirect()->route('programs.show', $record->program)
+            ->with('success', 'Dispersal record updated successfully!');
+    }
+
+    public function destroyDispersalRecord(\App\Models\SwineDispersalRecord $record)
+    {
+        $this->authorizeManage($record->program);
+        $program = $record->program;
+        $record->delete();
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Dispersal record deleted.');
+    }
 
 }
 

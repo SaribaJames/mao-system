@@ -102,4 +102,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/farmers/{farmer}/approve', [FarmerController::class, 'approveRegistration'])->name('farmers.approve');
     Route::post('/farmers/{farmer}/reject', [FarmerController::class, 'rejectRegistration'])->name('farmers.reject');
 
+    Route::post('/programs/{program}/dispersal', [ProgramController::class, 'storeDispersalRecord'])->name('programs.dispersal.store');
+    Route::put('/programs/dispersal/{record}', [ProgramController::class, 'updateDispersalRecord'])->name('programs.dispersal.update');
+    Route::delete('/programs/dispersal/{record}', [ProgramController::class, 'destroyDispersalRecord'])->name('programs.dispersal.destroy');
+
 });

@@ -341,6 +341,124 @@ $eduMap = [
 
 </div>
 
+{{-- ══════════════ PAGE 2 — FARM PARCEL INFORMATION ══════════════ --}}
+<div style="width:850px;margin:0 auto 24px auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);padding:24px;">
+    <h3 style="font-size:14px;font-weight:bold;margin-bottom:16px;border-bottom:2px solid #000;padding-bottom:8px;">
+        PART II: FARM PARCEL INFORMATION
+    </h3>
+
+    @for($p = 0; $p < 3; $p++)
+    @php $parcel = isset($farmer) ? ($farmer->farmParcels[$p] ?? null) : null; @endphp
+    <div style="border:1px solid #ccc;padding:16px;margin-bottom:16px;border-radius:4px;">
+        <p style="font-weight:bold;font-size:13px;margin-bottom:12px;">Farm Parcel {{ $p + 1 }}</p>
+
+        <div class="grid grid-cols-3 gap-3 mb-3">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Farm Location — Barangay</label>
+                <input type="text" name="parcel_barangay[]" value="{{ old('parcel_barangay.'.$p, $parcel?->farm_location_barangay) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">City/Municipality</label>
+                <input type="text" name="parcel_municipality[]" value="{{ old('parcel_municipality.'.$p, $parcel?->farm_location_municipality) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Total Farm Area (ha)</label>
+                <input type="text" name="parcel_area[]" value="{{ old('parcel_area.'.$p, $parcel?->total_farm_area_ha) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Crop/Commodity</label>
+                <input type="text" name="parcel_crop[]" value="{{ old('parcel_crop.'.$p, $parcel?->crop_commodity) }}" autocomplete="off"
+                       placeholder="Rice/Corn/HVC/Livestock/Poultry/Agri-fishery"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Size (ha)</label>
+                <input type="text" name="parcel_size[]" value="{{ old('parcel_size.'.$p, $parcel?->size_ha) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-3">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">No. of Head (Livestock/Poultry)</label>
+                <input type="number" name="parcel_no_head[]" value="{{ old('parcel_no_head.'.$p, $parcel?->no_of_head) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Farm Type</label>
+                <select name="parcel_farm_type[]" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">Select</option>
+                    <option value="1" {{ old('parcel_farm_type.'.$p, $parcel?->farm_type) == 1 ? 'selected' : '' }}>1 - Irrigated</option>
+                    <option value="2" {{ old('parcel_farm_type.'.$p, $parcel?->farm_type) == 2 ? 'selected' : '' }}>2 - Rainfed Upland</option>
+                    <option value="3" {{ old('parcel_farm_type.'.$p, $parcel?->farm_type) == 3 ? 'selected' : '' }}>3 - Rainfed Lowland</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Organic Practitioner</label>
+                <select name="parcel_organic[]" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">Select</option>
+                    <option value="1" {{ old('parcel_organic.'.$p, $parcel?->organic_practitioner) ? 'selected' : '' }}>Yes</option>
+                    <option value="0" {{ old('parcel_organic.'.$p) === '0' ? 'selected' : '' }}>No</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Ownership Type</label>
+                <select name="parcel_ownership_type[]" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">Select</option>
+                    <option value="registered_owner" {{ old('parcel_ownership_type.'.$p, $parcel?->ownership_type) === 'registered_owner' ? 'selected' : '' }}>Registered Owner</option>
+                    <option value="tenant" {{ old('parcel_ownership_type.'.$p, $parcel?->ownership_type) === 'tenant' ? 'selected' : '' }}>Tenant</option>
+                    <option value="lessee" {{ old('parcel_ownership_type.'.$p, $parcel?->ownership_type) === 'lessee' ? 'selected' : '' }}>Lessee</option>
+                    <option value="others" {{ old('parcel_ownership_type.'.$p, $parcel?->ownership_type) === 'others' ? 'selected' : '' }}>Others</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Name of Land Owner (if Tenant/Lessee)</label>
+                <input type="text" name="parcel_owner_name[]" value="{{ old('parcel_owner_name.'.$p, $parcel?->owner_name) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Ownership Document Code (1-13)</label>
+                <input type="text" name="parcel_doc_code[]" value="{{ old('parcel_doc_code.'.$p, $parcel?->ownership_document_code) }}" autocomplete="off"
+                       placeholder="See legend on form"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Remarks</label>
+                <input type="text" name="parcel_remarks[]" value="{{ old('parcel_remarks.'.$p, $parcel?->remarks) }}" autocomplete="off"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+        </div>
+
+        <div class="flex gap-6">
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="parcel_ancestral[{{ $p }}]" value="1"
+                       {{ old('parcel_ancestral.'.$p, $parcel?->within_ancestral_domain) ? 'checked' : '' }}
+                       class="accent-primary">
+                Within Ancestral Domain
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="parcel_arb[{{ $p }}]" value="1"
+                       {{ old('parcel_arb.'.$p, $parcel?->agrarian_reform_beneficiary) ? 'checked' : '' }}
+                       class="accent-primary">
+                Agrarian Reform Beneficiary
+            </label>
+        </div>
+    </div>
+    @endfor
+</div>
+
 {{-- SUBMIT --}}
 <div style="width:850px;margin:0 auto 32px auto;display:flex;gap:12px;">
     <button type="submit" class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-2.5 rounded-md transition text-sm">

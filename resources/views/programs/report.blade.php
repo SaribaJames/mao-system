@@ -7,9 +7,17 @@ body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #111; }
 h1 { font-size: 18px; margin-bottom: 4px; }
 .subtitle { color: #666; font-size: 11px; margin-bottom: 20px; }
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+th:nth-child(1) { width: 12%; }
+th:nth-child(2) { width: 14%; }
+th:nth-child(3) { width: 16%; }
+th:nth-child(4) { width: 16%; }
+th:nth-child(5) { width: 14%; }
+th:nth-child(6) { width: 12%; }
 th { background: #f3f4f6; font-size: 10px; }
-td { font-size: 10px; }
+td { font-size: 8px; }
+th { background: #f3f4f6; font-size: 8px; }
 .overview { margin-bottom: 20px; line-height: 1.5; }
 </style>
 </head>

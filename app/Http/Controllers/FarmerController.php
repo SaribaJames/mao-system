@@ -136,6 +136,32 @@ class FarmerController extends Controller
 
         $this->saveCoconutProfile($request, $farmer);
 
+
+        // Save farm parcels (up to 3)
+        if ($request->has('parcel_barangay')) {
+            foreach ($request->parcel_barangay as $i => $barangay) {
+                if (blank($barangay) && blank($request->parcel_crop[$i] ?? null))
+                    continue;
+                $farmer->farmParcels()->create([
+                    'parcel_number' => $i + 1,
+                    'farm_location_barangay' => $barangay,
+                    'farm_location_municipality' => $request->parcel_municipality[$i] ?? null,
+                    'total_farm_area_ha' => $request->parcel_area[$i] ?? null,
+                    'within_ancestral_domain' => isset($request->parcel_ancestral[$i]),
+                    'agrarian_reform_beneficiary' => isset($request->parcel_arb[$i]),
+                    'ownership_document_code' => $request->parcel_doc_code[$i] ?? null,
+                    'ownership_type' => $request->parcel_ownership_type[$i] ?? null,
+                    'owner_name' => $request->parcel_owner_name[$i] ?? null,
+                    'crop_commodity' => $request->parcel_crop[$i] ?? null,
+                    'size_ha' => $request->parcel_size[$i] ?? null,
+                    'no_of_head' => $request->parcel_no_head[$i] ?? null,
+                    'farm_type' => $request->parcel_farm_type[$i] ?? null,
+                    'organic_practitioner' => isset($request->parcel_organic[$i]),
+                    'remarks' => $request->parcel_remarks[$i] ?? null,
+                ]);
+            }
+        }
+
         return redirect()->route('farmers.index')
             ->with('success', "Farmer {$farmer->full_name} registered successfully!");
     }
@@ -240,9 +266,9 @@ class FarmerController extends Controller
         };
 
         if ($farmer->enrollment_type === 'new')
-            $mark(108.6, 114.4);
+            $mark(106.6, 111.4);
         if ($farmer->enrollment_type === 'updating')
-            $mark(151.1, 114.1);
+            $mark(148.1, 111.4);
 
         // Reference Number and Date Administered — real database fields, edited via edit.blade.php after DA approval
         // Date Administered (8 boxed digits: MMDDYYYY)
@@ -263,15 +289,15 @@ class FarmerController extends Controller
             }
         }
 
-        $write(33.2, 166.5, strtoupper($farmer->surname));
-        $write(311.8, 165.1, strtoupper($farmer->first_name));
-        $write(33.4, 191.1, strtoupper($farmer->middle_name));
-        $write(303.3, 191.5, strtoupper($farmer->extension_name));
+        $write(60.5, 172.5, strtoupper($farmer->surname));
+        $write(320.5, 172.5, strtoupper($farmer->first_name));
+        $write(60.5, 200.5, strtoupper($farmer->middle_name));
+        $write(320.5, 200.5, strtoupper($farmer->extension_name));
 
         if ($farmer->sex === 'male')
-            $mark(455.5, 209.9);
+            $mark(452.5, 206.9);
         if ($farmer->sex === 'female')
-            $mark(504.2, 209.3);
+            $mark(501.2, 206.9);
 
         $write(70.8, 228.1, $farmer->house_lot_number, 8);
         $write(239.1, 228.5, $farmer->street, 8);
@@ -281,20 +307,22 @@ class FarmerController extends Controller
         $write(406.9, 256.7, $farmer->region, 8);
 
         $mobile = str_split(preg_replace('/\D/', '', $farmer->mobile_number ?? ''));
-        foreach ($mobile as $i => $d) $writeBoxed(35.5 + $i*10.33, 292.7, $d, 8);
+        foreach ($mobile as $i => $d)
+            $writeBoxed(35.5 + $i * 10.70, 291.3, $d, 8);
         $landline = str_split(preg_replace('/\D/', '', $farmer->landline_number ?? ''));
-        foreach ($landline as $i => $d) $writeBoxed(179.5 + $i*10.52, 292.2, $d, 8);
+        foreach ($landline as $i => $d)
+            $writeBoxed(179.5 + $i * 10.52, 292.2, $d, 8);
 
         $eduMap = [
-            'pre_school' => [315.2, 299.8],
-            'junior_high_k12' => [403.5, 299.8],
-            'vocational' => [499.1, 299.9],
-            'elementary' => [315.4, 310.9],
-            'senior_high_k12' => [403.2, 311.2],
-            'post_graduate' => [498.9, 311.3],
-            'high_school_non_k12' => [315.2, 323.3],
-            'college' => [403.7, 323.3],
-            'none' => [499.1, 323.4],
+            'pre_school' => [312.2, 296.8],
+            'junior_high_k12' => [400.5, 296.8],
+            'vocational' => [496.1, 296.8],
+            'elementary' => [312.2, 308.3],
+            'senior_high_k12' => [400.2, 308.3],
+            'post_graduate' => [495.9, 308.3],
+            'high_school_non_k12' => [312.2, 320.3],
+            'college' => [400.2, 320.3],
+            'none' => [496.1, 320.3],
         ];
         if (isset($eduMap[$farmer->highest_education])) {
             [$x, $y] = $eduMap[$farmer->highest_education];
@@ -303,44 +331,45 @@ class FarmerController extends Controller
 
         if ($farmer->date_of_birth) {
             $dob = str_split($farmer->date_of_birth->format('mdY'));
-            foreach ($dob as $i => $d) $writeBoxed(35.5 + $i*13.5, 322.0, $d, 8);
+            foreach ($dob as $i => $d)
+                $writeBoxed(35.5 + $i * 13.3, 322.0, $d, 8);
         }
 
         $pob = $farmer->place_of_birth ? explode(', ', $farmer->place_of_birth) : [];
-        $write(152.0, 319.2, $pob[0] ?? '', 7);
-        $write(151.3, 330.7, $pob[1] ?? '', 7);
-        $write(223.1, 330.8, $pob[2] ?? '', 7);
+        $write(200.0, 315.2, $pob[0] ?? '', 7);
+        $write(165.3, 326.7, $pob[1] ?? '', 7);
+        $write(235.1, 326.7, $pob[2] ?? '', 7);
 
-        $farmer->is_pwd ? $mark(452.1, 344.0) : $mark(494.5, 344.0);
+        $farmer->is_pwd ? $mark(449.1, 341.0) : $mark(491.8, 341.0);
 
         $rel = $farmer->religion;
         if ($rel === 'Christianity')
             $mark(73.5, 355.9);
         elseif ($rel === 'Islam')
-            $mark(132.6, 356.7);
+            $mark(133.6, 357.7);
         elseif ($rel) {
-            $mark(170.1, 360.4);
+            $mark(169.1, 358.4);
             $write(233.4, 359.2, $rel, 7);
         }
 
-        $farmer->is_4ps_beneficiary ? $mark(450.4, 366.9) : $mark(491.8, 367.0);
+        $farmer->is_4ps_beneficiary ? $mark(447.4, 363.9) : $mark(488.8, 363.9);
 
-        $csMap = ['single' => 93.7, 'married' => 139.0, 'widowed' => 187.5, 'separated' => 241.9];
+        $csMap = ['single' => 90.7, 'married' => 136.0, 'widowed' => 184.5, 'separated' => 238.9];
         if (isset($csMap[$farmer->civil_status]))
-            $mark($csMap[$farmer->civil_status], 379.3);
+            $mark($csMap[$farmer->civil_status], 376.3);
 
-        $farmer->is_indigenous ? $mark(450.2, 381.8) : $mark(491.8, 381.8);
+        $farmer->is_indigenous ? $mark(447.5, 378.9) : $mark(488.8, 378.89);
         $write(359.4, 393.5, $farmer->indigenous_group_name, 7);
 
         $write(101.3, 400.4, $farmer->spouse_name, 9);
 
-        $farmer->has_government_id ? $mark(397.1, 416.3) : $mark(439.5, 416.3);
-        $write(396.6, 426.0, $farmer->government_id_type, 7);
-        $write(396.5, 436.7, $farmer->government_id_number, 7);
+        $farmer->has_government_id ? $mark(394.1, 413.3) : $mark(436.5, 413.3);
+        $write(396.6, 424.0, $farmer->government_id_type, 7);
+        $write(396.5, 433.9, $farmer->government_id_number, 7);
 
         $write(101.2, 428.6, $farmer->mother_maiden_name, 9);
 
-        $farmer->is_household_head ? $mark(134.3, 449.7) : $mark(176.8, 450.2);
+        $farmer->is_household_head ? $mark(131.4, 447.7) : $mark(174.4, 447.2);
         if (!$farmer->is_household_head) {
             $write(143.3, 463.1, $farmer->household_head_name, 7);
             $write(143.5, 480.1, $farmer->household_head_relationship, 7);
@@ -349,82 +378,119 @@ class FarmerController extends Controller
         $write(78.5, 515.4, $farmer->household_male_count, 7);
         $write(225.7, 515.7, $farmer->household_female_count, 7);
 
-        $farmer->is_farmers_association_member ? $mark(501.6, 455.8) : $mark(537.1, 455.8);
+        $farmer->is_farmers_association_member ? $mark(499.0, 452.8) : $mark(534.5, 452.8);
         $write(358.7, 469.5, $farmer->farmers_association_name, 7);
 
         $write(390.9, 496.6, $farmer->emergency_contact_name, 7);
         $contact = str_split(preg_replace('/\D/', '', $farmer->emergency_contact_number ?? ''));
-        foreach ($contact as $i => $d) $writeBoxed(394.0 + $i*15.88, 514.6, $d, 8);
+        foreach ($contact as $i => $d)
+            $writeBoxed(394.0 + $i * 14.98, 516.6, $d, 8);
 
-        $lhMap = ['farmer' => 121.6, 'farmworker' => 210.2, 'fisherfolk' => 359.5, 'agri_youth' => 479.0];
+        $lhMap = ['farmer' => 118.9, 'farmworker' => 207.0, 'fisherfolk' => 356.5, 'agri_youth' => 476.0];
         if (isset($lhMap[$farmer->main_livelihood]))
-            $mark($lhMap[$farmer->main_livelihood], 553.0);
+            $mark($lhMap[$farmer->main_livelihood], 550.0);
 
         if ($farmer->farming_rice)
-            $mark(33.3, 600.4);
+            $mark(30.3, 597.4);
         if ($farmer->farming_corn)
-            $mark(33.1, 617.9);
+            $mark(30.3, 614.5);
         if ($farmer->farming_other_crops) {
-            $mark(33.5, 635.5);
+            $mark(30.3, 632.5);
             $write(100.5, 641.8, $farmer->farming_other_crops_specify, 7);
         }
         if ($farmer->farming_livestock) {
-            $mark(32.8, 659.7);
+            $mark(30.3, 656.5);
             $write(100.3, 667.4, $farmer->farming_livestock_specify, 7);
         }
         if ($farmer->farming_poultry) {
-            $mark(32.7, 683.1);
+            $mark(30.3, 680.5);
             $write(101.3, 691.0, $farmer->farming_poultry_specify, 7);
         }
 
         if ($farmer->farmwork_land_preparation)
-            $mark(214.0, 602.1);
+            $mark(211.2, 599.1);
         if ($farmer->farmwork_planting)
-            $mark(213.9, 619.2);
+            $mark(211.2, 616.2);
         if ($farmer->farmwork_cultivation)
-            $mark(214.1, 636.3);
+            $mark(211.2, 633.3);
         if ($farmer->farmwork_harvesting)
-            $mark(213.4, 653.3);
+            $mark(211.2, 650.3);
         if ($farmer->farmwork_others) {
-            $mark(214.2, 670.3);
+            $mark(211.2, 667.3);
             $write(215.3, 690.7, $farmer->farmwork_others_specify, 7);
         }
 
         if ($farmer->fishing_capture)
-            $mark(331.1, 645.8);
+            $mark(328.1, 642.8);
         if ($farmer->fishing_processing)
-            $mark(396.8, 645.6);
+            $mark(393.8, 642.6);
         if ($farmer->fishing_aquaculture)
-            $mark(330.7, 658.0);
+            $mark(328.1, 655.0);
         if ($farmer->fishing_vending)
-            $mark(396.6, 657.7);
+            $mark(393.8, 655.0);
         if ($farmer->fishing_gleaning)
-            $mark(330.4, 669.7);
+            $mark(328.1, 666.5);
         if ($farmer->fishing_others) {
-            $mark(330.9, 681.1);
+            $mark(328.1, 678.1);
             $write(326.1, 689.5, $farmer->fishing_others_specify, 7);
         }
 
         if ($farmer->agri_youth_farming_household)
-            $mark(471.7, 629.7);
+            $mark(468.5, 626.5);
         if ($farmer->agri_youth_formal_course)
-            $mark(471.9, 639.7);
+            $mark(468.5, 636.5);
         if ($farmer->agri_youth_nonformal_course)
-            $mark(472.0, 655.6);
+            $mark(468.5, 652.5);
         if ($farmer->agri_youth_participated_program)
-            $mark(471.7, 673.2);
+            $mark(468.5, 670.5);
         if ($farmer->agri_youth_others) {
-            $mark(472.1, 690.6);
-            $write(471.7, 695.3, $farmer->agri_youth_others_specify, 6);
+            $mark(468.5, 687.5);
+            $write(468.5, 695.3, $farmer->agri_youth_others_specify, 6);
         }
 
-        $write(213.3, 711.1, $farmer->gross_annual_income_farming ? number_format($farmer->gross_annual_income_farming, 2) : '', 7);
-        $write(432.5, 711.5, $farmer->gross_annual_income_non_farming ? number_format($farmer->gross_annual_income_non_farming, 2) : '', 7);
+        $write(218.3, 709.3, $farmer->gross_annual_income_farming ? number_format($farmer->gross_annual_income_farming, 2) : '', 7);
+        $write(438.3, 709.3, $farmer->gross_annual_income_non_farming ? number_format($farmer->gross_annual_income_non_farming, 2) : '', 7);
 
-        $write(29.0, 808.6, strtoupper($farmer->surname));
-        $write(305.0, 808.6, strtoupper($farmer->first_name));
-        $write(28.9, 837.0, strtoupper($farmer->middle_name));
-        $write(299.8, 837.0, strtoupper($farmer->extension_name));
+        $write(130.0, 812.6, strtoupper($farmer->surname));
+        $write(410.0, 812.6, strtoupper($farmer->first_name));
+        $write(135.0, 837.0, strtoupper($farmer->middle_name));
+        $write(320.8, 837.0, strtoupper($farmer->extension_name));
+
+        // ═══ PAGE 2 — FARM PARCEL INFORMATION ═══
+        $farmer->load('farmParcels');
+        if ($farmer->farmParcels->count() > 0) {
+            $tpl2 = $pdf->importPage(2);
+            $pdf->AddPage();
+            $pdf->useTemplate($tpl2, 0, 0, 595, 893);
+
+            $parcelStartY = [85, 285, 485]; // approximate Y positions for parcels 1, 2, 3
+
+            foreach ($farmer->farmParcels as $parcel) {
+                $idx = $parcel->parcel_number - 1;
+                $y = $parcelStartY[$idx] ?? ($parcelStartY[0] + $idx * 200);
+
+                $write(95, $y, $parcel->farm_location_barangay, 8);
+                $write(95, $y + 14, $parcel->farm_location_municipality, 8);
+                $write(95, $y + 25, $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 4) : '', 8);
+
+                if ($parcel->within_ancestral_domain)
+                    $mark(250, $y + 25);
+                else
+                    $mark(280, $y + 25);
+
+                if ($parcel->agrarian_reform_beneficiary)
+                    $mark(250, $y + 36);
+                else
+                    $mark(280, $y + 36);
+
+                $write(430, $y, $parcel->crop_commodity, 7);
+                $write(490, $y, $parcel->size_ha ? number_format($parcel->size_ha, 4) : '', 7);
+                $write(510, $y, $parcel->no_of_head ?? '', 7);
+                $write(530, $y, $parcel->farm_type ?? '', 7);
+                $write(555, $y, $parcel->organic_practitioner ? 'Y' : 'N', 7);
+                $write(570, $y, $parcel->remarks ?? '', 7);
+            }
+        }
 
         return response($pdf->Output('Farmer-' . $farmer->reference_number . '.pdf', 'S'), 200)
             ->header('Content-Type', 'application/pdf');
