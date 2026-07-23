@@ -84,6 +84,11 @@ class Farmer extends Model
         'photo',
         'status',
         'registered_by',
+        'registration_status',
+        'registration_rejection_reason',
+        'approved_by',
+        'approved_at',
+
     ];
 
     protected $casts = [

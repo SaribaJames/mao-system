@@ -252,7 +252,7 @@ class ProgramController extends Controller
                 continue;
 
             $transaction = $stock->transactions()->create([
-                'type' => 'released',
+                'type' => 'release',
                 'quantity' => $qty,
                 'recipient' => $activity->program->name . ' — ' . $activity->name,
                 'notes' => 'Auto-released for program activity',

@@ -229,8 +229,8 @@ class FarmerController extends Controller
 
         $writeBoxed = function ($x, $y, $text, $size = 9) use ($pdf) {
             $pdf->SetFont('helvetica', 'B', $size);
-            $pdf->SetXY($x, $y);
-            $pdf->Cell(0, 13, $text, 0, 0, 'L', false, '', 0, false, 'T', 'M');
+            $pdf->SetXY($x, $y + 1.5);
+            $pdf->Cell(8, 10, $text, 0, 0, 'C');
         };
 
         $mark = function ($x, $y) use ($pdf) {
@@ -281,11 +281,9 @@ class FarmerController extends Controller
         $write(406.9, 256.7, $farmer->region, 8);
 
         $mobile = str_split(preg_replace('/\D/', '', $farmer->mobile_number ?? ''));
-        foreach ($mobile as $i => $d)
-            $writeBoxed(32.07 + $i * 8.33, 292.7, $d, 8);
+        foreach ($mobile as $i => $d) $writeBoxed(35.5 + $i*10.33, 292.7, $d, 8);
         $landline = str_split(preg_replace('/\D/', '', $farmer->landline_number ?? ''));
-        foreach ($landline as $i => $d)
-            $writeBoxed(176.24 + $i * 9.52, 292.2, $d, 8);
+        foreach ($landline as $i => $d) $writeBoxed(179.5 + $i*10.52, 292.2, $d, 8);
 
         $eduMap = [
             'pre_school' => [315.2, 299.8],
@@ -305,8 +303,7 @@ class FarmerController extends Controller
 
         if ($farmer->date_of_birth) {
             $dob = str_split($farmer->date_of_birth->format('mdY'));
-            foreach ($dob as $i => $d)
-                $writeBoxed(32.43 + $i * 12.5, 322.0, $d, 8);
+            foreach ($dob as $i => $d) $writeBoxed(35.5 + $i*13.5, 322.0, $d, 8);
         }
 
         $pob = $farmer->place_of_birth ? explode(', ', $farmer->place_of_birth) : [];
@@ -318,12 +315,12 @@ class FarmerController extends Controller
 
         $rel = $farmer->religion;
         if ($rel === 'Christianity')
-            $mark(77.5, 359.9);
+            $mark(73.5, 355.9);
         elseif ($rel === 'Islam')
-            $mark(136.6, 360.7);
+            $mark(132.6, 356.7);
         elseif ($rel) {
-            $mark(172.1, 360.4);
-            $write(236.4, 359.2, $rel, 7);
+            $mark(170.1, 360.4);
+            $write(233.4, 359.2, $rel, 7);
         }
 
         $farmer->is_4ps_beneficiary ? $mark(450.4, 366.9) : $mark(491.8, 367.0);
@@ -357,8 +354,7 @@ class FarmerController extends Controller
 
         $write(390.9, 496.6, $farmer->emergency_contact_name, 7);
         $contact = str_split(preg_replace('/\D/', '', $farmer->emergency_contact_number ?? ''));
-        foreach ($contact as $i => $d)
-            $writeBoxed(390.86 + $i * 14.88, 514.6, $d, 8);
+        foreach ($contact as $i => $d) $writeBoxed(394.0 + $i*15.88, 514.6, $d, 8);
 
         $lhMap = ['farmer' => 121.6, 'farmworker' => 210.2, 'fisherfolk' => 359.5, 'agri_youth' => 479.0];
         if (isset($lhMap[$farmer->main_livelihood]))
