@@ -89,9 +89,12 @@ class FarmerController extends Controller
         ]);
 
         // If barangay rep, automatically assign their barangay
+        // and set registration as pending (requires admin/DA approval)
         $barangayId = $request->barangay_id;
+        $registrationStatus = 'approved';
         if (Auth::user()->isBarangayUser()) {
             $barangayId = Auth::user()->barangayAccount?->barangay_id;
+            $registrationStatus = 'pending';
         }
 
         $farmer = Farmer::create(array_merge(
@@ -99,6 +102,7 @@ class FarmerController extends Controller
             [
                 'registered_by' => Auth::id(),
                 'barangay_id' => $barangayId,
+                'registration_status' => $registrationStatus,
                 'religion' => $request->religion === 'others' ? $request->religion_other : $request->religion,
                 'is_household_head' => $request->boolean('is_household_head'),
                 'is_pwd' => $request->boolean('is_pwd'),
@@ -547,5 +551,39 @@ class FarmerController extends Controller
     {
         $barangays = Barangay::orderBy('name')->get();
         return view('farmers.create_db', compact('barangays'));
+    }
+
+    public function pendingRegistrations()
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        $farmers = Farmer::where('registration_status', 'pending')
+            ->with(['barangay', 'registeredBy'])
+            ->latest()
+            ->paginate(15);
+        return view('farmers.pending', compact('farmers'));
+    }
+
+    public function approveRegistration(Farmer $farmer)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        $farmer->update([
+            'registration_status' => 'approved',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+        return redirect()->back()->with('success', "Farmer {$farmer->full_name} registration approved.");
+    }
+
+    public function rejectRegistration(Request $request, Farmer $farmer)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        $request->validate(['reason' => 'required|string|max:500']);
+        $farmer->update([
+            'registration_status' => 'rejected',
+            'registration_rejection_reason' => $request->reason,
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+        return redirect()->back()->with('success', "Farmer {$farmer->full_name} registration rejected.");
     }
 }

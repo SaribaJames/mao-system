@@ -13,6 +13,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\EndorsementController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -91,5 +92,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/programs/activities/{activity}', [ProgramController::class, 'destroyActivity'])->name('programs.activities.destroy');
 
     Route::get('/programs/{program}/report', [ProgramController::class, 'report'])->name('programs.report');
+
+
+    Route::get('/endorsements', [EndorsementController::class, 'index'])->name('endorsements.index');
+    Route::post('/endorsements', [EndorsementController::class, 'store'])->name('endorsements.store');
+    Route::post('/endorsements/{endorsement}/approve', [EndorsementController::class, 'approve'])->name('endorsements.approve');
+    Route::post('/endorsements/{endorsement}/reject', [EndorsementController::class, 'reject'])->name('endorsements.reject');
+
+    Route::post('/farmers/{farmer}/approve', [FarmerController::class, 'approveRegistration'])->name('farmers.approve');
+    Route::post('/farmers/{farmer}/reject', [FarmerController::class, 'rejectRegistration'])->name('farmers.reject');
 
 });

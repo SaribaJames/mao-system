@@ -198,6 +198,58 @@
             </div>
         @endif
 
+        @php
+    $pendingEndorsements = \App\Models\ProgramEndorsement::where('program_id', $program->id)
+        ->where('status', 'pending')
+        ->with(['farmer', 'endorser'])
+        ->get();
+@endphp
+
+@if($pendingEndorsements->count() > 0)
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-5 mb-6">
+    <h3 class="text-base font-semibold text-yellow-800 mb-3">
+        <i class="fa-solid fa-clock mr-1"></i>
+        Pending Endorsements ({{ $pendingEndorsements->count() }})
+    </h3>
+    <div class="space-y-3">
+        @foreach($pendingEndorsements as $endorsement)
+        <div class="flex items-center justify-between bg-white rounded-md border border-yellow-100 px-4 py-3">
+            <div>
+                <p class="font-medium text-gray-800 text-sm">
+                    {{ $endorsement->farmer->first_name }} {{ $endorsement->farmer->surname }}
+                </p>
+                <p class="text-xs text-gray-400">
+                    Endorsed by {{ $endorsement->endorser->name }}
+                    · {{ $endorsement->created_at->format('M d, Y') }}
+                </p>
+                @if($endorsement->notes)
+                <p class="text-xs text-gray-500 mt-0.5">Note: {{ $endorsement->notes }}</p>
+                @endif
+            </div>
+            @if($isAssignedUser && $isUnlocked)
+            <div class="flex items-center gap-2">
+                <form method="POST" action="{{ route('endorsements.approve', $endorsement) }}">
+                    @csrf
+                    <button type="submit"
+                            class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition">
+                        Approve
+                    </button>
+                </form>
+                <form method="POST" action="{{ route('endorsements.reject', $endorsement) }}">
+                    @csrf
+                    <button type="submit"
+                            class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition">
+                        Reject
+                    </button>
+                </form>
+            </div>
+            @endif
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
         <div class="flex items-center justify-between mb-3">
     <h3 class="text-base font-semibold text-gray-800">Activities & Budget Planning</h3>
     <div class="flex items-center gap-2">
