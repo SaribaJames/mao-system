@@ -138,7 +138,8 @@ class FarmerController extends Controller
 
 
         // Save farm parcels (up to 3)
-        if ($request->has('parcel_barangay')) {
+        $farmer->farmParcels()->delete();
+        if ($request->filled('parcel_barangay') || $request->has('parcel_barangay')) {
             foreach ($request->parcel_barangay as $i => $barangay) {
                 if (blank($barangay) && blank($request->parcel_crop[$i] ?? null))
                     continue;
@@ -146,17 +147,17 @@ class FarmerController extends Controller
                     'parcel_number' => $i + 1,
                     'farm_location_barangay' => $barangay,
                     'farm_location_municipality' => $request->parcel_municipality[$i] ?? null,
-                    'total_farm_area_ha' => $request->parcel_area[$i] ?? null,
+                    'total_farm_area_ha' => is_numeric($request->parcel_area[$i] ?? '') ? $request->parcel_area[$i] : null,
                     'within_ancestral_domain' => isset($request->parcel_ancestral[$i]),
                     'agrarian_reform_beneficiary' => isset($request->parcel_arb[$i]),
                     'ownership_document_code' => $request->parcel_doc_code[$i] ?? null,
                     'ownership_type' => $request->parcel_ownership_type[$i] ?? null,
                     'owner_name' => $request->parcel_owner_name[$i] ?? null,
                     'crop_commodity' => $request->parcel_crop[$i] ?? null,
-                    'size_ha' => $request->parcel_size[$i] ?? null,
-                    'no_of_head' => $request->parcel_no_head[$i] ?? null,
-                    'farm_type' => $request->parcel_farm_type[$i] ?? null,
-                    'organic_practitioner' => isset($request->parcel_organic[$i]),
+                    'size_ha' => is_numeric($request->parcel_size[$i] ?? '') ? $request->parcel_size[$i] : null,
+                    'no_of_head' => is_numeric($request->parcel_no_head[$i] ?? '') ? $request->parcel_no_head[$i] : null,
+                    'farm_type' => is_numeric($request->parcel_farm_type[$i] ?? '') ? $request->parcel_farm_type[$i] : null,
+                    'organic_practitioner' => ($request->parcel_organic[$i] ?? '') === 'Y',
                     'remarks' => $request->parcel_remarks[$i] ?? null,
                 ]);
             }
@@ -217,6 +218,31 @@ class FarmerController extends Controller
             ]
         ));
 
+
+        // Save farm parcels — wipe and recreate
+        $farmer->farmParcels()->delete();
+        foreach (($request->parcel_barangay ?? []) as $i => $barangay) {
+            if (blank($barangay) && blank($request->parcel_crop[$i] ?? null))
+                continue;
+            $farmer->farmParcels()->create([
+                'parcel_number' => $i + 1,
+                'farm_location_barangay' => $barangay,
+                'farm_location_municipality' => $request->parcel_municipality[$i] ?? null,
+                'total_farm_area_ha' => is_numeric($request->parcel_area[$i] ?? '') ? $request->parcel_area[$i] : null,
+                'within_ancestral_domain' => isset($request->parcel_ancestral[$i]),
+                'agrarian_reform_beneficiary' => isset($request->parcel_arb[$i]),
+                'ownership_document_code' => $request->parcel_doc_code[$i] ?? null,
+                'ownership_type' => $request->parcel_ownership_type[$i] ?? null,
+                'owner_name' => $request->parcel_owner_name[$i] ?? null,
+                'crop_commodity' => $request->parcel_crop[$i] ?? null,
+                'size_ha' => is_numeric($request->parcel_size[$i] ?? '') ? $request->parcel_size[$i] : null,
+                'no_of_head' => is_numeric($request->parcel_no_head[$i] ?? '') ? $request->parcel_no_head[$i] : null,
+                'farm_type' => is_numeric($request->parcel_farm_type[$i] ?? '') ? $request->parcel_farm_type[$i] : null,
+                'organic_practitioner' => ($request->parcel_organic[$i] ?? '') === 'Y',
+                'remarks' => $request->parcel_remarks[$i] ?? null,
+            ]);
+        }
+
         $this->saveCoconutProfile($request, $farmer);
 
         return redirect()->route('farmers.show', $farmer)
@@ -260,9 +286,9 @@ class FarmerController extends Controller
         };
 
         $mark = function ($x, $y) use ($pdf) {
-            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFont('helvetica', 'B', 7);
             $pdf->SetXY($x, $y);
-            $pdf->Cell(13, 13, 'X', 0, 0, 'C');
+            $pdf->Cell(5.2, 5.0, 'X', 0, 0, 'C');
         };
 
         if ($farmer->enrollment_type === 'new')
@@ -458,39 +484,130 @@ class FarmerController extends Controller
 
         // ═══ PAGE 2 — FARM PARCEL INFORMATION ═══
         $farmer->load('farmParcels');
-        if ($farmer->farmParcels->count() > 0) {
-            $tpl2 = $pdf->importPage(2);
-            $pdf->AddPage();
-            $pdf->useTemplate($tpl2, 0, 0, 595, 893);
+        $tpl2 = $pdf->importPage(2);
+        $pdf->AddPage();
+        $pdf->useTemplate($tpl2, 0, 0, 595, 893);
 
-            $parcelStartY = [85, 285, 485]; // approximate Y positions for parcels 1, 2, 3
+        // Header: No. of Farm Parcels
+        $write(114.5, 22.0, $farmer->farmParcels->count() ?: '', 8);
 
-            foreach ($farmer->farmParcels as $parcel) {
-                $idx = $parcel->parcel_number - 1;
-                $y = $parcelStartY[$idx] ?? ($parcelStartY[0] + $idx * 200);
+        foreach ($farmer->farmParcels as $parcel) {
+            $n = $parcel->parcel_number;
 
-                $write(95, $y, $parcel->farm_location_barangay, 8);
-                $write(95, $y + 14, $parcel->farm_location_municipality, 8);
-                $write(95, $y + 25, $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 4) : '', 8);
-
-                if ($parcel->within_ancestral_domain)
-                    $mark(250, $y + 25);
-                else
-                    $mark(280, $y + 25);
-
-                if ($parcel->agrarian_reform_beneficiary)
-                    $mark(250, $y + 36);
-                else
-                    $mark(280, $y + 36);
-
-                $write(430, $y, $parcel->crop_commodity, 7);
-                $write(490, $y, $parcel->size_ha ? number_format($parcel->size_ha, 4) : '', 7);
-                $write(510, $y, $parcel->no_of_head ?? '', 7);
-                $write(530, $y, $parcel->farm_type ?? '', 7);
-                $write(555, $y, $parcel->organic_practitioner ? 'Y' : 'N', 7);
-                $write(570, $y, $parcel->remarks ?? '', 7);
+            // Each parcel block's base Y — from the extracted coordinates
+            if ($n === 1) {
+                $by = 0; // base offset for parcel 1
+                $farmLocY = 98.3;
+                $munY = 108.7;
+                $areaY = 124.7;
+                $areaX = 142.4;
+                $docY = 144.2;
+                $docX = 136.0;
+                $ancYesY = 137.1;
+                $ancNoY = 137.2;
+                $ancYesX = 179.1;
+                $ancNoX = 220.8;
+                $arbYesY = 156.4;
+                $arbNoY = 156.3;
+                $arbYesX = 179.1;
+                $arbNoX = 221.0;
+                $ownerNameY = 178.3;
+                $ownerNameX = 156.3;
+                $cropY = 96.7;
+                $cropX = 274.1;
+                $sizeX = 346.9;
+                $headX = 386.4;
+                $ftypeX = 426.5;
+                $orgX = 470.6;
+                $remX = 513.4;
+                $farmLocX = 100.0;
+            } elseif ($n === 2) {
+                $farmLocX = 99.7;
+                $farmLocY = 204.7;
+                $munY = 215.4;
+                $areaY = 231.6;
+                $areaX = 142.1;
+                $docY = 250.8;
+                $docX = 136.0;
+                $ancYesY = 243.5;
+                $ancNoY = 243.5;
+                $ancYesX = 179.1;
+                $ancNoX = 220.8;
+                $arbYesY = 262.8;
+                $arbNoY = 262.8;
+                $arbYesX = 179.1;
+                $arbNoX = 221.0;
+                $ownerNameY = 285.8;
+                $ownerNameX = 156.3;
+                $cropY = 224.8;
+                $cropX = 274.2;
+                $sizeX = 346.9;
+                $headX = 386.4;
+                $ftypeX = 426.5;
+                $orgX = 470.6;
+                $remX = 513.4;
+            } elseif ($n === 3) {
+                $farmLocX = 103.5;
+                $farmLocY = 312.2;
+                $munY = 322.2;
+                $areaY = 339.0;
+                $areaX = 145.6;
+                $docY = 358.2;
+                $docX = 138.4;
+                $ancYesY = 351.0;
+                $ancNoY = 351.0;
+                $ancYesX = 179.1;
+                $ancNoX = 220.8;
+                $arbYesY = 370.2;
+                $arbNoY = 370.2;
+                $arbYesX = 179.1;
+                $arbNoX = 221.0;
+                $ownerNameY = 392.8;
+                $ownerNameX = 156.3;
+                $cropY = 330.6;
+                $cropX = 274.1;
+                $sizeX = 346.9;
+                $headX = 386.4;
+                $ftypeX = 426.5;
+                $orgX = 470.6;
+                $remX = 513.4;
+            } else {
+                continue;
             }
+
+            // Farm Location
+            $write($farmLocX, $farmLocY, $parcel->farm_location_barangay ?? '', 7);
+            $write($farmLocX, $munY, $parcel->farm_location_municipality ?? '', 7);
+            $write($areaX, $areaY, $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 4) : '', 7);
+            $write($docX, $docY, $parcel->ownership_document_code ?? '', 7);
+
+            // Ancestral Domain
+            if ($parcel->within_ancestral_domain)
+                $mark($ancYesX, $ancYesY);
+            else
+                $mark($ancNoX, $ancNoY);
+
+            // ARB
+            if ($parcel->agrarian_reform_beneficiary)
+                $mark($arbYesX, $arbYesY);
+            else
+                $mark($arbNoX, $arbNoY);
+
+            // Owner name
+            $write($ownerNameX, $ownerNameY, $parcel->owner_name ?? '', 7);
+
+            // Crop/commodity table row 1
+            $write($cropX, $cropY, $parcel->crop_commodity ?? '', 7);
+            $write($sizeX, $cropY, $parcel->size_ha ? number_format($parcel->size_ha, 4) : '', 7);
+            $write($headX, $cropY, $parcel->no_of_head ?? '', 7);
+            $write($ftypeX, $cropY, $parcel->farm_type ?? '', 7);
+            $write($orgX, $cropY, $parcel->organic_practitioner ? 'Y' : 'N', 7);
+            $write($remX, $cropY, $parcel->remarks ?? '', 7);
         }
+
+        // Signature area
+        $write(31.5, 559.5, now()->format('m/d/Y'), 7);
+        $write(144.5, 559.5, strtoupper($farmer->first_name . ' ' . $farmer->middle_name . ' ' . $farmer->surname), 7);
 
         return response($pdf->Output('Farmer-' . $farmer->reference_number . '.pdf', 'S'), 200)
             ->header('Content-Type', 'application/pdf');

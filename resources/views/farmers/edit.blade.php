@@ -538,7 +538,7 @@
 <input type="text" name="parcel_doc_code[]" value="{{ old('parcel_doc_code.1', $parcel2?->ownership_document_code ?? '') }}" autocomplete="off"
     class="f" style="top:28.09%;left:22.86%;width:2.67%;height:1.00%;font-size:9px;">
 <input type="checkbox" class="cb" style="top:27.33%;left:30.08%;" {{ $parcel2?->within_ancestral_domain ? 'checked' : '' }}>
-<input type="checkbox" class="cb" style="top:27.30%;left:37.12%;" {{ !$parcel2?->within_ancestral_domain ? 'checked' : '' }}>
+<input type="checkbox" class="cb" style="top:27.30%;left:37.12%;" {{ ($parcel2 && !$parcel2->within_ancestral_domain) ? 'checked' : '' }}>
 <input type="checkbox" class="cb" style="top:29.46%;left:30.14%;" {{ $parcel2?->agrarian_reform_beneficiary ? 'checked' : '' }}>
 <input type="checkbox" class="cb" style="top:29.45%;left:37.12%;" {{ !$parcel2?->agrarian_reform_beneficiary ? 'checked' : '' }}>
 <input type="checkbox" class="cb" style="top:31.30%;left:24.31%;">
