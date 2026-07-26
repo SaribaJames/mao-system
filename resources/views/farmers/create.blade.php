@@ -24,6 +24,31 @@
     @endif
 
     <style>
+        input[type="radio"].cb {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 11px;
+            height: 11px;
+            border: 1px solid #333;
+            border-radius: 0;
+            background: #fff;
+            cursor: pointer;
+            position: absolute;
+            margin: 0;
+            padding: 0;
+        }
+
+        input[type="radio"].cb:checked::after {
+            content: "\2713";
+            position: absolute;
+            top: -4px;
+            left: 0;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+        }
+
         .rsbsa-page {
             position: relative;
             width: 850px;
@@ -445,354 +470,254 @@
         </div>
 
         {{-- ══════════════ PAGE 2 — FARM PARCEL INFORMATION ══════════════ --}}
-        <div class="rsbsa-page" style="width:850px;height:1275px;">
-            <img src="{{ asset('images/rsbsa_page-2.jpg') }}" alt="RSBSA Page 2"
-                style="width:100%;height:1275px;display:block;">
+        @php
+            $parcels = isset($farmer) ? $farmer->farmParcels : collect();
+            $pc = [
+                'no_parcels' => ['2.72%', '19.21%', '5.09%', '1.24%'],
+                'rot1' => ['2.55%', '45.83%', '14.54%', '1.24%'],
+                'rot2' => ['2.59%', '63.21%', '14.54%', '1.24%'],
+                'rot3' => ['2.59%', '80.49%', '14.54%', '1.24%'],
+                1 => [
+                    'brgy' => ['11.01%', '16.81%', '27.5%', '1.0%'],
+                    'muni' => ['12.17%', '16.81%', '27.5%', '1.0%'],
+                    'area' => ['13.96%', '23.93%', '2.27%', '1.0%'],
+                    'doc' => ['16.15%', '22.86%', '2.81%', '1.0%'],
+                    'anc_y' => ['15.35%', '30.1%'],
+                    'anc_n' => ['15.36%', '37.11%'],
+                    'arb_y' => ['17.51%', '30.1%'],
+                    'arb_n' => ['17.5%', '37.14%'],
+                    'reg' => ['19.34%', '24.32%'],
+                    'oth' => ['19.32%', '10.37%'],
+                    'ten' => ['20.45%', '10.35%'],
+                    'les' => ['21.66%', '10.37%'],
+                    'oth_t' => ['18.84%', '29.45%', '14.5%', '1.0%'],
+                    'ten_t' => ['19.97%', '26.27%', '17.87%', '1.0%'],
+                    'les_t' => ['21.16%', '26.3%', '17.76%', '1.0%'],
+                    'crop' => ['10.83%', '46.07%', '12.22%', '2.43%'],
+                    'size' => ['10.92%', '58.3%', '6.84%', '2.43%'],
+                    'head' => ['10.9%', '64.94%', '6.84%', '2.43%'],
+                    'ftype' => ['10.95%', '71.68%', '7.26%', '2.4%'],
+                    'org' => ['10.92%', '79.09%', '7.19%', '2.43%'],
+                    'rem' => ['10.86%', '86.29%', '8.99%', '2.43%']
+                ],
+                2 => [
+                    'brgy' => ['22.92%', '16.76%', '27.55%', '1.0%'],
+                    'muni' => ['24.12%', '16.76%', '27.55%', '1.0%'],
+                    'area' => ['25.94%', '23.88%', '2.3%', '1.0%'],
+                    'doc' => ['28.09%', '22.86%', '2.67%', '1.0%'],
+                    'anc_y' => ['27.33%', '30.08%'],
+                    'anc_n' => ['27.3%', '37.13%'],
+                    'arb_y' => ['29.46%', '30.13%'],
+                    'arb_n' => ['29.45%', '37.13%'],
+                    'reg' => ['31.3%', '24.3%'],
+                    'oth' => ['31.28%', '10.39%'],
+                    'ten' => ['32.42%', '10.35%'],
+                    'les' => ['33.61%', '10.35%'],
+                    'oth_t' => ['30.84%', '29.39%', '14.59%', '1.0%'],
+                    'ten_t' => ['32.0%', '26.22%', '18.0%', '1.0%'],
+                    'les_t' => ['33.14%', '26.05%', '18.0%', '1.0%'],
+                    'crop' => ['22.7%', '46.15%', '12.22%', '2.43%'],
+                    'size' => ['22.7%', '58.32%', '6.84%', '2.43%'],
+                    'head' => ['22.79%', '65.09%', '6.57%', '2.36%'],
+                    'ftype' => ['22.78%', '71.7%', '7.26%', '2.4%'],
+                    'org' => ['22.74%', '79.14%', '7.19%', '2.43%'],
+                    'rem' => ['22.75%', '86.39%', '8.99%', '2.43%']
+                ],
+                3 => [
+                    'brgy' => ['34.96%', '17.39%', '27.41%', '0.8%'],
+                    'muni' => ['36.08%', '17.39%', '27.41%', '0.82%'],
+                    'area' => ['37.96%', '24.47%', '2.44%', '0.73%'],
+                    'doc' => ['40.11%', '23.26%', '2.81%', '0.73%'],
+                    'anc_y' => ['39.1%', '30.62%'],
+                    'anc_n' => ['39.09%', '37.65%'],
+                    'arb_y' => ['41.25%', '30.64%'],
+                    'arb_n' => ['41.25%', '37.66%'],
+                    'reg' => ['43.07%', '24.82%'],
+                    'oth' => ['43.06%', '10.89%'],
+                    'ten' => ['44.2%', '10.91%'],
+                    'les' => ['45.39%', '10.91%'],
+                    'oth_t' => ['42.86%', '29.98%', '14.5%', '0.73%'],
+                    'ten_t' => ['44.02%', '26.81%', '17.87%', '0.73%'],
+                    'les_t' => ['45.15%', '26.57%', '18.0%', '0.73%'],
+                    'crop' => ['34.59%', '46.1%', '12.22%', '2.43%'],
+                    'size' => ['34.6%', '58.49%', '6.57%', '2.43%'],
+                    'head' => ['34.66%', '65.13%', '6.57%', '2.36%'],
+                    'ftype' => ['34.65%', '71.73%', '7.26%', '2.4%'],
+                    'org' => ['34.61%', '79.08%', '7.26%', '2.4%'],
+                    'rem' => ['34.65%', '86.37%', '8.99%', '2.43%']
+                ],
+                'sig' => [
+                    'date' => ['62.65%', '5.29%', '17.14%', '1.47%'],
+                    'pname' => ['62.65%', '24.29%', '26.67%', '1.47%'],
+                    'v1' => ['69.41%', '5.43%', '26.59%', '1.47%'],
+                    'v2' => ['69.4%', '34.82%', '29.82%', '1.47%'],
+                    'v3' => ['69.4%', '67.36%', '26.59%', '1.47%'],
+                    'pn1' => ['92.02%', '5.48%', '26.59%', '1.47%'],
+                    'pn2' => ['91.99%', '34.81%', '29.82%', '1.47%'],
+                    'pn3' => ['92.0%', '67.48%', '26.59%', '1.47%']
+                ],
+            ];
+            $box = fn($a) => "top:{$a[0]};left:{$a[1]};width:{$a[2]};height:{$a[3]};";
+            $chk = fn($a) => "top:{$a[0]};left:{$a[1]};";
+        @endphp
 
-            {{-- HEADER: No. of Farm Parcels --}}
-            <input type="text" name="no_of_parcels"
-                value="{{ old('no_of_parcels', isset($farmer) ? $farmer->farmParcels->count() : '') }}" autocomplete="off"
-                class="f" style="top:2.72%;left:19.22%;width:5.09%;height:1.24%;">
+    <div style="position:relative;width:850px;height:1275px;margin:0 auto 24px auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);">
+    <img src="{{ asset('images/rsbsa_page-2.jpg') }}" alt="RSBSA Page 2"
+         style="width:100%;height:1275px;display:block;pointer-events:none;user-select:none;">
 
-            {{-- HEADER: Name of Farmer/s in Rotation P1/P2/P3 --}}
-            <input type="text" name="rotation_p1" value="{{ old('rotation_p1') }}" autocomplete="off" class="f"
-                style="top:2.55%;left:45.84%;width:14.54%;height:1.24%;font-size:9px;">
-            <input type="text" name="rotation_p2" value="{{ old('rotation_p2') }}" autocomplete="off" class="f"
-                style="top:2.58%;left:63.21%;width:14.54%;height:1.24%;font-size:9px;">
-            <input type="text" name="rotation_p3" value="{{ old('rotation_p3') }}" autocomplete="off" class="f"
-                style="top:2.58%;left:80.48%;width:14.54%;height:1.24%;font-size:9px;">
+    <input type="text" name="no_of_parcels" value="{{ old('no_of_parcels', $parcels->count() ?: '') }}"
+        autocomplete="off" class="f" style="{{ $box($pc['no_parcels']) }}">
+    <input type="text" name="rotation_p1" value="{{ old('rotation_p1') }}" autocomplete="off" class="f" style="{{ $box($pc['rot1']) }}font-size:9px;">
+    <input type="text" name="rotation_p2" value="{{ old('rotation_p2') }}" autocomplete="off" class="f" style="{{ $box($pc['rot2']) }}font-size:9px;">
+    <input type="text" name="rotation_p3" value="{{ old('rotation_p3') }}" autocomplete="off" class="f" style="{{ $box($pc['rot3']) }}font-size:9px;">
 
-            {{-- ══ PARCEL 1 ══ --}}
-            {{-- Farm Location Barangay --}}
-            <input type="text" name="parcel_barangay[]"
-                value="{{ old('parcel_barangay.0', isset($farmer) ? ($farmer->farmParcels[0]->farm_location_barangay ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:11.01%;left:16.81%;width:27.50%;height:1.00%;font-size:9px;">
-            {{-- Farm Location City/Muni --}}
-            <input type="text" name="parcel_municipality[]"
-                value="{{ old('parcel_municipality.0', isset($farmer) ? ($farmer->farmParcels[0]->farm_location_municipality ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:12.18%;left:16.81%;width:27.50%;height:1.00%;font-size:9px;">
-            {{-- Total Farm Area --}}
-            <input type="text" name="parcel_area[]"
-                value="{{ old('parcel_area.0', isset($farmer) ? ($farmer->farmParcels[0]->total_farm_area_ha ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:13.97%;left:23.93%;width:2.26%;height:1.00%;font-size:9px;">
-            {{-- Ownership Doc Code --}}
-            <input type="text" name="parcel_doc_code[]"
-                value="{{ old('parcel_doc_code.0', isset($farmer) ? ($farmer->farmParcels[0]->ownership_document_code ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:16.15%;left:22.86%;width:2.80%;height:1.00%;font-size:9px;">
-            {{-- Within Ancestral Domain Yes/No --}}
-            <input type="checkbox" class="cb" name="parcel_ancestral_yes[]" value="1" style="top:15.35%;left:30.10%;" {{ old('parcel_ancestral_yes.0', isset($farmer) && ($farmer->farmParcels[0]->within_ancestral_domain ?? false) ? '1' : '') == '1' ? 'checked' : '' }}>
-            <input type="checkbox" class="cb" name="parcel_ancestral_no[]" value="1" style="top:15.36%;left:37.11%;" {{ old('parcel_ancestral_yes.0', isset($farmer) && ($farmer->farmParcels[0]->within_ancestral_domain ?? false) ? '1' : '') != '1' ? 'checked' : '' }}>
-            {{-- ARB Yes/No --}}
-            <input type="checkbox" class="cb" name="parcel_arb_yes[]" value="1" style="top:17.51%;left:30.10%;" {{ old('parcel_arb_yes.0', isset($farmer) && ($farmer->farmParcels[0]->agrarian_reform_beneficiary ?? false) ? '1' : '') == '1' ? 'checked' : '' }}>
-            <input type="checkbox" class="cb" name="parcel_arb_no[]" value="1" style="top:17.50%;left:37.14%;" {{ old('parcel_arb_yes.0', isset($farmer) && ($farmer->farmParcels[0]->agrarian_reform_beneficiary ?? false) ? '1' : '') != '1' ? 'checked' : '' }}>
-            {{-- Ownership Type --}}
-            <input type="checkbox" class="cb" style="top:19.33%;left:24.32%;"> {{-- Registered Owner --}}
-            <input type="checkbox" class="cb" style="top:19.32%;left:10.37%;"> {{-- Others --}}
-            <input type="checkbox" class="cb" style="top:20.45%;left:10.36%;"> {{-- Tenant --}}
-            <input type="checkbox" class="cb" style="top:21.65%;left:10.37%;"> {{-- Lessee --}}
-            {{-- Owner name (Tenant) --}}
-            <input type="text" name="parcel_owner_name[]"
-                value="{{ old('parcel_owner_name.0', isset($farmer) ? ($farmer->farmParcels[0]->owner_name ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:19.97%;left:26.26%;width:17.86%;height:1.00%;font-size:10px;">
-            <input type="text" class="f" style="top:21.16%;left:26.31%;width:17.77%;height:1.00%;font-size:10px;"> {{--
-            Lessee name --}}
-            <input type="text" class="f" style="top:18.84%;left:29.45%;width:14.50%;height:1.00%;font-size:10px;"> {{--
-            Others specify --}}
-            {{-- Crop rows P1 (5 rows) --}}
-            <input type="text" name="parcel_crop[]"
-                value="{{ old('parcel_crop.0', isset($farmer) ? ($farmer->farmParcels[0]->crop_commodity ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:10.82%;left:46.06%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_size[]"
-                value="{{ old('parcel_size.0', isset($farmer) ? ($farmer->farmParcels[0]->size_ha ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:10.91%;left:58.30%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_no_head[]"
-                value="{{ old('parcel_no_head.0', isset($farmer) ? ($farmer->farmParcels[0]->no_of_head ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:10.90%;left:64.94%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_farm_type[]"
-                value="{{ old('parcel_farm_type.0', isset($farmer) ? ($farmer->farmParcels[0]->farm_type ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:10.95%;left:71.69%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" name="parcel_organic[]"
-                value="{{ old('parcel_organic.0', isset($farmer) ? ($farmer->farmParcels[0]->organic_practitioner ? 'Y' : '') : '') }}"
-                autocomplete="off" class="f" style="top:10.92%;left:79.09%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_remarks[]"
-                value="{{ old('parcel_remarks.0', isset($farmer) ? ($farmer->farmParcels[0]->remarks ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:10.86%;left:86.29%;width:9.00%;height:2.43%;font-size:10px;">
-            {{-- Extra crop rows for parcel 1 (rows 2-5) --}}
-            <input type="text" class="f" style="top:13.24%;left:46.11%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:13.33%;left:58.38%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:13.32%;left:65.12%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:13.35%;left:71.75%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:13.27%;left:79.11%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:13.32%;left:86.39%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:15.69%;left:46.08%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:15.70%;left:58.27%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:15.65%;left:65.05%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:15.62%;left:71.78%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:15.65%;left:79.04%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:15.63%;left:86.21%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:17.99%;left:46.12%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:18.05%;left:58.35%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:17.94%;left:65.10%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:18.02%;left:71.72%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:17.97%;left:79.04%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:17.95%;left:86.31%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:20.38%;left:46.15%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:20.39%;left:58.32%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:20.47%;left:65.07%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:20.42%;left:71.75%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:20.37%;left:79.11%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:20.37%;left:86.35%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:22.70%;left:46.15%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:22.70%;left:58.32%;width:6.83%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:22.79%;left:65.10%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:22.78%;left:71.71%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:22.75%;left:79.14%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:22.75%;left:86.38%;width:9.00%;height:2.43%;font-size:10px;">
-            {{-- Farmer name rows P1 --}}
-            <input type="text" class="f" style="top:22.93%;left:16.76%;width:27.54%;height:1.00%;font-size:10px;">
-            <input type="text" class="f" style="top:24.12%;left:16.76%;width:27.54%;height:1.00%;font-size:10px;">
+    @for ($n = 1; $n <= 3; $n++)
+        @php $p = $parcels->get($n - 1);
+            $i = $n - 1;
+        $g = $pc[$n]; @endphp
 
-            {{-- ══ PARCEL 2 ══ --}}
-            <input type="text" name="parcel_barangay[]"
-                value="{{ old('parcel_barangay.1', isset($farmer) ? ($farmer->farmParcels[1]->farm_location_barangay ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:23.11%;left:16.81%;width:27.50%;height:1.00%;font-size:9px;">
-            <input type="text" name="parcel_municipality[]"
-                value="{{ old('parcel_municipality.1', isset($farmer) ? ($farmer->farmParcels[1]->farm_location_municipality ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:24.28%;left:16.81%;width:27.50%;height:1.00%;font-size:9px;">
-            <input type="text" name="parcel_area[]"
-                value="{{ old('parcel_area.1', isset($farmer) ? ($farmer->farmParcels[1]->total_farm_area_ha ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:25.94%;left:23.89%;width:2.31%;height:1.00%;font-size:9px;">
-            <input type="text" name="parcel_doc_code[]"
-                value="{{ old('parcel_doc_code.1', isset($farmer) ? ($farmer->farmParcels[1]->ownership_document_code ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:28.09%;left:22.86%;width:2.67%;height:1.00%;font-size:9px;">
-            <input type="checkbox" class="cb" style="top:27.33%;left:30.08%;">
-            <input type="checkbox" class="cb" style="top:27.30%;left:37.12%;">
-            <input type="checkbox" class="cb" style="top:29.46%;left:30.14%;">
-            <input type="checkbox" class="cb" style="top:29.45%;left:37.12%;">
-            <input type="checkbox" class="cb" style="top:31.30%;left:24.31%;">
-            <input type="checkbox" class="cb" style="top:31.28%;left:10.38%;">
-            <input type="text" name="parcel_owner_name[]"
-                value="{{ old('parcel_owner_name.1', isset($farmer) ? ($farmer->farmParcels[1]->owner_name ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:32.00%;left:26.22%;width:17.99%;height:1.00%;font-size:10px;">
-            <input type="text" class="f" style="top:33.14%;left:26.04%;width:17.99%;height:1.00%;font-size:10px;">
-            <input type="text" class="f" style="top:30.84%;left:29.40%;width:14.59%;height:1.00%;font-size:10px;">
-            <input type="checkbox" class="cb" style="top:32.41%;left:10.36%;">
-            <input type="checkbox" class="cb" style="top:33.61%;left:10.36%;">
-            <input type="text" name="parcel_crop[]"
-                value="{{ old('parcel_crop.1', isset($farmer) ? ($farmer->farmParcels[1]->crop_commodity ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:25.17%;left:46.08%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_size[]"
-                value="{{ old('parcel_size.1', isset($farmer) ? ($farmer->farmParcels[1]->size_ha ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:25.09%;left:58.40%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_no_head[]"
-                value="{{ old('parcel_no_head.1', isset($farmer) ? ($farmer->farmParcels[1]->no_of_head ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:25.21%;left:65.07%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" name="parcel_farm_type[]"
-                value="{{ old('parcel_farm_type.1', isset($farmer) ? ($farmer->farmParcels[1]->farm_type ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:25.19%;left:71.79%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" name="parcel_organic[]"
-                value="{{ old('parcel_organic.1', isset($farmer) ? ($farmer->farmParcels[1]->organic_practitioner ? 'Y' : '') : '') }}"
-                autocomplete="off" class="f" style="top:25.10%;left:79.07%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_remarks[]"
-                value="{{ old('parcel_remarks.1', isset($farmer) ? ($farmer->farmParcels[1]->remarks ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:25.15%;left:86.30%;width:9.00%;height:2.43%;font-size:10px;">
-            {{-- Extra crop rows parcel 2 --}}
-            <input type="text" class="f" style="top:27.43%;left:46.11%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:27.54%;left:58.43%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:27.52%;left:65.10%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:27.53%;left:71.71%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:27.50%;left:79.06%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:27.49%;left:86.44%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:29.89%;left:46.07%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:29.92%;left:58.46%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:29.94%;left:65.10%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:29.88%;left:71.73%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:29.82%;left:79.10%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:29.88%;left:86.43%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:32.18%;left:46.15%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:32.20%;left:58.43%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:32.28%;left:65.10%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:32.19%;left:71.76%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:32.22%;left:79.08%;width:7.19%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:32.26%;left:86.26%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:34.60%;left:46.10%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:34.60%;left:58.49%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:34.65%;left:65.13%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:34.65%;left:71.73%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:34.61%;left:79.08%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:34.65%;left:86.36%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:34.96%;left:17.39%;width:27.41%;height:0.79%;font-size:10px;">
-            <input type="text" class="f" style="top:36.08%;left:17.39%;width:27.41%;height:0.82%;font-size:10px;">
-            <input type="text" class="f" style="top:36.98%;left:86.26%;width:9.00%;height:2.43%;font-size:10px;">
+        <input type="text" name="parcel_barangay[]" value="{{ old("parcel_barangay.$i", $p?->farm_location_barangay) }}"
+            autocomplete="off" class="f" style="{{ $box($g['brgy']) }}font-size:9px;">
+        <input type="text" name="parcel_municipality[]" value="{{ old("parcel_municipality.$i", $p?->farm_location_municipality) }}"
+            autocomplete="off" class="f" style="{{ $box($g['muni']) }}font-size:9px;">
+        <input type="text" name="parcel_area[]" value="{{ old("parcel_area.$i", $p?->total_farm_area_ha) }}"
+            autocomplete="off" class="f" style="{{ $box($g['area']) }}font-size:9px;">
+        <input type="text" name="parcel_doc_code[]" value="{{ old("parcel_doc_code.$i", $p?->ownership_document_code) }}"
+            autocomplete="off" class="f" style="{{ $box($g['doc']) }}font-size:9px;">
 
-            {{-- ══ PARCEL 3 ══ --}}
-            <input type="text" name="parcel_barangay[]"
-                value="{{ old('parcel_barangay.2', isset($farmer) ? ($farmer->farmParcels[2]->farm_location_barangay ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:35.08%;left:16.81%;width:27.50%;height:1.00%;font-size:9px;">
-            <input type="text" name="parcel_municipality[]"
-                value="{{ old('parcel_municipality.2', isset($farmer) ? ($farmer->farmParcels[2]->farm_location_municipality ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:36.22%;left:16.81%;width:27.50%;height:1.00%;font-size:9px;">
-            <input type="text" name="parcel_area[]"
-                value="{{ old('parcel_area.2', isset($farmer) ? ($farmer->farmParcels[2]->total_farm_area_ha ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:37.96%;left:24.47%;width:2.44%;height:0.73%;font-size:9px;">
-            <input type="text" name="parcel_doc_code[]"
-                value="{{ old('parcel_doc_code.2', isset($farmer) ? ($farmer->farmParcels[2]->ownership_document_code ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:40.11%;left:23.26%;width:2.80%;height:0.73%;font-size:9px;">
-            <input type="checkbox" class="cb" style="top:39.10%;left:30.62%;">
-            <input type="checkbox" class="cb" style="top:39.09%;left:37.65%;">
-            <input type="checkbox" class="cb" style="top:41.25%;left:30.64%;">
-            <input type="checkbox" class="cb" style="top:41.25%;left:37.67%;">
-            <input type="checkbox" class="cb" style="top:43.07%;left:24.82%;">
-            <input type="checkbox" class="cb" style="top:43.06%;left:10.90%;">
-            <input type="text" name="parcel_owner_name[]"
-                value="{{ old('parcel_owner_name.2', isset($farmer) ? ($farmer->farmParcels[2]->owner_name ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:44.02%;left:26.80%;width:17.86%;height:0.73%;font-size:10px;">
-            <input type="text" class="f" style="top:45.15%;left:26.58%;width:17.99%;height:0.73%;font-size:10px;">
-            <input type="text" class="f" style="top:42.86%;left:29.98%;width:14.50%;height:0.73%;font-size:10px;">
-            <input type="checkbox" class="cb" style="top:44.20%;left:10.91%;">
-            <input type="checkbox" class="cb" style="top:45.38%;left:10.90%;">
-            <input type="text" name="parcel_crop[]"
-                value="{{ old('parcel_crop.2', isset($farmer) ? ($farmer->farmParcels[2]->crop_commodity ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:37.03%;left:46.07%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_size[]"
-                value="{{ old('parcel_size.2', isset($farmer) ? ($farmer->farmParcels[2]->size_ha ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:37.04%;left:58.49%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" name="parcel_no_head[]"
-                value="{{ old('parcel_no_head.2', isset($farmer) ? ($farmer->farmParcels[2]->no_of_head ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:37.00%;left:65.05%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" name="parcel_farm_type[]"
-                value="{{ old('parcel_farm_type.2', isset($farmer) ? ($farmer->farmParcels[2]->farm_type ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:37.00%;left:71.73%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" name="parcel_organic[]"
-                value="{{ old('parcel_organic.2', isset($farmer) ? ($farmer->farmParcels[2]->organic_practitioner ? 'Y' : '') : '') }}"
-                autocomplete="off" class="f" style="top:37.02%;left:79.11%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" name="parcel_remarks[]"
-                value="{{ old('parcel_remarks.2', isset($farmer) ? ($farmer->farmParcels[2]->remarks ?? '') : '') }}"
-                autocomplete="off" class="f" style="top:36.98%;left:86.26%;width:9.00%;height:2.43%;font-size:10px;">
-            {{-- Extra crop rows parcel 3 --}}
-            <input type="text" class="f" style="top:39.29%;left:46.12%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:39.40%;left:58.49%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:39.39%;left:65.10%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:39.42%;left:71.76%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:39.36%;left:79.08%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:39.27%;left:86.30%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:41.74%;left:46.15%;width:12.21%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:41.75%;left:58.51%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:41.70%;left:65.07%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:41.73%;left:71.73%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:41.72%;left:79.00%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:41.72%;left:86.23%;width:9.00%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:44.04%;left:46.01%;width:12.48%;height:2.37%;font-size:10px;">
-            <input type="text" class="f" style="top:44.09%;left:58.48%;width:6.57%;height:2.43%;font-size:10px;">
-            <input type="text" class="f" style="top:44.12%;left:65.04%;width:6.57%;height:2.36%;font-size:10px;">
-            <input type="text" class="f" style="top:44.11%;left:71.70%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:44.06%;left:78.97%;width:7.26%;height:2.40%;font-size:10px;">
-            <input type="text" class="f" style="top:44.07%;left:86.25%;width:9.00%;height:2.43%;font-size:10px;">
+        <input type="radio" name="parcel_ancestral[{{ $i }}]" value="1" class="cb" style="{{ $chk($g['anc_y']) }}"
+            {{ old("parcel_ancestral.$i", $p ? ($p->within_ancestral_domain ? '1' : '0') : null) === '1' ? 'checked' : '' }}>
+        <input type="radio" name="parcel_ancestral[{{ $i }}]" value="0" class="cb" style="{{ $chk($g['anc_n']) }}"
+            {{ old("parcel_ancestral.$i", $p ? ($p->within_ancestral_domain ? '1' : '0') : null) === '0' ? 'checked' : '' }}>
 
-            {{-- DECLARATION / SIGNATURE AREA --}}
-            <input type="text" name="p2_date" value="{{ old('p2_date') }}" autocomplete="off" class="f"
-                style="top:62.66%;left:5.29%;width:17.14%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_printed_name"
-                value="{{ old('p2_printed_name', isset($farmer) ? strtoupper($farmer->first_name . ' ' . $farmer->middle_name . ' ' . $farmer->surname) : '') }}"
-                autocomplete="off" class="f" style="top:62.66%;left:24.28%;width:26.67%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_verified_by_1" value="{{ old('p2_verified_by_1') }}" autocomplete="off" class="f"
-                style="top:69.40%;left:5.42%;width:26.59%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_verified_by_2" value="{{ old('p2_verified_by_2') }}" autocomplete="off" class="f"
-                style="top:69.40%;left:34.83%;width:29.82%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_verified_by_3" value="{{ old('p2_verified_by_3') }}" autocomplete="off" class="f"
-                style="top:69.39%;left:67.37%;width:26.59%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_printed_name_barangay" value="{{ old('p2_printed_name_barangay') }}"
-                autocomplete="off" class="f" style="top:92.02%;left:5.48%;width:26.59%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_printed_name_mao" value="{{ old('p2_printed_name_mao') }}" autocomplete="off"
-                class="f" style="top:92.00%;left:34.81%;width:29.82%;height:1.47%;font-size:11px;">
-            <input type="text" name="p2_printed_name_cafc" value="{{ old('p2_printed_name_cafc') }}" autocomplete="off"
-                class="f" style="top:92.00%;left:67.48%;width:26.59%;height:1.47%;font-size:11px;">
+        <input type="radio" name="parcel_arb[{{ $i }}]" value="1" class="cb" style="{{ $chk($g['arb_y']) }}"
+            {{ old("parcel_arb.$i", $p ? ($p->agrarian_reform_beneficiary ? '1' : '0') : null) === '1' ? 'checked' : '' }}>
+        <input type="radio" name="parcel_arb[{{ $i }}]" value="0" class="cb" style="{{ $chk($g['arb_n']) }}"
+            {{ old("parcel_arb.$i", $p ? ($p->agrarian_reform_beneficiary ? '1' : '0') : null) === '0' ? 'checked' : '' }}>
 
-        </div>
+        @php $ot = old("parcel_ownership_type.$i", $p?->ownership_type); @endphp
+        <input type="radio" name="parcel_ownership_type[{{ $i }}]" value="registered_owner" class="cb" style="{{ $chk($g['reg']) }}" {{ $ot === 'registered_owner' ? 'checked' : '' }}>
+        <input type="radio" name="parcel_ownership_type[{{ $i }}]" value="others" class="cb" style="{{ $chk($g['oth']) }}" {{ $ot === 'others' ? 'checked' : '' }}>
+        <input type="radio" name="parcel_ownership_type[{{ $i }}]" value="tenant" class="cb" style="{{ $chk($g['ten']) }}" {{ $ot === 'tenant' ? 'checked' : '' }}>
+        <input type="radio" name="parcel_ownership_type[{{ $i }}]" value="lessee" class="cb" style="{{ $chk($g['les']) }}" {{ $ot === 'lessee' ? 'checked' : '' }}>
 
-        {{-- SUBMIT --}}
-        <div style="width:850px;margin:0 auto 32px auto;display:flex;gap:12px;">
-            <button type="submit"
-                class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-2.5 rounded-md transition text-sm">
-                Register Farmer
-            </button>
-            <a href="{{ route('farmers.index') }}"
-                class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-2.5 rounded-md transition text-sm">
-                Cancel
-            </a>
-        </div>
+        <input type="text" name="parcel_others_specify[]" value="{{ old("parcel_others_specify.$i", $ot === 'others' ? $p?->owner_name : '') }}"
+            autocomplete="off" class="f" style="{{ $box($g['oth_t']) }}font-size:8px;">
+        <input type="text" name="parcel_tenant_name[]" value="{{ old("parcel_tenant_name.$i", $ot === 'tenant' ? $p?->owner_name : '') }}"
+            autocomplete="off" class="f" style="{{ $box($g['ten_t']) }}font-size:8px;">
+        <input type="text" name="parcel_lessee_name[]" value="{{ old("parcel_lessee_name.$i", $ot === 'lessee' ? $p?->owner_name : '') }}"
+            autocomplete="off" class="f" style="{{ $box($g['les_t']) }}font-size:8px;">
 
-    </form>
+        <input type="text" name="parcel_crop[]" value="{{ old("parcel_crop.$i", $p?->crop_commodity) }}"
+            autocomplete="off" class="f" style="{{ $box($g['crop']) }}font-size:9px;">
+        <input type="text" name="parcel_size[]" value="{{ old("parcel_size.$i", $p?->size_ha) }}"
+            autocomplete="off" class="f" style="{{ $box($g['size']) }}font-size:9px;">
+        <input type="text" name="parcel_no_head[]" value="{{ old("parcel_no_head.$i", $p?->no_of_head) }}"
+            autocomplete="off" class="f" style="{{ $box($g['head']) }}font-size:9px;">
+        <input type="text" name="parcel_farm_type[]" value="{{ old("parcel_farm_type.$i", $p?->farm_type) }}"
+            autocomplete="off" class="f" style="{{ $box($g['ftype']) }}font-size:9px;" placeholder="1-3">
+        <input type="text" name="parcel_organic[]" value="{{ old("parcel_organic.$i", $p ? ($p->organic_practitioner ? 'Y' : 'N') : '') }}"
+            autocomplete="off" class="f" style="{{ $box($g['org']) }}font-size:9px;" placeholder="Y/N">
+        <input type="text" name="parcel_remarks[]" value="{{ old("parcel_remarks.$i", $p?->remarks) }}"
+            autocomplete="off" class="f" style="{{ $box($g['rem']) }}font-size:8px;">
+    @endfor
 
-    <script>
-        document.querySelectorAll('.edu-cb').forEach(cb => cb.addEventListener('change', () => {
-            document.querySelectorAll('.edu-cb').forEach(o => { if (o !== cb) o.checked = false; });
-            document.getElementById('edu_h').value = cb.checked ? cb.dataset.val : '';
-        }));
-        document.querySelectorAll('.cs-cb').forEach(cb => cb.addEventListener('change', () => {
-            document.querySelectorAll('.cs-cb').forEach(o => { if (o !== cb) o.checked = false; });
-            document.getElementById('cs_h').value = cb.checked ? cb.dataset.val : '';
-        }));
-        document.querySelectorAll('.lh-cb').forEach(cb => cb.addEventListener('change', () => {
-            document.querySelectorAll('.lh-cb').forEach(o => { if (o !== cb) o.checked = false; });
-            document.getElementById('lh_h').value = cb.checked ? cb.dataset.val : '';
-        }));
-        document.querySelectorAll('.rel-cb').forEach(cb => cb.addEventListener('change', () => {
-            document.querySelectorAll('.rel-cb').forEach(o => { if (o !== cb) o.checked = false; });
-            document.getElementById('religion_h').value = cb.checked ? cb.dataset.val : '';
-            document.getElementById('religionOther').style.display = (cb.checked && cb.dataset.val === 'others') ? 'block' : 'none';
-        }));
+    <input type="text" name="p2_date" value="{{ old('p2_date') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['date']) }}font-size:9px;">
+    <input type="text" name="p2_printed_name"
+        value="{{ old('p2_printed_name', isset($farmer) ? strtoupper(trim($farmer->first_name . ' ' . $farmer->middle_name . ' ' . $farmer->surname)) : '') }}"
+        autocomplete="off" class="f" style="{{ $box($pc['sig']['pname']) }}font-size:9px;">
+    <input type="text" name="p2_verified_by_1" value="{{ old('p2_verified_by_1') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['v1']) }}font-size:9px;">
+    <input type="text" name="p2_verified_by_2" value="{{ old('p2_verified_by_2') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['v2']) }}font-size:9px;">
+    <input type="text" name="p2_verified_by_3" value="{{ old('p2_verified_by_3') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['v3']) }}font-size:9px;">
+    <input type="text" name="p2_printed_name_barangay" value="{{ old('p2_printed_name_barangay') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['pn1']) }}font-size:8px;">
+    <input type="text" name="p2_printed_name_mao" value="{{ old('p2_printed_name_mao') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['pn2']) }}font-size:8px;">
+    <input type="text" name="p2_printed_name_cafc" value="{{ old('p2_printed_name_cafc') }}" autocomplete="off" class="f" style="{{ $box($pc['sig']['pn3']) }}font-size:8px;">
 
-        function mkDig(sel, hiddenId) {
-            const bs = Array.from(document.querySelectorAll(sel));
-            bs.forEach((b, i) => {
-                b.addEventListener('input', () => { b.value = b.value.replace(/\D/g, ''); if (b.value && i < bs.length - 1) bs[i + 1].focus(); });
-                b.addEventListener('keydown', e => { if (e.key === 'Backspace' && !b.value && i > 0) bs[i - 1].focus(); });
+    </div>
+
+            {{-- SUBMIT --}}
+            <div style="width:850px;margin:0 auto 32px auto;display:flex;gap:12px;">
+                <button type="submit"
+                    class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-2.5 rounded-md transition text-sm">
+                    Register Farmer
+                </button>
+                <a href="{{ route('farmers.index') }}"
+                    class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-2.5 rounded-md transition text-sm">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+        <script>
+            document.querySelectorAll('.edu-cb').forEach(cb => cb.addEventListener('change', () => {
+                document.querySelectorAll('.edu-cb').forEach(o => { if (o !== cb) o.checked = false; });
+                document.getElementById('edu_h').value = cb.checked ? cb.dataset.val : '';
+            }));
+            document.querySelectorAll('.cs-cb').forEach(cb => cb.addEventListener('change', () => {
+                document.querySelectorAll('.cs-cb').forEach(o => { if (o !== cb) o.checked = false; });
+                document.getElementById('cs_h').value = cb.checked ? cb.dataset.val : '';
+            }));
+            document.querySelectorAll('.lh-cb').forEach(cb => cb.addEventListener('change', () => {
+                document.querySelectorAll('.lh-cb').forEach(o => { if (o !== cb) o.checked = false; });
+                document.getElementById('lh_h').value = cb.checked ? cb.dataset.val : '';
+            }));
+            document.querySelectorAll('.rel-cb').forEach(cb => cb.addEventListener('change', () => {
+                document.querySelectorAll('.rel-cb').forEach(o => { if (o !== cb) o.checked = false; });
+                document.getElementById('religion_h').value = cb.checked ? cb.dataset.val : '';
+                document.getElementById('religionOther').style.display = (cb.checked && cb.dataset.val === 'others') ? 'block' : 'none';
+            }));
+
+            function mkDig(sel, hiddenId) {
+                const bs = Array.from(document.querySelectorAll(sel));
+                bs.forEach((b, i) => {
+                    b.addEventListener('input', () => { b.value = b.value.replace(/\D/g, ''); if (b.value && i < bs.length - 1) bs[i + 1].focus(); });
+                    b.addEventListener('keydown', e => { if (e.key === 'Backspace' && !b.value && i > 0) bs[i - 1].focus(); });
+                });
+                document.getElementById('farmerForm').addEventListener('submit', () => {
+                    document.getElementById(hiddenId).value = bs.map(b => b.value).join('');
+                });
+                return bs;
+            }
+            mkDig('.mob-d', 'mobH');
+            mkDig('.land-d', 'landH');
+            mkDig('.con-d', 'conH');
+            mkDig('.dateadmin-d', 'dateAdminH');
+            mkDig('.refnum-d', 'refH');
+            const dobBoxes = mkDig('.dob-d', 'dobH');
+            document.getElementById('farmerForm').addEventListener('submit', () => {
+                const v = dobBoxes.map(b => b.value).join('');
+                if (v.length === 8) document.getElementById('dobH').value = `${v.slice(4, 8)}-${v.slice(0, 2)}-${v.slice(2, 4)}`;
             });
             document.getElementById('farmerForm').addEventListener('submit', () => {
-                document.getElementById(hiddenId).value = bs.map(b => b.value).join('');
+                const p1 = document.getElementById('pob1').value;
+                const p2 = document.getElementById('pob2').value;
+                const p3 = document.getElementById('pob3').value;
+                document.getElementById('pobH').value = [p1, p2, p3].filter(Boolean).join(', ');
             });
-            return bs;
-        }
-        mkDig('.mob-d', 'mobH');
-        mkDig('.land-d', 'landH');
-        mkDig('.con-d', 'conH');
-        mkDig('.dateadmin-d', 'dateAdminH');
-        mkDig('.refnum-d', 'refH');
-        const dobBoxes = mkDig('.dob-d', 'dobH');
-        document.getElementById('farmerForm').addEventListener('submit', () => {
-            const v = dobBoxes.map(b => b.value).join('');
-            if (v.length === 8) document.getElementById('dobH').value = `${v.slice(4, 8)}-${v.slice(0, 2)}-${v.slice(2, 4)}`;
-        });
-        document.getElementById('farmerForm').addEventListener('submit', () => {
-            const p1 = document.getElementById('pob1').value;
-            const p2 = document.getElementById('pob2').value;
-            const p3 = document.getElementById('pob3').value;
-            document.getElementById('pobH').value = [p1, p2, p3].filter(Boolean).join(', ');
-        });
 
-        document.getElementById('photoInput').addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = document.getElementById('photoPreview');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+            document.getElementById('photoInput').addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = document.getElementById('photoPreview');
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            function syncStub() {
+                document.getElementById('stubSurname').value = document.getElementById('mainSurname').value;
+                document.getElementById('stubFirstName').value = document.getElementById('mainFirstName').value;
+                document.getElementById('stubMiddleName').value = document.getElementById('mainMiddleName').value;
+                document.getElementById('stubExtName').value = document.getElementById('mainExtName').value;
             }
-        });
-
-        function syncStub() {
-            document.getElementById('stubSurname').value = document.getElementById('mainSurname').value;
-            document.getElementById('stubFirstName').value = document.getElementById('mainFirstName').value;
-            document.getElementById('stubMiddleName').value = document.getElementById('mainMiddleName').value;
-            document.getElementById('stubExtName').value = document.getElementById('mainExtName').value;
-        }
-        ['mainSurname', 'mainFirstName', 'mainMiddleName', 'mainExtName'].forEach(id => {
-            document.getElementById(id).addEventListener('input', syncStub);
-        });
-    </script>
+            ['mainSurname', 'mainFirstName', 'mainMiddleName', 'mainExtName'].forEach(id => {
+                document.getElementById(id).addEventListener('input', syncStub);
+            });
+        </script>
 
 @endsection

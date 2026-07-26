@@ -137,31 +137,7 @@ class FarmerController extends Controller
         $this->saveCoconutProfile($request, $farmer);
 
 
-        // Save farm parcels (up to 3)
-        $farmer->farmParcels()->delete();
-        if ($request->filled('parcel_barangay') || $request->has('parcel_barangay')) {
-            foreach ($request->parcel_barangay as $i => $barangay) {
-                if (blank($barangay) && blank($request->parcel_crop[$i] ?? null))
-                    continue;
-                $farmer->farmParcels()->create([
-                    'parcel_number' => $i + 1,
-                    'farm_location_barangay' => $barangay,
-                    'farm_location_municipality' => $request->parcel_municipality[$i] ?? null,
-                    'total_farm_area_ha' => is_numeric($request->parcel_area[$i] ?? '') ? $request->parcel_area[$i] : null,
-                    'within_ancestral_domain' => isset($request->parcel_ancestral[$i]),
-                    'agrarian_reform_beneficiary' => isset($request->parcel_arb[$i]),
-                    'ownership_document_code' => $request->parcel_doc_code[$i] ?? null,
-                    'ownership_type' => $request->parcel_ownership_type[$i] ?? null,
-                    'owner_name' => $request->parcel_owner_name[$i] ?? null,
-                    'crop_commodity' => $request->parcel_crop[$i] ?? null,
-                    'size_ha' => is_numeric($request->parcel_size[$i] ?? '') ? $request->parcel_size[$i] : null,
-                    'no_of_head' => is_numeric($request->parcel_no_head[$i] ?? '') ? $request->parcel_no_head[$i] : null,
-                    'farm_type' => is_numeric($request->parcel_farm_type[$i] ?? '') ? $request->parcel_farm_type[$i] : null,
-                    'organic_practitioner' => ($request->parcel_organic[$i] ?? '') === 'Y',
-                    'remarks' => $request->parcel_remarks[$i] ?? null,
-                ]);
-            }
-        }
+        $this->saveFarmParcels($request, $farmer);
 
         return redirect()->route('farmers.index')
             ->with('success', "Farmer {$farmer->full_name} registered successfully!");
@@ -218,32 +194,9 @@ class FarmerController extends Controller
             ]
         ));
 
-
-        // Save farm parcels — wipe and recreate
-        $farmer->farmParcels()->delete();
-        foreach (($request->parcel_barangay ?? []) as $i => $barangay) {
-            if (blank($barangay) && blank($request->parcel_crop[$i] ?? null))
-                continue;
-            $farmer->farmParcels()->create([
-                'parcel_number' => $i + 1,
-                'farm_location_barangay' => $barangay,
-                'farm_location_municipality' => $request->parcel_municipality[$i] ?? null,
-                'total_farm_area_ha' => is_numeric($request->parcel_area[$i] ?? '') ? $request->parcel_area[$i] : null,
-                'within_ancestral_domain' => isset($request->parcel_ancestral[$i]),
-                'agrarian_reform_beneficiary' => isset($request->parcel_arb[$i]),
-                'ownership_document_code' => $request->parcel_doc_code[$i] ?? null,
-                'ownership_type' => $request->parcel_ownership_type[$i] ?? null,
-                'owner_name' => $request->parcel_owner_name[$i] ?? null,
-                'crop_commodity' => $request->parcel_crop[$i] ?? null,
-                'size_ha' => is_numeric($request->parcel_size[$i] ?? '') ? $request->parcel_size[$i] : null,
-                'no_of_head' => is_numeric($request->parcel_no_head[$i] ?? '') ? $request->parcel_no_head[$i] : null,
-                'farm_type' => is_numeric($request->parcel_farm_type[$i] ?? '') ? $request->parcel_farm_type[$i] : null,
-                'organic_practitioner' => ($request->parcel_organic[$i] ?? '') === 'Y',
-                'remarks' => $request->parcel_remarks[$i] ?? null,
-            ]);
-        }
-
         $this->saveCoconutProfile($request, $farmer);
+
+        $this->saveFarmParcels($request, $farmer);
 
         return redirect()->route('farmers.show', $farmer)
             ->with('success', 'Farmer record updated successfully!');
@@ -255,6 +208,7 @@ class FarmerController extends Controller
         return redirect()->route('farmers.index')
             ->with('success', 'Farmer record deleted successfully!');
     }
+
 
     public function print(Farmer $farmer)
     {
@@ -286,9 +240,9 @@ class FarmerController extends Controller
         };
 
         $mark = function ($x, $y) use ($pdf) {
-            $pdf->SetFont('helvetica', 'B', 7);
+            $pdf->SetFont('helvetica', 'B', 9);
             $pdf->SetXY($x, $y);
-            $pdf->Cell(5.2, 5.0, 'X', 0, 0, 'C');
+            $pdf->Cell(13, 13, 'X', 0, 0, 'C');
         };
 
         if ($farmer->enrollment_type === 'new')
@@ -484,135 +438,186 @@ class FarmerController extends Controller
 
         // ═══ PAGE 2 — FARM PARCEL INFORMATION ═══
         $farmer->load('farmParcels');
+
+        $mark2 = function ($x, $y) use ($pdf) {
+            $pdf->SetFont('helvetica', 'B', 7);
+            $pdf->SetXY($x - 0.4, $y - 1.6);
+            $pdf->Cell(6.0, 8.0, 'X', 0, 0, 'C');
+        };
+
+        $P2 = [
+            'no_parcels' => [114.3, 24.3],
+            1 => [
+                'brgy' => [100.0, 98.3],
+                'muni' => [100.0, 108.7],
+                'area' => [142.4, 124.7],
+                'doc' => [136.0, 144.2],
+                'anc_y' => [179.1, 137.1],
+                'anc_n' => [220.8, 137.2],
+                'arb_y' => [179.1, 156.4],
+                'arb_n' => [221.0, 156.3],
+                'reg' => [144.7, 172.7],
+                'oth' => [61.7, 172.5],
+                'ten' => [61.6, 182.6],
+                'les' => [61.7, 193.4],
+                'oth_t' => [175.2, 168.2],
+                'ten_t' => [156.3, 178.3],
+                'les_t' => [156.5, 189.0],
+                'crop' => [274.1, 96.7],
+                'size' => [346.9, 97.5],
+                'head' => [386.4, 97.3],
+                'ftype' => [426.5, 97.8],
+                'org' => [470.6, 97.5],
+                'rem' => [513.4, 97.0]
+            ],
+            2 => [
+                'brgy' => [99.7, 204.7],
+                'muni' => [99.7, 215.4],
+                'area' => [142.1, 231.6],
+                'doc' => [136.0, 250.8],
+                'anc_y' => [179.0, 244.1],
+                'anc_n' => [220.9, 243.8],
+                'arb_y' => [179.3, 263.1],
+                'arb_n' => [220.9, 263.0],
+                'reg' => [144.6, 279.5],
+                'oth' => [61.8, 279.3],
+                'ten' => [61.6, 289.5],
+                'les' => [61.6, 300.1],
+                'oth_t' => [174.9, 275.4],
+                'ten_t' => [156.0, 285.8],
+                'les_t' => [155.0, 295.9],
+                'crop' => [274.6, 202.7],
+                'size' => [347.0, 202.7],
+                'head' => [387.3, 203.5],
+                'ftype' => [426.6, 203.4],
+                'org' => [470.9, 203.1],
+                'rem' => [514.0, 203.2]
+            ],
+            3 => [
+                'brgy' => [103.5, 312.2],
+                'muni' => [103.5, 322.2],
+                'area' => [145.6, 339.0],
+                'doc' => [138.4, 358.2],
+                'anc_y' => [182.2, 349.2],
+                'anc_n' => [224.0, 349.1],
+                'arb_y' => [182.3, 368.4],
+                'arb_n' => [224.1, 368.4],
+                'reg' => [147.7, 384.6],
+                'oth' => [64.8, 384.5],
+                'ten' => [64.9, 394.7],
+                'les' => [64.9, 405.3],
+                'oth_t' => [178.4, 382.7],
+                'ten_t' => [159.5, 393.1],
+                'les_t' => [158.1, 403.2],
+                'crop' => [274.3, 308.9],
+                'size' => [348.0, 309.0],
+                'head' => [387.5, 309.5],
+                'ftype' => [426.8, 309.4],
+                'org' => [470.5, 309.1],
+                'rem' => [513.9, 309.4]
+            ],
+            'date' => [31.5, 559.5],
+            'pname' => [144.5, 559.5],
+        ];
+
         $tpl2 = $pdf->importPage(2);
         $pdf->AddPage();
         $pdf->useTemplate($tpl2, 0, 0, 595, 893);
 
-        // Header: No. of Farm Parcels
-        $write(114.5, 22.0, $farmer->farmParcels->count() ?: '', 8);
+        if ($farmer->farmParcels->count() > 0) {
+            $write($P2['no_parcels'][0], $P2['no_parcels'][1], $farmer->farmParcels->count(), 8);
+        }
 
         foreach ($farmer->farmParcels as $parcel) {
             $n = $parcel->parcel_number;
-
-            // Each parcel block's base Y — from the extracted coordinates
-            if ($n === 1) {
-                $by = 0; // base offset for parcel 1
-                $farmLocY = 98.3;
-                $munY = 108.7;
-                $areaY = 124.7;
-                $areaX = 142.4;
-                $docY = 144.2;
-                $docX = 136.0;
-                $ancYesY = 137.1;
-                $ancNoY = 137.2;
-                $ancYesX = 179.1;
-                $ancNoX = 220.8;
-                $arbYesY = 156.4;
-                $arbNoY = 156.3;
-                $arbYesX = 179.1;
-                $arbNoX = 221.0;
-                $ownerNameY = 178.3;
-                $ownerNameX = 156.3;
-                $cropY = 96.7;
-                $cropX = 274.1;
-                $sizeX = 346.9;
-                $headX = 386.4;
-                $ftypeX = 426.5;
-                $orgX = 470.6;
-                $remX = 513.4;
-                $farmLocX = 100.0;
-            } elseif ($n === 2) {
-                $farmLocX = 99.7;
-                $farmLocY = 204.7;
-                $munY = 215.4;
-                $areaY = 231.6;
-                $areaX = 142.1;
-                $docY = 250.8;
-                $docX = 136.0;
-                $ancYesY = 243.5;
-                $ancNoY = 243.5;
-                $ancYesX = 179.1;
-                $ancNoX = 220.8;
-                $arbYesY = 262.8;
-                $arbNoY = 262.8;
-                $arbYesX = 179.1;
-                $arbNoX = 221.0;
-                $ownerNameY = 285.8;
-                $ownerNameX = 156.3;
-                $cropY = 224.8;
-                $cropX = 274.2;
-                $sizeX = 346.9;
-                $headX = 386.4;
-                $ftypeX = 426.5;
-                $orgX = 470.6;
-                $remX = 513.4;
-            } elseif ($n === 3) {
-                $farmLocX = 103.5;
-                $farmLocY = 312.2;
-                $munY = 322.2;
-                $areaY = 339.0;
-                $areaX = 145.6;
-                $docY = 358.2;
-                $docX = 138.4;
-                $ancYesY = 351.0;
-                $ancNoY = 351.0;
-                $ancYesX = 179.1;
-                $ancNoX = 220.8;
-                $arbYesY = 370.2;
-                $arbNoY = 370.2;
-                $arbYesX = 179.1;
-                $arbNoX = 221.0;
-                $ownerNameY = 392.8;
-                $ownerNameX = 156.3;
-                $cropY = 330.6;
-                $cropX = 274.1;
-                $sizeX = 346.9;
-                $headX = 386.4;
-                $ftypeX = 426.5;
-                $orgX = 470.6;
-                $remX = 513.4;
-            } else {
+            if (!isset($P2[$n]))
                 continue;
+            $g = $P2[$n];
+
+            $write($g['brgy'][0], $g['brgy'][1], $parcel->farm_location_barangay, 7);
+            $write($g['muni'][0], $g['muni'][1], $parcel->farm_location_municipality, 7);
+            $write($g['area'][0], $g['area'][1], $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 2) : '', 7);
+            $write($g['doc'][0], $g['doc'][1], $parcel->ownership_document_code, 7);
+
+            $parcel->within_ancestral_domain
+                ? $mark2($g['anc_y'][0], $g['anc_y'][1])
+                : $mark2($g['anc_n'][0], $g['anc_n'][1]);
+
+            $parcel->agrarian_reform_beneficiary
+                ? $mark2($g['arb_y'][0], $g['arb_y'][1])
+                : $mark2($g['arb_n'][0], $g['arb_n'][1]);
+
+            switch ($parcel->ownership_type) {
+                case 'registered_owner':
+                    $mark2($g['reg'][0], $g['reg'][1]);
+                    break;
+                case 'others':
+                    $mark2($g['oth'][0], $g['oth'][1]);
+                    $write($g['oth_t'][0], $g['oth_t'][1], $parcel->owner_name, 7);
+                    break;
+                case 'tenant':
+                    $mark2($g['ten'][0], $g['ten'][1]);
+                    $write($g['ten_t'][0], $g['ten_t'][1], $parcel->owner_name, 7);
+                    break;
+                case 'lessee':
+                    $mark2($g['les'][0], $g['les'][1]);
+                    $write($g['les_t'][0], $g['les_t'][1], $parcel->owner_name, 7);
+                    break;
             }
 
-            // Farm Location
-            $write($farmLocX, $farmLocY, $parcel->farm_location_barangay ?? '', 7);
-            $write($farmLocX, $munY, $parcel->farm_location_municipality ?? '', 7);
-            $write($areaX, $areaY, $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 4) : '', 7);
-            $write($docX, $docY, $parcel->ownership_document_code ?? '', 7);
-
-            // Ancestral Domain
-            if ($parcel->within_ancestral_domain)
-                $mark($ancYesX, $ancYesY);
-            else
-                $mark($ancNoX, $ancNoY);
-
-            // ARB
-            if ($parcel->agrarian_reform_beneficiary)
-                $mark($arbYesX, $arbYesY);
-            else
-                $mark($arbNoX, $arbNoY);
-
-            // Owner name
-            $write($ownerNameX, $ownerNameY, $parcel->owner_name ?? '', 7);
-
-            // Crop/commodity table row 1
-            $write($cropX, $cropY, $parcel->crop_commodity ?? '', 7);
-            $write($sizeX, $cropY, $parcel->size_ha ? number_format($parcel->size_ha, 4) : '', 7);
-            $write($headX, $cropY, $parcel->no_of_head ?? '', 7);
-            $write($ftypeX, $cropY, $parcel->farm_type ?? '', 7);
-            $write($orgX, $cropY, $parcel->organic_practitioner ? 'Y' : 'N', 7);
-            $write($remX, $cropY, $parcel->remarks ?? '', 7);
+            $write($g['crop'][0], $g['crop'][1], $parcel->crop_commodity, 7);
+            $write($g['size'][0], $g['size'][1], $parcel->size_ha ? number_format($parcel->size_ha, 2) : '', 7);
+            $write($g['head'][0], $g['head'][1], $parcel->no_of_head, 7);
+            $write($g['ftype'][0], $g['ftype'][1], $parcel->farm_type, 7);
+            $write($g['org'][0], $g['org'][1], $parcel->organic_practitioner ? 'Y' : 'N', 7);
+            $write($g['rem'][0], $g['rem'][1], $parcel->remarks, 7);
         }
 
-        // Signature area
-        $write(31.5, 559.5, now()->format('m/d/Y'), 7);
-        $write(144.5, 559.5, strtoupper($farmer->first_name . ' ' . $farmer->middle_name . ' ' . $farmer->surname), 7);
+        $write($P2['date'][0], $P2['date'][1], now()->format('m/d/Y'), 7);
+        $write($P2['pname'][0], $P2['pname'][1], strtoupper(trim($farmer->first_name . ' ' . $farmer->middle_name . ' ' . $farmer->surname)), 7);
 
         return response($pdf->Output('Farmer-' . $farmer->reference_number . '.pdf', 'S'), 200)
             ->header('Content-Type', 'application/pdf');
     }
 
+
+    protected function saveFarmParcels(Request $request, Farmer $farmer): void
+    {
+        $farmer->farmParcels()->delete();
+
+        foreach (($request->parcel_barangay ?? []) as $i => $barangay) {
+            $crop = $request->parcel_crop[$i] ?? null;
+            if (blank($barangay) && blank($crop))
+                continue;
+
+            $type = $request->parcel_ownership_type[$i] ?? null;
+            $ownerName = match ($type) {
+                'tenant' => $request->parcel_tenant_name[$i] ?? null,
+                'lessee' => $request->parcel_lessee_name[$i] ?? null,
+                'others' => $request->parcel_others_specify[$i] ?? null,
+                default => null,
+            };
+            $num = fn($v) => is_numeric($v) ? $v : null;
+
+            $farmer->farmParcels()->create([
+                'parcel_number' => $i + 1,
+                'farm_location_barangay' => $barangay,
+                'farm_location_municipality' => $request->parcel_municipality[$i] ?? null,
+                'total_farm_area_ha' => $num($request->parcel_area[$i] ?? null),
+                'within_ancestral_domain' => ($request->parcel_ancestral[$i] ?? null) === '1',
+                'agrarian_reform_beneficiary' => ($request->parcel_arb[$i] ?? null) === '1',
+                'ownership_document_code' => $request->parcel_doc_code[$i] ?? null,
+                'ownership_type' => $type,
+                'owner_name' => $ownerName,
+                'crop_commodity' => $crop,
+                'size_ha' => $num($request->parcel_size[$i] ?? null),
+                'no_of_head' => $num($request->parcel_no_head[$i] ?? null),
+                'farm_type' => $num($request->parcel_farm_type[$i] ?? null),
+                'organic_practitioner' => strtoupper(trim($request->parcel_organic[$i] ?? '')) === 'Y',
+                'remarks' => $request->parcel_remarks[$i] ?? null,
+            ]);
+        }
+    }
     /**
      * Saves the Page 2 coconut supplement (single-value profile fields) plus
      * its two repeatable-row tables (coconut trees, farm incomes/expenses).
