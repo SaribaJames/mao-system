@@ -719,7 +719,7 @@
             </div>
 
             <div id="add-activity-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-                <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-semibold text-gray-800">Add Activity — {{ $program->name }}</h3>
                         <button onclick="document.getElementById('add-activity-modal').classList.add('hidden')"

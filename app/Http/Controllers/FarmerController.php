@@ -13,14 +13,24 @@ class FarmerController extends Controller
     {
         $query = Farmer::with('barangay');
 
-        // Barangay user can only see their own barangay's farmers
         if (Auth::user()->isBarangayUser()) {
+            // Barangay user can only see their own barangay's farmers,
+            // and can filter by registration status via tabs (default: all)
             $barangayId = Auth::user()->barangayAccount?->barangay_id;
             if ($barangayId) {
                 $query->where('barangay_id', $barangayId);
             } else {
                 $query->whereRaw('1 = 0');
             }
+
+            if ($request->status && in_array($request->status, ['pending', 'approved', 'rejected'])) {
+                $query->where('registration_status', $request->status);
+            }
+        } else {
+            // Admin/staff only see approved farmers in the official registry.
+            // Pending/rejected registrations are reviewed separately via
+            // the Pending Registrations page.
+            $query->where('registration_status', 'approved');
         }
 
         // Search
@@ -269,9 +279,9 @@ class FarmerController extends Controller
             }
         }
 
-        $write(60.5, 172.5, strtoupper($farmer->surname));
-        $write(320.5, 172.5, strtoupper($farmer->first_name));
-        $write(60.5, 200.5, strtoupper($farmer->middle_name));
+        $write(137.5, 172.5, strtoupper($farmer->surname));
+        $write(402.5, 172.5, strtoupper($farmer->first_name));
+        $write(137.5, 200.5, strtoupper($farmer->middle_name));
         $write(320.5, 200.5, strtoupper($farmer->extension_name));
 
         if ($farmer->sex === 'male')

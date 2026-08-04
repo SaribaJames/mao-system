@@ -11,9 +11,10 @@
         @if(Auth::user()->isAdmin())
         @php $pendingCount = \App\Models\Farmer::where('registration_status', 'pending')->count(); @endphp
         @if($pendingCount > 0)
-        <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1">
+        <a href="{{ route('farmers.pending') }}"
+           class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-yellow-200 transition">
             <i class="fa-solid fa-clock"></i> {{ $pendingCount }} Pending
-        </span>
+        </a>
         @endif
         @endif
         @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff' || Auth::user()->isBarangayUser())
@@ -31,9 +32,34 @@
     </div>
 @endif
 
+@if(Auth::user()->isBarangayUser())
+{{-- Status tabs — barangay reps see their own Pending/Approved/Rejected separately --}}
+<div class="flex items-center gap-2 mb-4">
+    <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}"
+       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ !request('status') ? 'bg-primary text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+        All
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['status' => 'pending']) }}"
+       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ request('status') === 'pending' ? 'bg-primary text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+        Pending
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['status' => 'approved']) }}"
+       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ request('status') === 'approved' ? 'bg-primary text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+        Approved
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['status' => 'rejected']) }}"
+       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ request('status') === 'rejected' ? 'bg-primary text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+        Rejected
+    </a>
+</div>
+@endif
+
 {{-- Search / Filter --}}
 <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
     <form method="GET" class="flex gap-3">
+        @if(Auth::user()->isBarangayUser() && request('status'))
+        <input type="hidden" name="status" value="{{ request('status') }}">
+        @endif
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Search by name..."
                class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
@@ -118,14 +144,10 @@
                     </form>
                     <button onclick="document.getElementById('reject-modal-{{ $farmer->id }}').classList.remove('hidden')"
                             class="text-red-500 hover:underline text-xs font-medium ml-2">Reject</button>
-                    @endif
-                </td>
-            </tr>
 
-            {{-- Reject Modal — inside the loop so $farmer is always defined --}}
-            @if(Auth::user()->isAdmin() && ($farmer->registration_status ?? 'approved') === 'pending')
-            <tr class="hidden">
-                <td>
+                    {{-- Reject Modal — lives inside this same <td>, no hidden <tr> wrapper.
+                         A hidden ancestor row would hide this modal permanently no
+                         matter what class the modal div itself has. --}}
                     <div id="reject-modal-{{ $farmer->id }}"
                          class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                         <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
@@ -151,10 +173,9 @@
                             </form>
                         </div>
                     </div>
+                    @endif
                 </td>
             </tr>
-            @endif
-
             @empty
             <tr>
                 <td colspan="6" class="px-4 py-8 text-center text-gray-400">No farmers found.</td>

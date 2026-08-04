@@ -14,6 +14,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\EndorsementController;
+use App\Http\Controllers\LivestockInsuranceController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -27,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Farmers
+    Route::get('/farmers/pending', [FarmerController::class, 'pendingRegistrations'])->name('farmers.pending');
     Route::resource('farmers', FarmerController::class);
     Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
 
@@ -105,5 +107,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/programs/{program}/dispersal', [ProgramController::class, 'storeDispersalRecord'])->name('programs.dispersal.store');
     Route::put('/programs/dispersal/{record}', [ProgramController::class, 'updateDispersalRecord'])->name('programs.dispersal.update');
     Route::delete('/programs/dispersal/{record}', [ProgramController::class, 'destroyDispersalRecord'])->name('programs.dispersal.destroy');
+
+    Route::get('/forms/livestock-insurance', [LivestockInsuranceController::class, 'index'])->name('livestock-insurance.index');
+    Route::get('/forms/livestock-insurance/create', [LivestockInsuranceController::class, 'create'])->name('livestock-insurance.create');
+    Route::post('/forms/livestock-insurance', [LivestockInsuranceController::class, 'store'])->name('livestock-insurance.store');
+    Route::get('/forms/livestock-insurance/{application}/print', [LivestockInsuranceController::class, 'print'])->name('livestock-insurance.print');
 
 });
