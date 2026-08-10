@@ -8,7 +8,7 @@
 </div>
 
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
@@ -17,7 +17,7 @@
 
     {{-- Left: Profile Card --}}
     <div class="col-span-1 space-y-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 text-center">
+        <div class="bg-white rounded border border-gray-300 p-5 text-center">
 
             {{-- Profile Photo --}}
             <div class="relative inline-block mb-3">
@@ -41,7 +41,7 @@
 
             {{-- Barangay Info for Barangay Reps --}}
             @if($user->isBarangayUser())
-            <div class="mt-4 bg-primary-light rounded-md p-3">
+            <div class="mt-4 bg-primary-light rounded border border-primary/20 p-3">
                 <p class="text-xs text-gray-500 mb-1">Assigned Barangay</p>
                 <p class="text-sm font-semibold text-primary">
                     {{ $user->barangayAccount?->barangay?->name ?? 'Not assigned' }}
@@ -76,12 +76,12 @@
     <div class="col-span-2 space-y-4">
 
         {{-- Update Profile --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                 Update Profile Information
             </h3>
             @if($errors->has('name') || $errors->has('email') || $errors->has('photo'))
-                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded p-3 mb-4">
                     @if($errors->has('name'))<p>{{ $errors->first('name') }}</p>@endif
                     @if($errors->has('email'))<p>{{ $errors->first('email') }}</p>@endif
                     @if($errors->has('photo'))<p>{{ $errors->first('photo') }}</p>@endif
@@ -106,7 +106,7 @@
                             </div>
                         @endif
                         <input type="file" name="photo" accept="image/*"
-                               class="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                               class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                onchange="previewPhoto(this)"/>
                     </div>
                     {{-- Preview --}}
@@ -118,28 +118,28 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Email Address</label>
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
                 <button type="submit"
-                        class="bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2 rounded-md transition text-sm">
+                        class="bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2 rounded transition text-sm">
                     Save Changes
                 </button>
             </form>
         </div>
 
         {{-- Change Password --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                 Change Password
             </h3>
             @if($errors->has('current_password') || $errors->has('password'))
-                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded p-3 mb-4">
                     @if($errors->has('current_password'))<p>{{ $errors->first('current_password') }}</p>@endif
                     @if($errors->has('password'))<p>{{ $errors->first('password') }}</p>@endif
                 </div>
@@ -150,21 +150,21 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Current Password</label>
                         <input type="password" name="current_password" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">New Password</label>
                         <input type="password" name="password" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Confirm New Password</label>
                         <input type="password" name="password_confirmation" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
                 <button type="submit"
-                        class="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-5 py-2 rounded-md transition text-sm">
+                        class="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-5 py-2 rounded transition text-sm">
                     Change Password
                 </button>
             </form>

@@ -85,19 +85,19 @@
 
             {{-- Generate Report Button --}}
             <a href="{{ route('reports.generate') }}" target="_blank"
-                class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+                class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
                 <i class="fa-solid fa-file-contract"></i> Generate Report
             </a>
 
             {{-- Export Dropdown --}}
             <div class="relative" id="exportDropdown">
                 <button onclick="document.getElementById('exportMenu').classList.toggle('hidden')"
-                    class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+                    class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
                     <i class="fa-solid fa-download"></i> Export PDF
                     <i class="fa-solid fa-chevron-down text-xs"></i>
                 </button>
                 <div id="exportMenu"
-                    class="hidden absolute right-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-100 z-50">
+                    class="hidden absolute right-0 mt-1 w-56 bg-white rounded shadow-md border border-gray-300 z-50">
                     <a href="{{ route('reports.export.pdf') }}"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">
                         <i class="fa-solid fa-file-pdf text-red-500"></i> Summary Report
@@ -119,7 +119,7 @@
 
             {{-- Print Button --}}
             <button onclick="window.print()"
-                class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+                class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
                 <i class="fa-solid fa-print"></i> Print
             </button>
         </div>
@@ -127,41 +127,41 @@
 
     {{-- Top Stat Cards --}}
     <div class="grid grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center justify-between mb-2">
                 <p class="text-xs text-gray-500">Total Farmers</p>
-                <div class="bg-green-100 p-1.5 rounded-lg">
+                <div class="bg-green-100 p-1.5 rounded border border-green-200">
                     <i class="fa-solid fa-person text-primary text-sm"></i>
                 </div>
             </div>
             <p class="text-2xl font-bold text-gray-800">{{ $totalFarmers }}</p>
             <p class="text-xs text-gray-400 mt-1">{{ $activeFarmers }} active</p>
         </div>
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center justify-between mb-2">
                 <p class="text-xs text-gray-500">Total Requests</p>
-                <div class="bg-blue-100 p-1.5 rounded-lg">
-                    <i class="fa-solid fa-file-lines text-blue-500 text-sm"></i>
+                <div class="bg-blue-100 p-1.5 rounded border border-blue-200">
+                    <i class="fa-solid fa-file-lines text-blue-600 text-sm"></i>
                 </div>
             </div>
             <p class="text-2xl font-bold text-gray-800">{{ $totalRequests }}</p>
             <p class="text-xs text-gray-400 mt-1">{{ $pendingRequests }} pending</p>
         </div>
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center justify-between mb-2">
                 <p class="text-xs text-gray-500">Total Services</p>
-                <div class="bg-yellow-100 p-1.5 rounded-lg">
-                    <i class="fa-solid fa-clipboard-list text-yellow-500 text-sm"></i>
+                <div class="bg-yellow-100 p-1.5 rounded border border-yellow-200">
+                    <i class="fa-solid fa-clipboard-list text-yellow-600 text-sm"></i>
                 </div>
             </div>
             <p class="text-2xl font-bold text-gray-800">{{ $totalServices }}</p>
             <p class="text-xs text-gray-400 mt-1">{{ $completedServices }} completed</p>
         </div>
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center justify-between mb-2">
                 <p class="text-xs text-gray-500">Available Stocks</p>
-                <div class="bg-orange-100 p-1.5 rounded-lg">
-                    <i class="fa-solid fa-boxes-stacked text-orange-500 text-sm"></i>
+                <div class="bg-orange-100 p-1.5 rounded border border-orange-200">
+                    <i class="fa-solid fa-boxes-stacked text-orange-600 text-sm"></i>
                 </div>
             </div>
             <p class="text-2xl font-bold text-gray-800">{{ number_format($remainingStock, 0) }}</p>
@@ -171,12 +171,12 @@
 
     {{-- Charts Row 1 --}}
     <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Monthly Farmer Registrations</h3>
             <p class="text-xs text-gray-400 mb-4">{{ now()->year }} — Total registrations per month</p>
             <canvas id="registrationChart" height="200"></canvas>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Monthly Service Records</h3>
             <p class="text-xs text-gray-400 mb-4">{{ now()->year }} — Services rendered per month</p>
             <canvas id="serviceChart" height="200"></canvas>
@@ -185,17 +185,17 @@
 
     {{-- Charts Row 2 --}}
     <div class="grid grid-cols-3 gap-4 mb-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Farmers by Sex</h3>
             <p class="text-xs text-gray-400 mb-4">Gender distribution</p>
             <canvas id="sexChart" height="200"></canvas>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Farmers by Livelihood</h3>
             <p class="text-xs text-gray-400 mb-4">Main livelihood type</p>
             <canvas id="livelihoodChart" height="200"></canvas>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Request Status</h3>
             <p class="text-xs text-gray-400 mb-4">Distribution by status</p>
             <canvas id="requestStatusChart" height="200"></canvas>
@@ -204,12 +204,12 @@
 
     {{-- Charts Row 3 --}}
     <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Remaining Stock by Category</h3>
             <p class="text-xs text-gray-400 mb-4">Available units per category</p>
             <canvas id="stockChart" height="200"></canvas>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-semibold text-gray-800 mb-1">Services by Type</h3>
             <p class="text-xs text-gray-400 mb-4">Number of services per type</p>
             <canvas id="serviceTypeChart" height="200"></canvas>
@@ -217,7 +217,7 @@
     </div>
 
     {{-- Top Barangays Table --}}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 mb-4">
+    <div class="bg-white rounded border border-gray-300 p-5 mb-4">
         <h3 class="text-base font-semibold text-gray-800 mb-4">Top 10 Barangays by Registered Farmers</h3>
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b border-gray-200">
@@ -236,8 +236,8 @@
                         <td class="px-4 py-3 text-gray-600">{{ $item->total }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
-                                <div class="flex-1 bg-gray-100 rounded-full h-2">
-                                    <div class="bg-primary h-2 rounded-full"
+                                <div class="flex-1 bg-gray-100 rounded h-2">
+                                    <div class="bg-primary h-2 rounded"
                                         style="width: {{ $totalFarmers > 0 ? ($item->total / $totalFarmers) * 100 : 0 }}%">
                                     </div>
                                 </div>
@@ -257,7 +257,7 @@
     </div>
 
     {{-- Request Types Table --}}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <div class="bg-white rounded border border-gray-300 p-5">
         <h3 class="text-base font-semibold text-gray-800 mb-4">Requests by Type</h3>
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b border-gray-200">
@@ -287,8 +287,8 @@
                         <td class="px-4 py-3 text-gray-600">{{ $item->total }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
-                                <div class="flex-1 bg-gray-100 rounded-full h-2">
-                                    <div class="bg-blue-400 h-2 rounded-full"
+                                <div class="flex-1 bg-gray-100 rounded h-2">
+                                    <div class="bg-blue-400 h-2 rounded"
                                         style="width: {{ $totalRequests > 0 ? ($item->total / $totalRequests) * 100 : 0 }}%">
                                     </div>
                                 </div>

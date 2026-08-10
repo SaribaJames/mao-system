@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class StockController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // The link stays visible to all staff — access is enforced with an
         // in-page note instead of hiding the nav item or throwing a 403 page.
         $canAccess = Auth::user()->isAdmin() || Auth::user()->managesStocks();
 
-        if (! $canAccess) {
+        if (!$canAccess) {
             return view('stocks.index', [
                 'canAccess' => false,
                 'stocks' => collect(),
@@ -26,9 +26,15 @@ class StockController extends Controller
             ]);
         }
 
-        $stocks = Stock::latest()->paginate(15);
-        $totalStock     = Stock::sum('total_stock');
-        $releasedStock  = Stock::sum('released_stock');
+        $query = Stock::query();
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        $stocks = $query->latest()->paginate(15)->withQueryString();
+        $totalStock = Stock::sum('total_stock');
+        $releasedStock = Stock::sum('released_stock');
         $remainingStock = Stock::sum('remaining_stock');
         return view('stocks.index', compact('stocks', 'totalStock', 'releasedStock', 'remainingStock', 'canAccess'));
     }
@@ -39,38 +45,38 @@ class StockController extends Controller
 
         $request->validate([
             'item_name' => 'required|string|max:100',
-            'category'  => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
-            'unit'      => 'required|string|max:20',
-            'quantity'  => 'required|numeric|min:0.01',
+            'category' => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
+            'unit' => 'required|string|max:20',
+            'quantity' => 'required|numeric|min:0.01',
         ]);
 
         $stock = Stock::where('item_name', $request->item_name)
-                      ->where('category', $request->category)
-                      ->first();
+            ->where('category', $request->category)
+            ->first();
 
         if ($stock) {
-            $stock->total_stock     += $request->quantity;
+            $stock->total_stock += $request->quantity;
             $stock->remaining_stock += $request->quantity;
             $stock->updateStatus();
         } else {
             $stock = Stock::create([
-                'item_name'       => $request->item_name,
-                'category'        => $request->category,
-                'unit'            => $request->unit,
-                'total_stock'     => $request->quantity,
-                'released_stock'  => 0,
+                'item_name' => $request->item_name,
+                'category' => $request->category,
+                'unit' => $request->unit,
+                'total_stock' => $request->quantity,
+                'released_stock' => 0,
                 'remaining_stock' => $request->quantity,
-                'description'     => $request->description,
-                'added_by'        => Auth::id(),
+                'description' => $request->description,
+                'added_by' => Auth::id(),
             ]);
             $stock->updateStatus();
         }
 
         StockTransaction::create([
-            'stock_id'     => $stock->id,
-            'type'         => 'add',
-            'quantity'     => $request->quantity,
-            'notes'        => $request->notes,
+            'stock_id' => $stock->id,
+            'type' => 'add',
+            'quantity' => $request->quantity,
+            'notes' => $request->notes,
             'processed_by' => Auth::id(),
         ]);
 
@@ -83,21 +89,21 @@ class StockController extends Controller
         $this->authorizeAccess();
 
         $request->validate([
-            'quantity'  => 'required|numeric|min:0.01|max:' . $stock->remaining_stock,
+            'quantity' => 'required|numeric|min:0.01|max:' . $stock->remaining_stock,
             'recipient' => 'required|string|max:100',
         ]);
 
-        $stock->released_stock  += $request->quantity;
+        $stock->released_stock += $request->quantity;
         $stock->remaining_stock -= $request->quantity;
         $stock->updateStatus();
 
         StockTransaction::create([
-            'stock_id'     => $stock->id,
-            'type'         => 'release',
-            'quantity'     => $request->quantity,
-            'recipient'    => $request->recipient,
-            'farmer_id'    => $request->farmer_id,
-            'notes'        => $request->notes,
+            'stock_id' => $stock->id,
+            'type' => 'release',
+            'quantity' => $request->quantity,
+            'recipient' => $request->recipient,
+            'farmer_id' => $request->farmer_id,
+            'notes' => $request->notes,
             'processed_by' => Auth::id(),
         ]);
 

@@ -8,13 +8,13 @@
             <p class="text-gray-500 text-sm mt-1">ANI AT KITA — RSBSA Enrollment Form</p>
         </div>
         <a href="{{ route('farmers.index') }}"
-            class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-5 py-2 rounded-md text-sm">
+            class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-5 py-2 rounded text-sm">
             ← Back
         </a>
     </div>
 
     @if ($errors->any())
-        <div class="max-w-[850px] mx-auto bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+        <div class="max-w-[850px] mx-auto bg-red-50 border border-red-200 text-red-600 text-sm rounded p-3 mb-4">
             <ul class="list-disc list-inside space-y-1">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -638,11 +638,11 @@
             {{-- SUBMIT --}}
             <div style="width:850px;margin:0 auto 32px auto;display:flex;gap:12px;">
                 <button type="submit"
-                    class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-2.5 rounded-md transition text-sm">
+                    class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-2.5 rounded transition text-sm">
                     Register Farmer
                 </button>
                 <a href="{{ route('farmers.index') }}"
-                    class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-2.5 rounded-md transition text-sm">
+                    class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-2.5 rounded transition text-sm">
                     Cancel
                 </a>
             </div>

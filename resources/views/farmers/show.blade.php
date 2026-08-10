@@ -13,16 +13,16 @@
         <div class="flex gap-2">
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
             <a href="{{ route('farmers.edit', $farmer) }}"
-            class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-md transition">
+            class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded transition">
                 <i class="fa-solid fa-pen mr-1"></i> Edit
             </a>
             <a href="{{ route('farmers.print', $farmer) }}" target="_blank"
-            class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-md transition">
+            class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded transition">
                 <i class="fa-solid fa-print mr-1"></i> Print
             </a>
             @endif
             <a href="{{ route('farmers.index') }}"
-            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
+            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded transition">
                 ← Back
             </a>
         </div>
@@ -34,7 +34,7 @@
         <div class="col-span-2 space-y-4">
 
             {{-- Personal Information --}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+            <div class="bg-white rounded border border-gray-300 p-5">
                 <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                     Part I — Personal Information
                 </h3>
@@ -99,7 +99,7 @@
             </div>
 
             {{-- Special Classifications --}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+            <div class="bg-white rounded border border-gray-300 p-5">
                 <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                     Special Classifications
                 </h3>
@@ -124,7 +124,7 @@
             </div>
 
             {{-- Farm Profile --}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+            <div class="bg-white rounded border border-gray-300 p-5">
                 <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                     Part II — Farm Profile
                 </h3>
@@ -159,24 +159,24 @@
                         <p class="text-xs text-gray-400 mb-1">Farming Activities</p>
                     <div class="flex flex-wrap gap-1 mt-1">
                             @if($farmer->farming_rice)
-                                <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Rice</span>
+                                <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded border border-green-200 text-xs">Rice</span>
                             @endif
                         @if($farmer->farming_corn)
-                            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">Corn</span>
+                            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded border border-yellow-200 text-xs">Corn</span>
                         @endif
                             @if($farmer->farming_livestock)
-                                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded border border-blue-200 text-xs">
                                                             Livesto
                                   c                         k {{ $farmer->farming_livestock_specify ? '(' . $farmer->farming_livestock_specify . ')' : '' }}
                                                         </span>
                             @endif
                             @if($farmer->farming_poultry)
-                                <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">
+                                <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded border border-orange-200 text-xs">
                                     Poultry {{ $farmer->farming_poultry_specify ? '(' . $farmer->farming_poultry_specify . ')' : '' }}
                                 </span>
                             @endif
                             @if($farmer->farming_other_crops)
-                                <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                                <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200 text-xs">
                                         {{ $farmer->farming_other_crops_specify ?? 'Other Crops' }}
                                     </span>
                             @endif
@@ -200,10 +200,10 @@
         <div class="space-y-4">
 
             {{-- Status --}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+            <div class="bg-white rounded border border-gray-300 p-5">
                 <h3 class="text-base font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">Status</h3>
-                @php $statusClass = $farmer->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'; @endphp
-                <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $statusClass }}">
+                @php $statusClass = $farmer->status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200'; @endphp
+                <span class="px-3 py-1.5 rounded border text-sm font-medium {{ $statusClass }}">
                     {{ ucfirst($farmer->status) }}
                 </span>
                 <div class="mt-4 text-xs text-gray-400 space-y-1">
@@ -213,7 +213,7 @@
             </div>
 
             {{-- Emergency Contact --}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+            <div class="bg-white rounded border border-gray-300 p-5">
                 <h3 class="text-base font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">Emergency Contact</h3>
                 <p class="text-sm font-medium text-gray-800">{{ $farmer->emergency_contact_name ?? '—' }}</p>
                 <p class="text-xs text-gray-400 mt-1">{{ $farmer->emergency_contact_number ?? '' }}</p>
@@ -221,7 +221,7 @@
 
             {{-- Government ID --}}
             @if($farmer->has_government_id)
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                <div class="bg-white rounded border border-gray-300 p-5">
                     <h3 class="text-base font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">Government ID</h3>
                     <p class="text-xs text-gray-400 mb-1">Type</p>
                     <p class="text-sm font-medium text-gray-800">{{ $farmer->government_id_type ?? '—' }}</p>
@@ -232,7 +232,7 @@
 
             {{-- Farmers Association --}}
             @if($farmer->is_farmers_association_member)
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                <div class="bg-white rounded border border-gray-300 p-5">
                     <h3 class="text-base font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">Farmers Association</h3>
                     <p class="text-sm font-medium text-gray-800">{{ $farmer->farmers_association_name ?? '—' }}</p>
                 </div>

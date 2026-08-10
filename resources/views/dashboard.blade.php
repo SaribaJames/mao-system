@@ -13,7 +13,7 @@
             ->toArray();
     @endphp
 
-    <div class="mb-6">
+    <div class="mb-6 border-b border-gray-300 pb-4">
         <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
         <p class="text-gray-500 text-sm mt-1">
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'superadmin')
@@ -41,41 +41,41 @@
                     $myCompleted = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'completed')->whereMonth('updated_at', now()->month)->count();
                 @endphp
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">My Submitted Requests</p>
-                            <div class="bg-green-100 p-2 rounded-lg">
+                            <div class="bg-green-100 p-2 rounded border border-green-200">
                                 <i class="fa-solid fa-file-lines text-primary text-sm"></i>
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-gray-800">{{ $myRequests }}</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Pending Requests</p>
-                            <div class="bg-yellow-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-clock text-yellow-500 text-sm"></i>
+                            <div class="bg-yellow-100 p-2 rounded border border-yellow-200">
+                                <i class="fa-solid fa-clock text-yellow-600 text-sm"></i>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-yellow-500">{{ $myPending }}</p>
+                        <p class="text-3xl font-bold text-yellow-600">{{ $myPending }}</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Approved Requests</p>
-                            <div class="bg-blue-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-circle-check text-blue-500 text-sm"></i>
+                            <div class="bg-blue-100 p-2 rounded border border-blue-200">
+                                <i class="fa-solid fa-circle-check text-blue-600 text-sm"></i>
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-primary">{{ $myApproved }}</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Completed This Month</p>
-                            <div class="bg-green-100 p-2 rounded-lg">
+                            <div class="bg-green-100 p-2 rounded border border-green-200">
                                 <i class="fa-solid fa-check-double text-primary text-sm"></i>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-blue-500">{{ $myCompleted }}</p>
+                        <p class="text-3xl font-bold text-blue-600">{{ $myCompleted }}</p>
                     </div>
                 </div>
             @else
@@ -88,64 +88,64 @@
                     $thisMonthFarmers = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
                 @endphp
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Total Farmers</p>
-                            <div class="bg-green-100 p-2 rounded-lg">
+                            <div class="bg-green-100 p-2 rounded border border-green-200">
                                 <i class="fa-solid fa-person text-primary text-sm"></i>
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-gray-800">{{ $totalFarmers }}</p>
-                        <p class="text-xs text-green-500 mt-1">+{{ $thisMonthFarmers }} this month</p>
+                        <p class="text-xs text-green-600 mt-1">+{{ $thisMonthFarmers }} this month</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Pending Requests</p>
-                            <div class="bg-yellow-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-clock text-yellow-500 text-sm"></i>
+                            <div class="bg-yellow-100 p-2 rounded border border-yellow-200">
+                                <i class="fa-solid fa-clock text-yellow-600 text-sm"></i>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-yellow-500">{{ $pendingRequests }}</p>
+                        <p class="text-3xl font-bold text-yellow-600">{{ $pendingRequests }}</p>
                         <p class="text-xs text-gray-400 mt-1">Needs attention</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Completed Requests</p>
-                            <div class="bg-blue-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-circle-check text-blue-500 text-sm"></i>
+                            <div class="bg-blue-100 p-2 rounded border border-blue-200">
+                                <i class="fa-solid fa-circle-check text-blue-600 text-sm"></i>
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-primary">{{ $completedTrans }}</p>
                         <p class="text-xs text-gray-400 mt-1">All time</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Available Stocks</p>
-                            <div class="bg-orange-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-boxes-stacked text-orange-500 text-sm"></i>
+                            <div class="bg-orange-100 p-2 rounded border border-orange-200">
+                                <i class="fa-solid fa-boxes-stacked text-orange-600 text-sm"></i>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-orange-500">{{ number_format($availableStocks, 0) }}</p>
+                        <p class="text-3xl font-bold text-orange-600">{{ number_format($availableStocks, 0) }}</p>
                         <p class="text-xs text-gray-400 mt-1">Units remaining</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Total Services</p>
-                            <div class="bg-purple-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-clipboard-list text-purple-500 text-sm"></i>
+                            <div class="bg-purple-100 p-2 rounded border border-purple-200">
+                                <i class="fa-solid fa-clipboard-list text-purple-600 text-sm"></i>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-purple-500">{{ $totalServices }}</p>
+                        <p class="text-3xl font-bold text-purple-600">{{ $totalServices }}</p>
                         <p class="text-xs text-gray-400 mt-1">Rendered</p>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div class="bg-white rounded p-5 border border-gray-300">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs text-gray-500">Announcements</p>
-                            <div class="bg-red-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-bullhorn text-red-500 text-sm"></i>
+                            <div class="bg-red-100 p-2 rounded border border-red-200">
+                                <i class="fa-solid fa-bullhorn text-red-600 text-sm"></i>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-red-500">
+                        <p class="text-3xl font-bold text-red-600">
                             {{ \App\Models\Activity::where('status', 'active')->count() }}
                         </p>
                         <p class="text-xs text-gray-400 mt-1">Active posts</p>
@@ -154,8 +154,8 @@
             @endif
 
             {{-- Recent Activities --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <div class="flex items-center justify-between mb-4">
+            <div class="bg-white rounded border border-gray-300 p-5">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                     <h3 class="text-base font-semibold text-gray-800">Recent Activities</h3>
                     <a href="{{ route('requests.index') }}" class="text-xs text-primary hover:underline">View all →</a>
                 </div>
@@ -163,12 +163,12 @@
                     $recentRequests = \App\Models\FarmerRequest::with('farmer')->latest()->take(5)->get();
                 @endphp
                 @forelse($recentRequests as $req)
-                        <div class="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+                        <div class="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
                             <div class="flex items-center gap-3">
                                 <div class="w-2 h-2 rounded-full
-                                                                        {{ $req->status === 'pending' ? 'bg-yellow-400' :
-                    ($req->status === 'approved' ? 'bg-blue-400' :
-                        ($req->status === 'completed' ? 'bg-green-500' : 'bg-red-400')) }}">
+                                                                        {{ $req->status === 'pending' ? 'bg-yellow-500' :
+                    ($req->status === 'approved' ? 'bg-blue-500' :
+                        ($req->status === 'completed' ? 'bg-green-600' : 'bg-red-500')) }}">
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-700 font-medium">
@@ -179,10 +179,10 @@
                             </div>
                             <div class="text-right">
                                 <span
-                                    class="text-xs px-2 py-0.5 rounded-full font-medium
-                                                                        {{ $req->status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    ($req->status === 'approved' ? 'bg-blue-100 text-blue-700' :
-                        ($req->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')) }}">
+                                    class="text-xs px-2 py-0.5 rounded font-medium border
+                                                                        {{ $req->status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                    ($req->status === 'approved' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                        ($req->status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200')) }}">
                                     {{ ucfirst($req->status) }}
                                 </span>
                                 <p class="text-xs text-gray-400 mt-0.5">{{ \Carbon\Carbon::parse($req->created_at)->format('M d') }}
@@ -200,8 +200,8 @@
                     ->where('status', 'active')->latest()->take(3)->get();
             @endphp
             @if($latestAnnouncements->count() > 0)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <div class="flex items-center justify-between mb-4">
+                <div class="bg-white rounded border border-gray-300 p-5">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                         <h3 class="text-base font-semibold text-gray-800">Latest Announcements</h3>
                         <a href="{{ route('activities.index') }}" class="text-xs text-primary hover:underline">View all →</a>
                     </div>
@@ -215,7 +215,7 @@
                                     default => 'bg-gray-400',
                                 };
                             @endphp
-                            <div class="flex gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                            <div class="flex gap-3 p-3 rounded bg-gray-50 border border-gray-200">
                                 <div class="w-1 rounded-full {{ $annColor }} flex-shrink-0"></div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-gray-800 truncate">{{ $ann->title }}</p>
@@ -234,7 +234,7 @@
         <div class="col-span-1 space-y-4">
 
             {{-- Live Clock --}}
-            <div class="bg-primary rounded-xl p-5 text-white text-center shadow-sm">
+            <div class="bg-primary rounded p-5 text-white text-center border border-primary-dark">
                 <p class="text-xs font-medium opacity-70 mb-1 uppercase tracking-widest">Current Time</p>
                 <div id="liveClock" class="text-4xl font-bold tracking-tight mb-1">00:00:00</div>
                 <div id="liveDate" class="text-sm opacity-80"></div>
@@ -244,13 +244,13 @@
             </div>
 
             {{-- Calendar --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <button onclick="prevMonth()" class="text-gray-400 hover:text-gray-600 transition">
+            <div class="bg-white rounded border border-gray-300 p-5">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                    <button onclick="prevMonth()" class="text-gray-500 hover:text-gray-700 transition">
                         <i class="fa-solid fa-chevron-left text-sm"></i>
                     </button>
                     <h3 id="calendarTitle" class="text-sm font-bold text-gray-800"></h3>
-                    <button onclick="nextMonth()" class="text-gray-400 hover:text-gray-600 transition">
+                    <button onclick="nextMonth()" class="text-gray-500 hover:text-gray-700 transition">
                         <i class="fa-solid fa-chevron-right text-sm"></i>
                     </button>
                 </div>
@@ -258,7 +258,7 @@
                 {{-- Day Labels --}}
                 <div class="grid grid-cols-7 mb-2">
                     @foreach(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as $day)
-                        <div class="text-center text-xs font-medium text-gray-400 py-1">{{ $day }}</div>
+                        <div class="text-center text-xs font-medium text-gray-500 py-1">{{ $day }}</div>
                     @endforeach
                 </div>
 
@@ -266,7 +266,7 @@
                 <div id="calendarGrid" class="grid grid-cols-7 gap-y-1"></div>
 
                 {{-- Legend --}}
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-1.5">
+                <div class="mt-4 pt-3 border-t border-gray-200 space-y-1.5">
                     <div class="flex items-center gap-2 text-xs text-gray-500">
                         <div class="w-3 h-3 rounded-full bg-primary"></div>
                         <span>Today</span>
@@ -296,12 +296,12 @@
                     ->get();
             @endphp
             @if($upcomingEvents->count() > 0)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-3">Upcoming Events</h3>
+                <div class="bg-white rounded border border-gray-300 p-5">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 pb-3 border-b border-gray-200">Upcoming Events</h3>
                     <div class="space-y-2">
                         @foreach($upcomingEvents as $event)
                             <div class="flex gap-3 items-start">
-                                <div class="bg-primary-light rounded-lg p-2 text-center min-w-10 flex-shrink-0">
+                                <div class="bg-primary-light rounded p-2 text-center min-w-10 flex-shrink-0 border border-primary/20">
                                     <p class="text-xs font-bold text-primary">{{ $event->event_date->format('d') }}</p>
                                     <p class="text-xs text-primary opacity-70">{{ $event->event_date->format('M') }}</p>
                                 </div>

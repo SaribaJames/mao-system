@@ -8,7 +8,7 @@
         <p class="text-gray-500 text-sm mt-1 font-mono">{{ $request->request_number }}</p>
     </div>
     <a href="{{ route('requests.index') }}"
-       class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
+       class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded transition">
         ← Back
     </a>
 </div>
@@ -17,7 +17,7 @@
 
     {{-- Request Info --}}
     <div class="col-span-2 space-y-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Request Information</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -54,7 +54,7 @@
         </div>
 
         {{-- Farmer Info --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Farmer Information</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -83,17 +83,17 @@
 
     {{-- Status & Actions --}}
     <div class="space-y-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Status</h3>
             @php
                 $colors = [
-                    'pending'   => 'bg-yellow-100 text-yellow-700',
-                    'approved'  => 'bg-blue-100 text-blue-700',
-                    'rejected'  => 'bg-red-100 text-red-700',
-                    'completed' => 'bg-green-100 text-green-700',
+                    'pending'   => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                    'approved'  => 'bg-blue-100 text-blue-700 border-blue-200',
+                    'rejected'  => 'bg-red-100 text-red-700 border-red-200',
+                    'completed' => 'bg-green-100 text-green-700 border-green-200',
                 ];
             @endphp
-            <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $colors[$request->status] ?? 'bg-gray-100 text-gray-600' }}">
+            <span class="px-3 py-1.5 rounded border text-sm font-medium {{ $colors[$request->status] ?? 'bg-gray-100 text-gray-600 border-gray-200' }}">
                 {{ ucfirst($request->status) }}
             </span>
 
@@ -108,14 +108,14 @@
         {{-- Update Status (Admin & Staff only) --}}
         @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
         @if($request->status === 'pending')
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded border border-gray-300 p-5">
             <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Update Status</h3>
             <form method="POST" action="{{ route('requests.status', $request) }}">
                 @csrf
                 <div class="mb-3">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Action</label>
                     <select name="status" required
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="approved">Approve</option>
                         <option value="rejected">Reject</option>
                         <option value="completed">Complete</option>
@@ -124,10 +124,10 @@
                 <div class="mb-3">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Remarks</label>
                     <textarea name="remarks" rows="2"
-                              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                              class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                 </div>
                 <button type="submit"
-                        class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
+                        class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded transition text-sm">
                     Update
                 </button>
             </form>

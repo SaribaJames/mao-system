@@ -9,7 +9,7 @@
     </div>
     @if($canAccess)
     <button onclick="document.getElementById('addStockModal').classList.remove('hidden')"
-            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
         <i class="fa-solid fa-plus"></i> Add Stock
     </button>
     @endif
@@ -18,8 +18,8 @@
 @if(!$canAccess)
 
     {{-- Restricted note — shown instead of any stock data --}}
-    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mt-10 text-center">
-        <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-3">
+    <div class="max-w-md mx-auto bg-white rounded border border-gray-300 p-6 mt-10 text-center">
+        <div class="w-14 h-14 rounded bg-yellow-100 border border-yellow-200 flex items-center justify-center mx-auto mb-3">
             <i class="fa-solid fa-lock text-yellow-600 text-xl"></i>
         </div>
         <h3 class="font-semibold text-gray-800 mb-1">Restricted</h3>
@@ -30,16 +30,16 @@
 
     {{-- Success Message --}}
     @if(session('success'))
-        <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
+        <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
             {{ session('success') }}
         </div>
     @endif
 
     {{-- Stat Cards --}}
     <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-100 p-2 rounded-lg">
+                <div class="bg-blue-100 p-2 rounded border border-blue-200">
                     <i class="fa-solid fa-boxes-stacked text-blue-500"></i>
                 </div>
                 <div>
@@ -49,9 +49,9 @@
                 </div>
             </div>
         </div>
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center gap-3">
-                <div class="bg-yellow-100 p-2 rounded-lg">
+                <div class="bg-yellow-100 p-2 rounded border border-yellow-200">
                     <i class="fa-solid fa-arrow-up-from-bracket text-yellow-500"></i>
                 </div>
                 <div>
@@ -61,9 +61,9 @@
                 </div>
             </div>
         </div>
-        <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div class="bg-white rounded p-5 border border-gray-300">
             <div class="flex items-center gap-3">
-                <div class="bg-green-100 p-2 rounded-lg">
+                <div class="bg-green-100 p-2 rounded border border-green-200">
                     <i class="fa-solid fa-warehouse text-green-500"></i>
                 </div>
                 <div>
@@ -76,22 +76,22 @@
     </div>
 
     {{-- Filter --}}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
+    <div class="bg-white rounded border border-gray-300 p-4 mb-4">
         <form method="GET" class="flex gap-3">
-            <select name="category" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            <select name="category" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">All Categories</option>
                 @foreach(['seeds' => 'Seeds', 'fertilizer' => 'Fertilizer', 'pesticide' => 'Pesticide', 'equipment' => 'Equipment', 'tools' => 'Tools', 'others' => 'Others'] as $value => $label)
                     <option value="{{ $value }}" {{ request('category') == $value ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary-dark transition">
+            <button type="submit" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary-dark transition">
                 Filter
             </button>
         </form>
     </div>
 
     {{-- Table --}}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded border border-gray-300 overflow-hidden">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -117,13 +117,13 @@
                     <td class="px-4 py-3">
                         @php
                             $statusColors = [
-                                'available'    => 'bg-green-100 text-green-700',
-                                'medium'       => 'bg-yellow-100 text-yellow-700',
-                                'low'          => 'bg-orange-100 text-orange-700',
-                                'out_of_stock' => 'bg-red-100 text-red-700',
+                                'available'    => 'bg-green-100 text-green-700 border-green-200',
+                                'medium'       => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                                'low'          => 'bg-orange-100 text-orange-700 border-orange-200',
+                                'out_of_stock' => 'bg-red-100 text-red-700 border-red-200',
                             ];
                         @endphp
-                        <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusColors[$stock->status] ?? 'bg-gray-100 text-gray-600' }}">
+                        <span class="px-2 py-1 rounded border text-xs font-medium {{ $statusColors[$stock->status] ?? 'bg-gray-100 text-gray-600 border-gray-200' }}">
                             {{ ucfirst(str_replace('_', ' ', $stock->status)) }}
                         </span>
                     </td>
@@ -146,14 +146,14 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="px-4 py-3 border-t border-gray-100">
+        <div class="px-4 py-3 border-t border-gray-200">
             {{ $stocks->links() }}
         </div>
     </div>
 
     {{-- Add Stock Modal --}}
     <div id="addStockModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <div class="bg-white rounded border border-gray-300 w-full max-w-md p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-bold text-gray-800">Add Stock</h3>
                 <button onclick="document.getElementById('addStockModal').classList.add('hidden')"
@@ -167,11 +167,11 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Item Name</label>
                         <input type="text" name="item_name" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Category</label>
-                        <select name="category" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <select name="category" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="">Select Category</option>
                             <option value="seeds">Seeds</option>
                             <option value="fertilizer">Fertilizer</option>
@@ -185,26 +185,26 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Quantity</label>
                             <input type="number" step="0.01" name="quantity" required
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                                   class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Unit</label>
                             <input type="text" name="unit" value="kg" required
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                                   class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
                         <textarea name="notes" rows="2"
-                                  class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-4">
-                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded transition text-sm">
                         Add Stock
                     </button>
                     <button type="button" onclick="document.getElementById('addStockModal').classList.add('hidden')"
-                            class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded-md transition text-sm hover:bg-gray-50">
+                            class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded transition text-sm hover:bg-gray-50">
                         Cancel
                     </button>
                 </div>
@@ -214,7 +214,7 @@
 
     {{-- Release Stock Modal --}}
     <div id="releaseStockModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <div class="bg-white rounded border border-gray-300 w-full max-w-md p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-bold text-gray-800">Release Stock</h3>
                 <button onclick="document.getElementById('releaseStockModal').classList.add('hidden')"
@@ -228,30 +228,30 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Item</label>
                         <input type="text" id="releaseItemName" readonly
-                               class="w-full border border-gray-200 bg-gray-50 rounded-md px-3 py-2 text-sm"/>
+                               class="w-full border border-gray-200 bg-gray-50 rounded px-3 py-2 text-sm"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Recipient Name</label>
                         <input type="text" name="recipient" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Quantity <span id="releaseMax" class="text-gray-400"></span></label>
                         <input type="number" step="0.01" name="quantity" id="releaseQty" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
                         <textarea name="notes" rows="2"
-                                  class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-4">
-                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded transition text-sm">
                         Release Stock
                     </button>
                     <button type="button" onclick="document.getElementById('releaseStockModal').classList.add('hidden')"
-                            class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded-md transition text-sm hover:bg-gray-50">
+                            class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded transition text-sm hover:bg-gray-50">
                         Cancel
                     </button>
                 </div>

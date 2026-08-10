@@ -8,56 +8,56 @@
         <p class="text-gray-500 text-sm mt-1">Manage system users and access permissions</p>
     </div>
     <button onclick="openAddUserModal()"
-            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
         <i class="fa-solid fa-plus"></i> Add User
     </button>
 </div>
 
 {{-- Messages --}}
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
 @if(session('error'))
-    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded p-3 mb-4">
         {{ session('error') }}
     </div>
 @endif
 
 {{-- Stat Cards --}}
 <div class="grid grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+    <div class="bg-white rounded p-5 border border-gray-300">
         <p class="text-xs text-gray-500 mb-1">Total Users</p>
         <p class="text-2xl font-bold text-gray-800">{{ $totalUsers }}</p>
     </div>
-    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+    <div class="bg-white rounded p-5 border border-gray-300">
         <p class="text-xs text-gray-500 mb-1">Admin</p>
-        <p class="text-2xl font-bold text-red-500">{{ $admins }}</p>
+        <p class="text-2xl font-bold text-red-600">{{ $admins }}</p>
     </div>
-    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+    <div class="bg-white rounded p-5 border border-gray-300">
         <p class="text-xs text-gray-500 mb-1">Staff</p>
-        <p class="text-2xl font-bold text-blue-500">{{ $staff }}</p>
+        <p class="text-2xl font-bold text-blue-600">{{ $staff }}</p>
     </div>
-    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+    <div class="bg-white rounded p-5 border border-gray-300">
         <p class="text-xs text-gray-500 mb-1">Barangay Reps</p>
         <p class="text-2xl font-bold text-primary">{{ $barangayReps }}</p>
     </div>
 </div>
 
 {{-- Search --}}
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
+<div class="bg-white rounded border border-gray-300 p-4 mb-4">
     <form method="GET" class="flex gap-3">
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Search by name or email..."
-               class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
-        <select name="role" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+               class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+        <select name="role" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
             <option value="">All Roles</option>
             <option value="admin"         {{ request('role') == 'admin'         ? 'selected' : '' }}>Admin</option>
             <option value="staff"         {{ request('role') == 'staff'         ? 'selected' : '' }}>Staff</option>
             <option value="barangay_user" {{ request('role') == 'barangay_user' ? 'selected' : '' }}>Barangay Rep</option>
         </select>
-        <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary-dark transition">
+        <button type="submit" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary-dark transition">
             Search
         </button>
     </form>
@@ -66,14 +66,14 @@
 {{-- Pending Approvals Notice --}}
 @php $pendingCount = $users->filter(fn($u) => $u->status === 'inactive' && $u->barangayAccount?->approval_status === 'pending')->count(); @endphp
 @if($pendingCount > 0)
-<div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-md p-3 mb-4 flex items-center gap-2">
+<div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded p-3 mb-4 flex items-center gap-2">
     <i class="fa-solid fa-clock"></i>
     <span>There are <strong>{{ $pendingCount }}</strong> pending registration request(s) waiting for your approval.</span>
 </div>
 @endif
 
 {{-- Table --}}
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+<div class="bg-white rounded border border-gray-300 overflow-hidden">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -91,18 +91,18 @@
                 <td class="px-4 py-3 font-medium text-gray-800">
                     {{ $user->name }}
                     @if($user->status === 'inactive' && $user->barangayAccount?->approval_status === 'pending')
-                        <span class="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+                        <span class="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded border border-yellow-200">Pending</span>
                     @endif
                 </td>
                 <td class="px-4 py-3 text-gray-600">{{ $user->email }}</td>
                 <td class="px-4 py-3">
                     @php
                         $roleColors = [
-                            'admin'         => 'bg-red-100 text-red-700',
-                            'superadmin'    => 'bg-purple-100 text-purple-700',
-                            'staff'         => 'bg-blue-100 text-blue-700',
-                            'barangay_user' => 'bg-green-100 text-green-700',
-                            'viewer'        => 'bg-gray-100 text-gray-600',
+                            'admin'         => 'bg-red-100 text-red-700 border-red-200',
+                            'superadmin'    => 'bg-purple-100 text-purple-700 border-purple-200',
+                            'staff'         => 'bg-blue-100 text-blue-700 border-blue-200',
+                            'barangay_user' => 'bg-green-100 text-green-700 border-green-200',
+                            'viewer'        => 'bg-gray-100 text-gray-600 border-gray-200',
                         ];
                         $roleName = $user->role?->name ?? 'none';
                         $roleLabels = [
@@ -113,13 +113,13 @@
                             'viewer'        => 'Viewer',
                         ];
                     @endphp
-                    <span class="px-2 py-1 rounded-full text-xs font-medium {{ $roleColors[$roleName] ?? 'bg-gray-100 text-gray-600' }}">
+                    <span class="px-2 py-1 rounded border text-xs font-medium {{ $roleColors[$roleName] ?? 'bg-gray-100 text-gray-600 border-gray-200' }}">
                         {{ $roleLabels[$roleName] ?? ucfirst($roleName) }}
                     </span>
                 </td>
                 <td class="px-4 py-3">
-                    <span class="px-2 py-1 rounded-full text-xs font-medium
-                        {{ $user->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                    <span class="px-2 py-1 rounded border text-xs font-medium
+                        {{ $user->status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200' }}">
                         {{ $user->status === 'inactive' && $user->barangayAccount?->approval_status === 'pending' ? 'Pending Approval' : ucfirst($user->status) }}
                     </span>
                 </td>
@@ -150,7 +150,7 @@
                         <form method="POST" action="{{ route('users.reset-password', $user) }}">
                             @csrf
                             <button type="submit" onclick="return confirm('Reset password to Password@123?')"
-                                    class="text-yellow-500 hover:underline text-xs font-medium">Reset PW</button>
+                                    class="text-yellow-600 hover:underline text-xs font-medium">Reset PW</button>
                         </form>
                         @if($user->id !== Auth::id())
                         <form method="POST" action="{{ route('users.destroy', $user) }}"
@@ -171,14 +171,14 @@
             @endforelse
         </tbody>
     </table>
-    <div class="px-4 py-3 border-t border-gray-100">
+    <div class="px-4 py-3 border-t border-gray-200">
         {{ $users->links() }}
     </div>
 </div>
 
 {{-- Add User Modal --}}
 <div id="addUserModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded border border-gray-300 w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-bold text-gray-800">Add User</h3>
             <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
@@ -191,17 +191,17 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
                     <input type="text" name="name" required
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Email Address</label>
                     <input type="email" name="email" required
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Role</label>
                     <select name="role_id" id="roleSelect" required onchange="toggleRoleFields()"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Select Role</option>
                         @foreach(\App\Models\Role::all() as $role)
                             <option value="{{ $role->id }}" data-name="{{ $role->name }}">
@@ -213,7 +213,7 @@
                 <div id="barangayField" style="display:none;">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Assign Barangay <span class="text-red-500">*</span></label>
                     <select name="barangay_id"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Select Barangay</option>
                         @foreach(\App\Models\Barangay::orderBy('name')->get() as $barangay)
                             <option value="{{ $barangay->id }}">{{ $barangay->name }}</option>
@@ -225,7 +225,7 @@
                 <div id="moduleField" style="display:none;">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Module Assignment</label>
                     <select name="module_assignment" id="moduleSelect" onchange="toggleProgramsCheckboxes()"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">None</option>
                         <option value="programs">Programs (choose specific program(s))</option>
                         <option value="stocks">Stocks</option>
@@ -233,7 +233,7 @@
                     <p class="text-xs text-gray-400 mt-1">A staff member can be assigned to Programs OR Stocks, not both.</p>
 
                     <div id="programsCheckboxes" style="display:none;" class="mt-2">
-                        <div class="border border-gray-300 rounded-md p-2 max-h-36 overflow-y-auto space-y-1">
+                        <div class="border border-gray-300 rounded p-2 max-h-36 overflow-y-auto space-y-1">
                             @foreach(\App\Models\Program::orderBy('name')->get() as $program)
                             <label class="flex items-center gap-2 text-sm text-gray-700 py-0.5">
                                 <input type="checkbox" name="assigned_programs[]" value="{{ $program->id }}"
@@ -251,26 +251,26 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Password</label>
                     <input type="password" name="password" required
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Confirm Password</label>
                     <input type="password" name="password_confirmation" required
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Program Access PIN <span class="text-gray-400">(optional, 4-6 digits)</span></label>
                     <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
             </div>
             <div class="flex gap-3 mt-4">
                 <button type="submit"
-                        class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
+                        class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded transition text-sm">
                     Add User
                 </button>
                 <button type="button" onclick="closeAddUserModal()"
-                        class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded-md transition text-sm hover:bg-gray-50">
+                        class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded transition text-sm hover:bg-gray-50">
                     Cancel
                 </button>
             </div>

@@ -39,9 +39,9 @@ class Program extends Model
     public function getStatusColorAttribute()
     {
         return match ($this->status) {
-            'active' => 'bg-green-100 text-green-700',
-            'inactive' => 'bg-gray-100 text-gray-600',
-            default => 'bg-gray-100 text-gray-600',
+            'active' => 'bg-green-100 text-green-700 border-green-200',
+            'inactive' => 'bg-gray-100 text-gray-600 border-gray-200',
+            default => 'bg-gray-100 text-gray-600 border-gray-200',
         };
     }
 

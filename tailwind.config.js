@@ -14,6 +14,9 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            borderRadius: {
+                DEFAULT: '2px',
+            },
         },
     },
 
