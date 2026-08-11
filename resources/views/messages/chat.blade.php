@@ -20,17 +20,17 @@
 @endif
 
 {{-- Messages --}}
-<div class="bg-white rounded border border-gray-300 overflow-hidden">
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="h-96 overflow-y-auto p-5 space-y-3" id="messageContainer">
         @forelse($messages as $message)
         @php $isMine = $message->sender_id === Auth::id(); @endphp
         <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
             <div class="max-w-xs lg:max-w-md">
                 @if($message->message)
-                <div class="px-4 py-2.5 rounded text-sm border
+                <div class="px-4 py-2.5 rounded-2xl text-sm
                     {{ $isMine
-                        ? 'bg-primary text-white border-primary-dark'
-                        : 'bg-gray-100 text-gray-800 border-gray-200' }}">
+                        ? 'bg-primary text-white rounded-br-sm'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-sm' }}">
                     {{ $message->message }}
                 </div>
                 @endif
@@ -69,7 +69,7 @@
     </div>
 
     {{-- Message Input --}}
-    <div class="border-t border-gray-200 p-4">
+    <div class="border-t border-gray-100 p-4">
         <form method="POST" action="{{ route('messages.send') }}" class="space-y-2" enctype="multipart/form-data" id="chatForm">
             @csrf
             <input type="hidden" name="receiver_id" value="{{ $admin->id }}">
@@ -92,9 +92,9 @@
                 <input type="text" name="message"
                        placeholder="Type your message to MAO..."
                        autocomplete="off"
-                       class="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                       class="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 <button type="submit"
-                        class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded text-sm font-medium transition">
+                        class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-full text-sm font-medium transition">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>

@@ -4,11 +4,21 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">
-                {{ $farmer->first_name }} {{ $farmer->surname }}
-            </h2>
-            <p class="text-gray-500 text-sm mt-1 font-mono">{{ $farmer->reference_number }}</p>
+        <div class="flex items-center gap-4">
+            @if($farmer->photo)
+                <img src="{{ asset('storage/' . $farmer->photo) }}" alt="Photo"
+                    class="w-16 h-16 rounded-full object-cover border border-gray-200 flex-shrink-0">
+            @else
+                <div class="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-user text-gray-300 text-xl"></i>
+                </div>
+            @endif
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">
+                    {{ $farmer->first_name }} {{ $farmer->surname }}
+                </h2>
+                <p class="text-gray-500 text-sm mt-1 font-mono">{{ $farmer->reference_number }}</p>
+            </div>
         </div>
         <div class="flex gap-2">
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
@@ -65,10 +75,28 @@
                         <p class="text-xs text-gray-400 mb-1">Mobile Number</p>
                         <p class="font-medium text-gray-800">{{ $farmer->mobile_number ?? '—' }}</p>
                     </div>
+                    @if($farmer->landline_number)
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Landline Number</p>
+                            <p class="font-medium text-gray-800">{{ $farmer->landline_number }}</p>
+                        </div>
+                    @endif
                     <div>
                         <p class="text-xs text-gray-400 mb-1">Civil Status</p>
                         <p class="font-medium text-gray-800 capitalize">{{ $farmer->civil_status ?? '—' }}</p>
                     </div>
+                    @if($farmer->civil_status === 'married' && $farmer->spouse_name)
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Spouse's Name</p>
+                            <p class="font-medium text-gray-800">{{ $farmer->spouse_name }}</p>
+                        </div>
+                    @endif
+                    @if($farmer->mother_maiden_name)
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Mother's Maiden Name</p>
+                            <p class="font-medium text-gray-800">{{ $farmer->mother_maiden_name }}</p>
+                        </div>
+                    @endif
                     <div class="col-span-2">
                         <p class="text-xs text-gray-400 mb-1">Address</p>
                         <p class="font-medium text-gray-800">
@@ -91,9 +119,27 @@
                         <p class="text-xs text-gray-400 mb-1">Household Head</p>
                         <p class="font-medium text-gray-800">{{ $farmer->is_household_head ? 'Yes' : 'No' }}</p>
                     </div>
+                    @if(!$farmer->is_household_head && ($farmer->household_head_name || $farmer->household_head_relationship))
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Household Head Name</p>
+                            <p class="font-medium text-gray-800">
+                                {{ $farmer->household_head_name ?? '—' }}
+                                @if($farmer->household_head_relationship)
+                                    <span class="text-gray-400 font-normal">({{ $farmer->household_head_relationship }})</span>
+                                @endif
+                            </p>
+                        </div>
+                    @endif
                     <div>
                         <p class="text-xs text-gray-400 mb-1">Household Members</p>
-                        <p class="font-medium text-gray-800">{{ $farmer->household_members_count ?? '—' }}</p>
+                        <p class="font-medium text-gray-800">
+                            {{ $farmer->household_members_count ?? '—' }}
+                            @if($farmer->household_male_count || $farmer->household_female_count)
+                                <span class="text-gray-400 font-normal text-xs">
+                                    ({{ $farmer->household_male_count ?? 0 }} male, {{ $farmer->household_female_count ?? 0 }} female)
+                                </span>
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
@@ -121,6 +167,12 @@
                         </div>
                     @endforeach
                 </div>
+                @if($farmer->is_indigenous && $farmer->indigenous_group_name)
+                    <div class="mt-3 pt-3 border-t border-gray-100 text-sm">
+                        <p class="text-xs text-gray-400 mb-1">Indigenous Group</p>
+                        <p class="font-medium text-gray-800">{{ $farmer->indigenous_group_name }}</p>
+                    </div>
+                @endif
             </div>
 
             {{-- Farm Profile --}}
@@ -155,42 +207,130 @@
                             {{ $farmer->land_area_hectares ? $farmer->land_area_hectares . ' ha' : '—' }}
                         </p>
                 </div>
-                    <div>
-                        <p class="text-xs text-gray-400 mb-1">Farming Activities</p>
-                    <div class="flex flex-wrap gap-1 mt-1">
-                            @if($farmer->farming_rice)
-                                <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Rice</span>
-                            @endif
-                        @if($farmer->farming_corn)
-                            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">Corn</span>
-                        @endif
-                            @if($farmer->farming_livestock)
-                                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
-                                                            Livesto
-                                  c                         k {{ $farmer->farming_livestock_specify ? '(' . $farmer->farming_livestock_specify . ')' : '' }}
-                                                        </span>
-                            @endif
-                            @if($farmer->farming_poultry)
-                                <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">
-                                    Poultry {{ $farmer->farming_poultry_specify ? '(' . $farmer->farming_poultry_specify . ')' : '' }}
-                                </span>
-                            @endif
-                            @if($farmer->farming_other_crops)
-                                <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                    @if($farmer->main_livelihood === 'farmer' || $farmer->farming_rice || $farmer->farming_corn || $farmer->farming_livestock || $farmer->farming_poultry || $farmer->farming_other_crops)
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400 mb-1">Farming Activities</p>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @if($farmer->farming_rice)
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Rice</span>
+                                @endif
+                                @if($farmer->farming_corn)
+                                    <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">Corn</span>
+                                @endif
+                                @if($farmer->farming_livestock)
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                        Livestock {{ $farmer->farming_livestock_specify ? '(' . $farmer->farming_livestock_specify . ')' : '' }}
+                                    </span>
+                                @endif
+                                @if($farmer->farming_poultry)
+                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">
+                                        Poultry {{ $farmer->farming_poultry_specify ? '(' . $farmer->farming_poultry_specify . ')' : '' }}
+                                    </span>
+                                @endif
+                                @if($farmer->farming_other_crops)
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
                                         {{ $farmer->farming_other_crops_specify ?? 'Other Crops' }}
                                     </span>
-                            @endif
-                            @if(!$farmer->farming_rice && !$farmer->farming_corn && !$farmer->farming_livestock && !$farmer->farming_poultry && !$farmer->farming_other_crops)
-                                <span class="text-gray-400">—</span>
-                            @endif
+                                @endif
+                                @if(!$farmer->farming_rice && !$farmer->farming_corn && !$farmer->farming_livestock && !$farmer->farming_poultry && !$farmer->farming_other_crops)
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </div>
                         </div>
-                    </div>
+                    @endif
+
+                    @if($farmer->main_livelihood === 'farmworker' || $farmer->farmwork_land_preparation || $farmer->farmwork_planting || $farmer->farmwork_cultivation || $farmer->farmwork_harvesting || $farmer->farmwork_others)
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400 mb-1">Farmworker Tasks</p>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @if($farmer->farmwork_land_preparation)
+                                    <span class="px-2 py-0.5 bg-lime-100 text-lime-700 rounded-full text-xs">Land Preparation</span>
+                                @endif
+                                @if($farmer->farmwork_planting)
+                                    <span class="px-2 py-0.5 bg-lime-100 text-lime-700 rounded-full text-xs">Planting</span>
+                                @endif
+                                @if($farmer->farmwork_cultivation)
+                                    <span class="px-2 py-0.5 bg-lime-100 text-lime-700 rounded-full text-xs">Cultivation</span>
+                                @endif
+                                @if($farmer->farmwork_harvesting)
+                                    <span class="px-2 py-0.5 bg-lime-100 text-lime-700 rounded-full text-xs">Harvesting</span>
+                                @endif
+                                @if($farmer->farmwork_others)
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                                        {{ $farmer->farmwork_others_specify ?? 'Other' }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($farmer->main_livelihood === 'fisherfolk' || $farmer->fishing_capture || $farmer->fishing_aquaculture || $farmer->fishing_processing || $farmer->fishing_vending || $farmer->fishing_gleaning || $farmer->fishing_others)
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400 mb-1">Fisherfolk Activities</p>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @if($farmer->fishing_capture)
+                                    <span class="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs">Capture</span>
+                                @endif
+                                @if($farmer->fishing_aquaculture)
+                                    <span class="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs">Aquaculture</span>
+                                @endif
+                                @if($farmer->fishing_processing)
+                                    <span class="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs">Processing</span>
+                                @endif
+                                @if($farmer->fishing_vending)
+                                    <span class="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs">Vending</span>
+                                @endif
+                                @if($farmer->fishing_gleaning)
+                                    <span class="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs">Gleaning</span>
+                                @endif
+                                @if($farmer->fishing_others)
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                                        {{ $farmer->fishing_others_specify ?? 'Other' }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($farmer->main_livelihood === 'agri_youth' || $farmer->agri_youth_farming_household || $farmer->agri_youth_formal_course || $farmer->agri_youth_nonformal_course || $farmer->agri_youth_participated_program || $farmer->agri_youth_others)
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400 mb-1">Agri-Youth Involvement</p>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @if($farmer->agri_youth_farming_household)
+                                    <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Part of Farming Household</span>
+                                @endif
+                                @if($farmer->agri_youth_formal_course)
+                                    <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Formal Agri Course</span>
+                                @endif
+                                @if($farmer->agri_youth_nonformal_course)
+                                    <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Non-Formal Agri Course</span>
+                                @endif
+                                @if($farmer->agri_youth_participated_program)
+                                    <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Participated in Agri Program</span>
+                                @endif
+                                @if($farmer->agri_youth_others)
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                                        {{ $farmer->agri_youth_others_specify ?? 'Other' }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     <div>
                         <p class="text-xs text-gray-400 mb-1">Annual Income (Farming)</p>
                         <p class="font-medium text-gray-800">
                             {{ $farmer->gross_annual_income_farming ? '₱' . number_format($farmer->gross_annual_income_farming, 2) : '—' }}
                         </p>
                     </div>
+                    @if($farmer->gross_annual_income_non_farming)
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Annual Income (Non-Farming)</p>
+                            <p class="font-medium text-gray-800">
+                                ₱{{ number_format($farmer->gross_annual_income_non_farming, 2) }}
+                            </p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -206,6 +346,15 @@
                 <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $statusClass }}">
                     {{ ucfirst($farmer->status) }}
                 </span>
+                @if($farmer->registration_status && $farmer->registration_status !== 'approved')
+                    @php $regClass = $farmer->registration_status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'; @endphp
+                    <span class="ml-2 px-3 py-1.5 rounded-full text-sm font-medium {{ $regClass }}">
+                        {{ ucfirst($farmer->registration_status) }}
+                    </span>
+                    @if($farmer->registration_status === 'rejected' && $farmer->registration_rejection_reason)
+                        <p class="text-xs text-red-500 mt-2">{{ $farmer->registration_rejection_reason }}</p>
+                    @endif
+                @endif
                 <div class="mt-4 text-xs text-gray-400 space-y-1">
                     <p>Registered: {{ $farmer->created_at->format('M d, Y') }}</p>
                     <p>By: {{ $farmer->registeredBy?->name ?? '—' }}</p>
