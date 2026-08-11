@@ -8,18 +8,18 @@
         <p class="text-gray-500 text-sm mt-1">LIV-UPI-01 applications on file</p>
     </div>
     <a href="{{ route('livestock-insurance.create') }}"
-       class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
+       class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
         <i class="fa-solid fa-plus"></i> New Application
     </a>
 </div>
 
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
 
-<div class="bg-white rounded border border-gray-300 overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -56,7 +56,7 @@
             @endforelse
         </tbody>
     </table>
-    <div class="px-4 py-3 border-t border-gray-200">
+    <div class="px-4 py-3 border-t border-gray-100">
         {{ $applications->links() }}
     </div>
 </div>

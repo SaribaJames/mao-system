@@ -8,18 +8,18 @@
             <p class="text-gray-500 text-sm mt-1">Accident and Dismemberment Security Scheme</p>
         </div>
         <a href="{{ route('forms.index') }}"
-            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded transition">
+            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
             ← Back
         </a>
     </div>
 
     {{-- Farmer Selection --}}
-    <div class="bg-white rounded border border-gray-300 p-5 mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4">
         <h3 class="text-sm font-bold text-gray-800 mb-3">Select Farmer (Optional)</h3>
         <p class="text-xs text-gray-400 mb-3">Select a farmer to auto-fill their information, or fill manually.</p>
         <form method="GET" action="{{ route('forms.pcic-adss') }}" class="flex gap-3">
             <select name="farmer_id"
-                class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">-- Select Farmer to Auto-fill --</option>
                 @foreach($farmers as $f)
                     <option value="{{ $f->id }}" {{ request('farmer_id') == $f->id ? 'selected' : '' }}>
@@ -28,11 +28,11 @@
                 @endforeach
             </select>
             <button type="submit"
-                class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded text-sm font-medium transition">
+                class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md text-sm font-medium transition">
                 Auto-fill
             </button>
             <a href="{{ route('forms.pcic-adss') }}"
-                class="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded text-sm transition">
+                class="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-md text-sm transition">
                 Clear
             </a>
         </form>
@@ -43,7 +43,7 @@
         <input type="hidden" name="farmer_id" value="{{ $farmer?->id }}">
 
         {{-- Paper Document --}}
-        <div class="bg-white border border-gray-300 rounded mx-auto"
+        <div class="bg-white shadow-xl rounded-sm mx-auto"
             style="width: 816px; min-height: 1056px; padding: 40px 50px; font-family: Arial, sans-serif; font-size: 11px;">
 
             {{-- Header --}}
@@ -458,11 +458,11 @@
         {{-- Buttons --}}
         <div class="flex gap-3 mt-4 justify-center" style="width: 816px; margin: 16px auto 0;">
             <button type="submit"
-                class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-3 rounded transition flex items-center gap-2">
+                class="bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-3 rounded-md transition flex items-center gap-2">
                 <i class="fa-solid fa-file-pdf"></i> Download as PDF
             </button>
             <a href="{{ route('forms.index') }}"
-                class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-3 rounded transition">
+                class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-3 rounded-md transition">
                 Cancel
             </a>
         </div>

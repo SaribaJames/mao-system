@@ -11,18 +11,18 @@
 
 {{-- Success Message --}}
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
 
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 gap-4 mb-6">
-    <div class="bg-white rounded p-5 border border-gray-300">
+    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
         <p class="text-xs text-gray-500 mb-1">Total Programs</p>
         <p class="text-2xl font-bold text-gray-800">{{ $totalPrograms }}</p>
     </div>
-    <div class="bg-white rounded p-5 border border-gray-300">
+    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
         <p class="text-xs text-gray-500 mb-1">Active Enrollments</p>
         <p class="text-2xl font-bold text-primary">{{ $totalActiveEnrollments }}</p>
     </div>
@@ -38,17 +38,17 @@
 
         @if($canOpen)
         <a href="{{ route('programs.show', $program) }}"
-           class="bg-white rounded p-5 transition block
-                  {{ $isMine ? 'border-2 border-primary ring-1 ring-primary-light' : 'border border-gray-300' }}">
+           class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition block
+                  {{ $isMine ? 'border-2 border-primary ring-1 ring-primary-light' : 'border border-gray-100' }}">
             <div class="flex items-start justify-between mb-3">
                 <i class="fa-solid fa-seedling text-primary text-lg"></i>
                 <div class="flex items-center gap-1">
                     @if($isMine)
-                    <span class="px-2 py-1 rounded text-xs font-medium bg-primary text-white">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium bg-primary text-white">
                         <i class="fa-solid fa-star text-[10px]"></i> Your Program
                     </span>
                     @endif
-                    <span class="px-2 py-1 rounded border text-xs font-medium {{ $program->status_color }}">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium {{ $program->status_color }}">
                         {{ ucfirst($program->status) }}
                     </span>
                 </div>
@@ -64,11 +64,11 @@
             </p>
         </a>
         @else
-        <div class="bg-gray-50 rounded border border-gray-300 p-5 opacity-70 cursor-not-allowed relative"
+        <div class="bg-gray-50 rounded-lg border border-gray-100 p-5 opacity-70 cursor-not-allowed relative"
              title="You are not assigned to this program">
             <div class="flex items-start justify-between mb-3">
                 <i class="fa-solid fa-seedling text-gray-300 text-lg"></i>
-                <span class="px-2 py-1 rounded border border-gray-200 text-xs font-medium bg-gray-100 text-gray-500">
+                <span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
                     <i class="fa-solid fa-lock text-[10px]"></i> Restricted
                 </span>
             </div>

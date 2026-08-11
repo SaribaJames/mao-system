@@ -13,9 +13,6 @@
                         primary: '#2D7A2D',
                         'primary-dark': '#1f5c1f',
                         'primary-light': '#e8f5e8',
-                    },
-                    borderRadius: {
-                        DEFAULT: '2px',
                     }
                 }
             }
@@ -24,7 +21,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
-    <div class="bg-white rounded w-full max-w-md p-8 border border-gray-300">
+    <div class="bg-white rounded-lg shadow-md w-full max-w-md p-8">
 
         {{-- Header --}}
         <div class="text-center mb-6">
@@ -33,7 +30,7 @@
         </div>
 
         {{-- Info Box --}}
-        <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs rounded p-3 mb-4">
+        <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs rounded-md p-3 mb-4">
             <i class="fa-solid fa-triangle-exclamation mr-1"></i>
             Your registration will be reviewed by the MAO Admin before you can login.
             This is to ensure only authorized Barangay Representatives can access the system.
@@ -41,7 +38,7 @@
 
         {{-- Error Messages --}}
         @if($errors->any())
-            <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded p-3 mb-4">
+            <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
                 <ul class="list-disc list-inside">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -59,20 +56,20 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Full Name <span class="text-red-500">*</span></label>
                     <input type="text" name="name" value="{{ old('name') }}" required
                            placeholder="e.g. Juan Dela Cruz"
-                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Email Address <span class="text-red-500">*</span></label>
                     <input type="email" name="email" value="{{ old('email') }}" required
                            placeholder="example@barangay.gov.ph"
-                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Barangay <span class="text-red-500">*</span></label>
                     <select name="barangay_id" required
-                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Select your Barangay</option>
                         @foreach(\App\Models\Barangay::orderBy('name')->get() as $barangay)
                             <option value="{{ $barangay->id }}" {{ old('barangay_id') == $barangay->id ? 'selected' : '' }}>
@@ -86,19 +83,19 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password" required
                            placeholder="Minimum 8 characters"
-                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Confirm Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password_confirmation" required
                            placeholder="Re-enter your password"
-                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full mt-4 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded transition text-sm">
+                    class="w-full mt-4 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
                 Submit Registration Request
             </button>
         </form>

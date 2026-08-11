@@ -8,7 +8,7 @@
             <p class="text-gray-500 text-sm mt-1">Type your report below — it will appear exactly as shown</p>
         </div>
         <a href="{{ route('reports.index') }}"
-            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded transition">
+            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
             ← Back
         </a>
     </div>
@@ -21,7 +21,7 @@
                 @csrf
 
                 {{-- Paper --}}
-                <div class="bg-white border border-gray-300 rounded mx-auto"
+                <div class="bg-white shadow-xl rounded-sm mx-auto"
                     style="width: 816px; min-height: 1056px; padding: 72px 80px; font-family: 'Times New Roman', serif;">
 
                     {{-- Letterhead --}}
@@ -159,11 +159,11 @@
                 {{-- Generate Button --}}
                 <div class="flex gap-3 mt-4 justify-center" style="width: 816px; margin: 0 auto;">
                     <button type="submit"
-                        class="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-8 py-3 rounded transition flex items-center gap-2">
+                        class="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-8 py-3 rounded-md transition flex items-center gap-2">
                         <i class="fa-solid fa-file-pdf"></i> Download as PDF
                     </button>
                     <a href="{{ route('reports.index') }}"
-                        class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-3 rounded transition">
+                        class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-8 py-3 rounded-md transition">
                         Cancel
                     </a>
                 </div>

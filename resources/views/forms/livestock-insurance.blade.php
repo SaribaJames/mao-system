@@ -11,7 +11,7 @@
 </div>
 
 @if($errors->any())
-<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded p-3 mb-4">
+<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
     <ul class="list-disc list-inside">
         @foreach($errors->all() as $error)
         <li>{{ $error }}</li>
@@ -20,10 +20,10 @@
 </div>
 @endif
 
-<div class="bg-white rounded border border-gray-300 p-4 mb-4">
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
     <label class="block text-xs text-gray-500 mb-1">Farmer <span class="text-red-500">*</span></label>
     <select id="farmer-select" form="liv-form" name="farmer_id" required
-        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
         <option value="">Select farmer...</option>
         @foreach($farmers as $farmer)
         <option value="{{ $farmer->id }}">{{ $farmer->surname }}, {{ $farmer->first_name }} — {{ $farmer->barangay?->name }}</option>
@@ -84,7 +84,7 @@
 <form id="liv-form" method="POST" action="{{ route('livestock-insurance.store') }}">
     @csrf
 
-    <div class="ovl-wrap bg-white border border-gray-300 rounded overflow-hidden">
+    <div class="ovl-wrap bg-white shadow-sm border border-gray-200 rounded-md overflow-hidden">
         <img src="{{ asset('images/livestock_insurance_page-1.jpg') }}" alt="LIV-UPI-01 Form">
 
         <input type="radio" name="cover_type" value="commercial" class="cb" style="top:11.93%; left:14.973%; width:1.691%; height:1.306%;">
@@ -178,7 +178,7 @@
 
     <div class="max-w-[850px] mx-auto mt-4">
         <button type="submit"
-            class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-3 rounded transition">
+            class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-3 rounded-md transition">
             Save Application
         </button>
     </div>

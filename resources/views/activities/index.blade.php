@@ -9,7 +9,7 @@
     </div>
     @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
     <button onclick="openAddModal()"
-            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded flex items-center gap-2 transition">
+            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
         <i class="fa-solid fa-plus"></i> Add New
     </button>
     @endif
@@ -17,7 +17,7 @@
 
 {{-- Success Message --}}
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
@@ -25,25 +25,25 @@
 {{-- Tabs --}}
 <div class="flex gap-2 mb-6">
     <a href="{{ route('activities.index', ['type' => 'announcement']) }}"
-       class="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition
+       class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
               {{ $type === 'announcement' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         <i class="fa-solid fa-bullhorn"></i>
         Announcements
-        <span class="text-xs px-1.5 py-0.5 rounded {{ $type === 'announcement' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $announcements }}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'announcement' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $announcements }}</span>
     </a>
     <a href="{{ route('activities.index', ['type' => 'training']) }}"
-       class="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition
+       class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
               {{ $type === 'training' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         <i class="fa-solid fa-chalkboard-user"></i>
         Training Programs
-        <span class="text-xs px-1.5 py-0.5 rounded {{ $type === 'training' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $trainings }}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'training' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $trainings }}</span>
     </a>
     <a href="{{ route('activities.index', ['type' => 'event']) }}"
-       class="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition
+       class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
               {{ $type === 'event' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         <i class="fa-solid fa-calendar-days"></i>
         Events
-        <span class="text-xs px-1.5 py-0.5 rounded {{ $type === 'event' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $events }}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'event' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $events }}</span>
     </a>
 </div>
 
@@ -74,16 +74,16 @@
         $actAuthor   = e($activity->createdBy?->name ?? 'System');
     @endphp
 
-    <div class="bg-white rounded border border-gray-300 overflow-hidden hover:border-primary transition cursor-pointer"
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition cursor-pointer"
          onclick="openViewModal({{ $actId }})">
 
         {{-- Card Top Banner --}}
         <div class="{{ $priorityBg }} p-4 text-white">
             <div class="flex items-center justify-between">
-                <div class="bg-white bg-opacity-20 p-2 rounded border border-white/30">
+                <div class="bg-white bg-opacity-20 p-2 rounded-lg">
                     <i class="fa-solid {{ $icon }} text-lg"></i>
                 </div>
-                <span class="text-xs font-medium bg-white bg-opacity-20 px-2 py-1 rounded border border-white/30">
+                <span class="text-xs font-medium bg-white bg-opacity-20 px-2 py-1 rounded-full">
                     {{ $actPriority }} Priority
                 </span>
             </div>
@@ -149,15 +149,15 @@
 @endif
 
 @else
-<div class="bg-white rounded border border-gray-300 p-16 text-center">
-    <div class="w-16 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center mx-auto mb-4">
+<div class="bg-white rounded-xl border border-gray-100 p-16 text-center">
+    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <i class="fa-solid {{ $type === 'announcement' ? 'fa-bullhorn' : ($type === 'training' ? 'fa-chalkboard-user' : 'fa-calendar-days') }} text-gray-400 text-2xl"></i>
     </div>
     <h3 class="text-base font-semibold text-gray-600 mb-1">No {{ ucfirst($type) }}s Yet</h3>
     <p class="text-sm text-gray-400">No {{ $type }}s have been posted yet.</p>
     @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
     <button onclick="openAddModal()"
-            class="mt-4 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded transition">
+            class="mt-4 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
         + Add First {{ ucfirst($type) }}
     </button>
     @endif
@@ -166,10 +166,10 @@
 
 {{-- View Full Modal --}}
 <div id="viewModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
-    <div class="bg-white rounded border border-gray-300 w-full max-w-lg mx-4 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
         <div id="viewModalBanner" class="bg-primary p-6 text-white">
             <div class="flex items-center justify-between mb-3">
-                <span id="viewModalPriority" class="text-xs font-medium bg-white bg-opacity-20 px-3 py-1 rounded border border-white/30"></span>
+                <span id="viewModalPriority" class="text-xs font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full"></span>
                 <button onclick="closeViewModal()" class="text-white hover:text-gray-200">
                     <i class="fa-solid fa-x"></i>
                 </button>
@@ -198,7 +198,7 @@
 {{-- Add Modal --}}
 @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
 <div id="addModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-50">
-    <div class="bg-white rounded border border-gray-300 w-full max-w-lg mx-4 p-6">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 p-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-bold text-gray-800">Add New Post</h3>
             <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
@@ -213,7 +213,7 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
                         <select name="type" id="typeSelect" required
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="announcement">Announcement</option>
                             <option value="training">Training Program</option>
                             <option value="event">Event</option>
@@ -222,7 +222,7 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Priority</label>
                         <select name="priority" required
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="normal">Normal</option>
                             <option value="high">High</option>
                             <option value="low">Low</option>
@@ -232,33 +232,33 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
                     <input type="text" name="title" required
-                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Content</label>
                     <textarea name="body" rows="4" required
-                              class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Date (optional)</label>
                         <input type="date" name="event_date"
-                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Location (optional)</label>
                         <input type="text" name="location"
-                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
             </div>
             <div class="flex gap-3 mt-4">
                 <button type="submit"
-                        class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded transition text-sm">
+                        class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
                     Post
                 </button>
                 <button type="button" onclick="closeAddModal()"
-                        class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded transition text-sm hover:bg-gray-50">
+                        class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded-md transition text-sm hover:bg-gray-50">
                     Cancel
                 </button>
             </div>

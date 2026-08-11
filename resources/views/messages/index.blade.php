@@ -8,12 +8,12 @@
 </div>
 
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded p-3 mb-4">
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
 
-<div class="bg-white rounded border border-gray-300 overflow-hidden">
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     @forelse($conversations as $user)
     <a href="{{ route('messages.conversation', $user) }}"
        class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
@@ -37,7 +37,7 @@
 
         {{-- Unread badge --}}
         @if($user->unread_count > 0)
-        <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+        <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
             {{ $user->unread_count }}
         </span>
         @endif
