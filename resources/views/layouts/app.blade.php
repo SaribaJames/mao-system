@@ -26,8 +26,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; }
-        .letterhead-serif { font-family: Georgia, 'Times New Roman', serif; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .letterhead-serif {
+            font-family: Georgia, 'Times New Roman', serif;
+        }
 
         @media print {
             aside.w-56 {
@@ -69,8 +74,10 @@
         <div class="px-4 py-4 border-b border-gray-300 mt-1">
             <p class="text-[10px] text-gray-500 uppercase tracking-wide leading-tight">Republic of the Philippines</p>
             <p class="text-[10px] text-gray-500 uppercase tracking-wide leading-tight">Province of Albay</p>
-            <p class="text-[10px] text-gray-500 uppercase tracking-wide leading-tight mb-1.5">Municipality of Guinobatan</p>
-            <h1 class="letterhead-serif text-sm font-bold text-gray-900 leading-tight border-t border-gray-200 pt-1.5">Municipal Agriculture Office</h1>
+            <p class="text-[10px] text-gray-500 uppercase tracking-wide leading-tight mb-1.5">Municipality of Guinobatan
+            </p>
+            <h1 class="letterhead-serif text-sm font-bold text-gray-900 leading-tight border-t border-gray-200 pt-1.5">
+                Municipal Agriculture Office</h1>
             <p class="text-[10px] text-gray-400 mt-0.5 uppercase tracking-wide">Management System</p>
         </div>
 
@@ -88,7 +95,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('service-records.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('service-records.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
                     Service Records
                 </a>
@@ -105,7 +112,7 @@
             @unless(Auth::user()->role?->name === 'staff' && Auth::user()->hasAssignedProgram())
                 <a href="{{ route('requests.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('requests.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('requests.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-file-lines w-4 text-center"></i>
                     Requests
                 </a>
@@ -115,7 +122,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('stocks.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('stocks.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
                     Stocks
                 </a>
@@ -124,7 +131,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('reports.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('reports.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-chart-bar w-4 text-center"></i>
                     Reports
                 </a>
@@ -147,7 +154,7 @@
             @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                 <a href="{{ route('forms.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                              {{ request()->routeIs('forms.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                  {{ request()->routeIs('forms.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-file-invoice w-4 text-center"></i>
                     Forms & Documents
                 </a>
@@ -157,7 +164,7 @@
             @if(Auth::user()->role?->name === 'barangay_user')
                 <a href="{{ route('messages.chat') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                 </a>
@@ -168,7 +175,7 @@
                 @php $unreadMessages = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count(); @endphp
                 <a href="{{ route('messages.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('messages.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-comments w-4 text-center"></i>
                     Messages
                     @if($unreadMessages > 0)
@@ -183,7 +190,7 @@
             @if(Auth::user()->isBarangayUser())
                 <a href="{{ route('endorsements.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                          {{ request()->routeIs('endorsements.*') ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                              {{ request()->routeIs('endorsements.*') ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-handshake w-4"></i>
                     <span>Endorsements</span>
                 </a>
@@ -192,7 +199,7 @@
             @if(Auth::user()->isAdmin())
                 <a href="{{ route('users.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition border border-transparent
-                                      {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
+                                          {{ request()->routeIs('users.*') ? 'bg-primary-light text-primary border-primary/30' : 'text-gray-700 hover:bg-gray-100 hover:border-gray-200' }}">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
                     User Management
                 </a>
@@ -208,7 +215,8 @@
                     <img src="{{ asset('storage/' . Auth::user()->photo) }}"
                         class="w-8 h-8 rounded-full object-cover flex-shrink-0 border-2 border-gray-300" />
                 @else
-                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 border-2 border-gray-300">
+                    <div
+                        class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 border-2 border-gray-300">
                         <span class="text-white text-xs font-bold">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         </span>
@@ -234,7 +242,8 @@
     <div class="ml-56 flex-1 flex flex-col min-h-screen">
 
         {{-- Top Bar --}}
-        <header class="bg-white border-b border-gray-300 px-6 py-3 flex items-center justify-end sticky top-0 z-10 mt-1">
+        <header
+            class="bg-white border-b border-gray-300 px-6 py-3 flex items-center justify-end sticky top-0 z-10 mt-1">
             <div class="flex items-center gap-4">
 
                 {{-- Notification Bell --}}
@@ -403,11 +412,32 @@
                     @php $isMine = $msg->sender_id === Auth::id(); @endphp
                     <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
                         <div class="max-w-48">
-                            <div
-                                class="px-3 py-2 rounded text-xs border
-                                                        {{ $isMine ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-800 border-gray-200' }}">
-                                {{ $msg->message }}
-                            </div>
+                            @if($msg->message)
+                                <div
+                                    class="px-3 py-2 rounded text-xs border
+                                                                    {{ $isMine ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-800 border-gray-200' }}">
+                                    {{ $msg->message }}
+                                </div>
+                            @endif
+
+                            @if($msg->attachment_path)
+                                <div class="mt-1">
+                                    @if($msg->attachment_type === 'image')
+                                        <a href="{{ asset('storage/' . $msg->attachment_path) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $msg->attachment_path) }}"
+                                                class="rounded border border-gray-300 max-w-full max-h-32 object-cover">
+                                        </a>
+                                    @else
+                                        <a href="{{ asset('storage/' . $msg->attachment_path) }}" target="_blank"
+                                            class="flex items-center gap-1.5 px-2 py-1.5 rounded border {{ $isMine ? 'bg-primary-dark border-primary-dark text-white' : 'bg-white border-gray-300 text-gray-700' }} text-xs hover:opacity-80 transition">
+                                            <i
+                                                class="fa-solid {{ $msg->attachment_type === 'pdf' ? 'fa-file-pdf' : 'fa-file-lines' }}"></i>
+                                            <span class="truncate max-w-[100px]">{{ $msg->attachment_name }}</span>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endif
+
                             <p class="text-xs text-gray-500 mt-0.5 {{ $isMine ? 'text-right' : 'text-left' }}">
                                 {{ $msg->created_at->format('h:i A') }}
                             </p>
@@ -424,15 +454,35 @@
 
             <div class="p-3 border-t border-gray-200 bg-white">
                 @if($adminUser)
-                    <form method="POST" action="{{ route('messages.send') }}" class="flex gap-2">
+                    <form method="POST" action="{{ route('messages.send') }}" enctype="multipart/form-data" id="widgetChatForm"
+                        class="space-y-2">
                         @csrf
                         <input type="hidden" name="receiver_id" value="{{ $adminUser->id }}">
-                        <input type="text" name="message" required placeholder="Type a message..." autocomplete="off"
-                            class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary" />
-                        <button type="submit"
-                            class="bg-primary hover:bg-primary-dark text-white w-8 h-8 rounded flex items-center justify-center transition">
-                            <i class="fa-solid fa-paper-plane text-xs"></i>
-                        </button>
+
+                        <div id="widgetFilePreview"
+                            class="hidden items-center gap-1.5 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs text-gray-600 w-fit">
+                            <i class="fa-solid fa-paperclip"></i>
+                            <span id="widgetFileName" class="truncate max-w-[120px]"></span>
+                            <button type="button" onclick="clearWidgetFile()" class="text-red-500 hover:text-red-700 ml-1">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <label for="widgetAttachmentInput"
+                                class="flex-shrink-0 text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center cursor-pointer transition">
+                                <i class="fa-solid fa-paperclip text-sm"></i>
+                            </label>
+                            <input type="file" name="attachment" id="widgetAttachmentInput" class="hidden"
+                                accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
+
+                            <input type="text" name="message" placeholder="Type a message..." autocomplete="off"
+                                class="flex-1 border border-gray-200 rounded-full px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <button type="submit"
+                                class="bg-primary hover:bg-primary-dark text-white w-8 h-8 rounded-full flex items-center justify-center transition">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+                        </div>
                     </form>
                 @else
                     <p class="text-xs text-gray-500 text-center">No admin available.</p>
@@ -489,6 +539,26 @@
             const msgs = document.getElementById('chatMessages');
             if (msgs) msgs.scrollTop = msgs.scrollHeight;
         });
+
+        const widgetAttachmentInput = document.getElementById('widgetAttachmentInput');
+        const widgetFilePreview = document.getElementById('widgetFilePreview');
+        const widgetFileName = document.getElementById('widgetFileName');
+
+        if (widgetAttachmentInput) {
+            widgetAttachmentInput.addEventListener('change', function () {
+                if (this.files.length > 0) {
+                    widgetFileName.textContent = this.files[0].name;
+                    widgetFilePreview.classList.remove('hidden');
+                    widgetFilePreview.classList.add('flex');
+                }
+            });
+        }
+
+        function clearWidgetFile() {
+            widgetAttachmentInput.value = '';
+            widgetFilePreview.classList.add('hidden');
+            widgetFilePreview.classList.remove('flex');
+        }
     </script>
 
 
