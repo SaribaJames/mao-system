@@ -3,12 +3,12 @@
 @section('content')
 
 <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-800">My Profile</h2>
-    <p class="text-gray-500 text-sm mt-1">View and update your account information</p>
+    <h2 class="text-3xl font-bold tracking-tight text-gray-900">My Profile</h2>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">View and update your account information</p>
 </div>
 
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
+    <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
@@ -17,7 +17,7 @@
 
     {{-- Left: Profile Card --}}
     <div class="col-span-1 space-y-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5 text-center">
 
             {{-- Profile Photo --}}
             <div class="relative inline-block mb-3">
@@ -34,15 +34,15 @@
                 @endif
             </div>
 
-            <h3 class="text-base font-bold text-gray-800">{{ $user->name }}</h3>
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100">{{ $user->name }}</h3>
             <p class="text-xs text-gray-400 mt-1 capitalize">
                 {{ ucfirst(str_replace('_', ' ', $user->role?->name ?? 'User')) }}
             </p>
 
             {{-- Barangay Info for Barangay Reps --}}
             @if($user->isBarangayUser())
-            <div class="mt-4 bg-primary-light rounded-md p-3">
-                <p class="text-xs text-gray-500 mb-1">Assigned Barangay</p>
+            <div class="mt-4 bg-primary-light dark:bg-gray-900 rounded-md p-3">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Assigned Barangay</p>
                 <p class="text-sm font-semibold text-primary">
                     {{ $user->barangayAccount?->barangay?->name ?? 'Not assigned' }}
                 </p>
@@ -51,11 +51,11 @@
             @endif
 
             <div class="mt-4 text-xs text-gray-400 space-y-1 text-left">
-                <p><span class="font-medium text-gray-600">Email:</span> {{ $user->email }}</p>
-                <p><span class="font-medium text-gray-600">Status:</span>
-                    <span class="text-green-600 font-medium capitalize">{{ $user->status }}</span>
+                <p><span class="font-medium text-gray-600 dark:text-gray-300">Email:</span> {{ $user->email }}</p>
+                <p><span class="font-medium text-gray-600 dark:text-gray-300">Status:</span>
+                    <span class="text-green-600 dark:text-green-400 font-medium capitalize">{{ $user->status }}</span>
                 </p>
-                <p><span class="font-medium text-gray-600">Member since:</span> {{ $user->created_at->format('M d, Y') }}</p>
+                <p><span class="font-medium text-gray-600 dark:text-gray-300">Member since:</span> {{ $user->created_at->format('M d, Y') }}</p>
             </div>
 
             {{-- Remove Photo Button --}}
@@ -76,12 +76,12 @@
     <div class="col-span-2 space-y-4">
 
         {{-- Update Profile --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-            <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
                 Update Profile Information
             </h3>
             @if($errors->has('name') || $errors->has('email') || $errors->has('photo'))
-                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-sm rounded-md p-3 mb-4">
                     @if($errors->has('name'))<p>{{ $errors->first('name') }}</p>@endif
                     @if($errors->has('email'))<p>{{ $errors->first('email') }}</p>@endif
                     @if($errors->has('photo'))<p>{{ $errors->first('photo') }}</p>@endif
@@ -92,21 +92,21 @@
 
                 {{-- Photo Upload --}}
                 <div class="mb-4">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                         Profile Photo
                         <span class="text-gray-400 font-normal">(JPG, PNG, GIF, WEBP — max 10MB)</span>
                     </label>
                     <div class="flex items-center gap-3">
                         @if($user->photo)
                             <img src="{{ Storage::url($user->photo) }}"
-                                 class="w-12 h-12 rounded-full object-cover border-2 border-gray-200"/>
+                                 class="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"/>
                         @else
                             <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
                                 <span class="text-white text-lg font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                             </div>
                         @endif
                         <input type="file" name="photo" accept="image/*"
-                               class="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                               class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                onchange="previewPhoto(this)"/>
                     </div>
                     {{-- Preview --}}
@@ -116,14 +116,14 @@
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Full Name</label>
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Email Address</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Email Address</label>
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
                 <button type="submit"
@@ -134,12 +134,12 @@
         </div>
 
         {{-- Change Password --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-            <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
                 Change Password
             </h3>
             @if($errors->has('current_password') || $errors->has('password'))
-                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-sm rounded-md p-3 mb-4">
                     @if($errors->has('current_password'))<p>{{ $errors->first('current_password') }}</p>@endif
                     @if($errors->has('password'))<p>{{ $errors->first('password') }}</p>@endif
                 </div>
@@ -148,19 +148,19 @@
                 @csrf @method('PUT')
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Current Password</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Current Password</label>
                         <input type="password" name="current_password" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">New Password</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">New Password</label>
                         <input type="password" name="password" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Confirm New Password</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Confirm New Password</label>
                         <input type="password" name="password_confirmation" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
                 <button type="submit"

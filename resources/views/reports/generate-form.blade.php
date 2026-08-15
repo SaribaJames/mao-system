@@ -4,11 +4,11 @@
 
     <div class="mb-4 flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Generate Narrative Report</h2>
-            <p class="text-gray-500 text-sm mt-1">Type your report below — it will appear exactly as shown</p>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">Generate Narrative Report</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Type your report below — it will appear exactly as shown</p>
         </div>
         <a href="{{ route('reports.index') }}"
-            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
+            class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium px-4 py-2 rounded-md transition">
             ← Back
         </a>
     </div>

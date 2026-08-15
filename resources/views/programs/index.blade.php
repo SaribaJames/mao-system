@@ -4,26 +4,26 @@
 
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-2xl font-bold text-gray-800">MAO Programs</h2>
-        <p class="text-gray-500 text-sm mt-1">Municipal Agriculture Office programs and enrolled farmers</p>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900">MAO Programs</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Municipal Agriculture Office programs and enrolled farmers</p>
     </div>
 </div>
 
 {{-- Success Message --}}
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
+    <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
 
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 gap-4 mb-6">
-    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 mb-1">Total Programs</p>
-        <p class="text-2xl font-bold text-gray-800">{{ $totalPrograms }}</p>
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-border-soft dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Programs</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $totalPrograms }}</p>
     </div>
-    <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 mb-1">Active Enrollments</p>
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-border-soft dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Active Enrollments</p>
         <p class="text-2xl font-bold text-primary">{{ $totalActiveEnrollments }}</p>
     </div>
 </div>
@@ -38,8 +38,8 @@
 
         @if($canOpen)
         <a href="{{ route('programs.show', $program) }}"
-           class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition block
-                  {{ $isMine ? 'border-2 border-primary ring-1 ring-primary-light' : 'border border-gray-100' }}">
+           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 hover:shadow-md transition block
+                  {{ $isMine ? 'border-2 border-primary ring-1 ring-primary-light' : 'border border-border-soft dark:border-gray-700' }}">
             <div class="flex items-start justify-between mb-3">
                 <i class="fa-solid fa-seedling text-primary text-lg"></i>
                 <div class="flex items-center gap-1">
@@ -53,26 +53,26 @@
                     </span>
                 </div>
             </div>
-            <p class="font-semibold text-gray-800 mb-1">{{ $program->name }}</p>
+            <p class="font-semibold text-gray-800 dark:text-gray-100 mb-1">{{ $program->name }}</p>
             <p class="text-xs text-gray-400 mb-3">
                 <i class="fa-solid fa-user-shield w-4 text-center"></i>
                 Assigned: {{ $program->assignedUser?->name ?? 'Unassigned' }}
             </p>
-            <p class="text-xs text-gray-500">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
                 <i class="fa-solid fa-users w-4 text-center"></i>
                 {{ $program->active_enrollments_count }} active farmer(s)
             </p>
         </a>
         @else
-        <div class="bg-gray-50 rounded-lg border border-gray-100 p-5 opacity-70 cursor-not-allowed relative"
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg border border-border-soft dark:border-gray-700 p-5 opacity-70 cursor-not-allowed relative"
              title="You are not assigned to this program">
             <div class="flex items-start justify-between mb-3">
-                <i class="fa-solid fa-seedling text-gray-300 text-lg"></i>
-                <span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                <i class="fa-solid fa-seedling text-gray-300 dark:text-gray-600 text-lg"></i>
+                <span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
                     <i class="fa-solid fa-lock text-[10px]"></i> Restricted
                 </span>
             </div>
-            <p class="font-semibold text-gray-500 mb-1">{{ $program->name }}</p>
+            <p class="font-semibold text-gray-500 dark:text-gray-400 mb-1">{{ $program->name }}</p>
             <p class="text-xs text-gray-400 mb-3">
                 <i class="fa-solid fa-user-shield w-4 text-center"></i>
                 Assigned: {{ $program->assignedUser?->name ?? 'Unassigned' }}

@@ -6,37 +6,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Municipal Agriculture Office</title>
+    {{-- Anti-flash-of-wrong-theme: must run before Tailwind CDN loads and before body paints --}}
+    <script>
+        (function () {
+            var stored = localStorage.getItem('theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (stored === 'dark' || (!stored && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         primary: '#2D7A2D',
                         'primary-dark': '#1f5c1f',
-                        'primary-light': '#e8f5e8',
+                        'primary-light': '#F6F8F6',
+                        accent: '#D4A017',
+                        'accent-dark': '#a97e11',
+                        'border-soft': '#D8DFD8',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        body {
+            font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        }
+
         @media print {
-            aside.w-56 {
+            header.topnav {
                 display: none !important;
             }
 
-            body>div,
-            main,
-            .ml-56 {
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-                width: 100% !important;
-            }
-
-            header,
             .fixed.bottom-6,
             button,
             form {
@@ -51,188 +66,155 @@
 
 </head>
 
-<body class="bg-gray-100 min-h-screen flex">
+<body class="bg-primary-light dark:bg-gray-900 min-h-screen">
 
-    {{-- Sidebar --}}
-    <aside id="sidebar" class="w-56 bg-gradient-to-b from-primary via-primary to-primary/60 min-h-screen shadow-sm flex flex-col fixed top-0 left-0 z-20 transition-all duration-300">
+    {{-- Top Navigation (replaces sidebar entirely) --}}
+    <header class="topnav sticky top-0 z-20 shadow-md">
 
-        {{-- Logo --}}
-        <div class="px-5 py-5 border-b border-white/15 flex items-center gap-3">
-            <img src="{{ asset('images/mao-logo.png') }}" alt="MAO Logo" class="w-14 h-14 rounded-full object-cover bg-white p-0.5 flex-shrink-0">
-            <div>
-                <h1 class="text-base font-bold text-white leading-tight">Municipal Agriculture Office</h1>
-                <p class="text-xs text-green-100 mt-0.5">Management System</p>
+        {{-- Single row: branding + nav links + user, all in one bar --}}
+        <div class="bg-gradient-to-r from-primary to-primary-dark px-6 py-2 flex items-center gap-4 border-b-4 border-accent">
+
+            {{-- Logo + Title --}}
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <img src="{{ asset('images/mao-logo.png') }}" alt="MAO Logo" class="w-8 h-8 rounded-full object-cover bg-white p-0.5 flex-shrink-0 ring-2 ring-accent">
+                <h1 class="text-sm font-bold text-white leading-tight whitespace-nowrap">Municipal Agriculture Office</h1>
             </div>
-        </div>
 
+            {{-- Separator --}}
+            <div class="w-px h-6 bg-white/20 flex-shrink-0"></div>
 
-        {{-- Navigation --}}
-        <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+            {{-- Nav links: standalone items + grouped dropdowns --}}
+            <nav class="flex-1 flex items-center gap-1">
 
-            <a href="{{ route('dashboard') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                      {{ request()->routeIs('dashboard') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                <i class="fa-solid fa-gauge-high w-4 text-center"></i>
-                Dashboard
-            </a>
-
-            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                <a href="{{ route('service-records.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('service-records.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
-                    Service Records
+                <a href="{{ route('dashboard') }}"
+                    class="px-4 py-2.5 text-sm font-medium transition
+                          {{ request()->routeIs('dashboard') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                    Dashboard
                 </a>
-            @endif
 
-            <a href="{{ route('farmers.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                      {{ request()->routeIs('farmers.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                <i class="fa-solid fa-person w-4 text-center"></i>
-                Farmers
-            </a>
+                {{-- Records dropdown: Farmers, Service Records, Requests --}}
+                @php $recordsActive = request()->routeIs('farmers.*') || request()->routeIs('service-records.*') || request()->routeIs('requests.*'); @endphp
+                <div class="relative nav-dropdown">
+                    <button type="button" onclick="toggleNavGroup('navGroupRecords')"
+                        class="px-4 py-2.5 rounded text-sm font-medium transition flex items-center gap-1.5
+                              {{ $recordsActive ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Records
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="navGroupRecordsPanel"
+                        class="nav-dropdown-panel hidden absolute left-0 mt-1 min-w-[180px] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border-soft dark:border-gray-700 z-50 overflow-hidden">
+                        <a href="{{ route('farmers.index') }}"
+                            class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('farmers.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                            Farmers
+                        </a>
+                        @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+                            <a href="{{ route('service-records.index') }}"
+                                class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('service-records.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                                Service Records
+                            </a>
+                        @endif
+                        @unless(Auth::user()->role?->name === 'staff' && Auth::user()->hasAssignedProgram())
+                            <a href="{{ route('requests.index') }}"
+                                class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('requests.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                                Requests
+                            </a>
+                        @endunless
+                    </div>
+                </div>
 
-            {{-- Requests: hidden from staff who have a Program assigned to them --}}
-            @unless(Auth::user()->role?->name === 'staff' && Auth::user()->hasAssignedProgram())
-                <a href="{{ route('requests.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('requests.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-file-lines w-4 text-center"></i>
-                    Requests
-                </a>
-            @endunless
+                {{-- Operations dropdown: Stocks, Programs, Activities --}}
+                @php $operationsActive = request()->routeIs('stocks.*') || request()->routeIs('programs.*') || request()->routeIs('activities.*'); @endphp
+                <div class="relative nav-dropdown">
+                    <button type="button" onclick="toggleNavGroup('navGroupOperations')"
+                        class="px-4 py-2.5 rounded text-sm font-medium transition flex items-center gap-1.5
+                              {{ $operationsActive ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Operations
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="navGroupOperationsPanel"
+                        class="nav-dropdown-panel hidden absolute left-0 mt-1 min-w-[180px] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border-soft dark:border-gray-700 z-50 overflow-hidden">
+                        @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+                            <a href="{{ route('stocks.index') }}"
+                                class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('stocks.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                                Stocks
+                            </a>
+                        @endif
+                        <a href="{{ route('programs.index') }}"
+                            class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('programs.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                            Programs
+                        </a>
+                        <a href="{{ route('activities.index') }}"
+                            class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('activities.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                            Activities
+                        </a>
+                    </div>
+                </div>
 
-            {{-- Stocks: visible to all staff/admin; access itself is enforced on the page --}}
-            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                <a href="{{ route('stocks.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('stocks.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
-                    Stocks
-                </a>
-            @endif
-
-            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                <a href="{{ route('reports.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('reports.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-chart-bar w-4 text-center"></i>
-                    Reports
-                </a>
-            @endif
-
-            <a href="{{ route('activities.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                      {{ request()->routeIs('activities.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                <i class="fa-solid fa-calendar-days w-4 text-center"></i>
-                Activities
-            </a>
-
-            <a href="{{ route('programs.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                      {{ request()->routeIs('programs.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                <i class="fa-solid fa-seedling w-4 text-center"></i>
-                Programs
-            </a>
-
-            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                <a href="{{ route('forms.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                  {{ request()->routeIs('forms.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-file-invoice w-4 text-center"></i>
-                    Forms & Documents
-                </a>
-            @endif
-
-            {{-- Messages for Barangay Reps --}}
-            @if(Auth::user()->role?->name === 'barangay_user')
-                <a href="{{ route('messages.chat') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('messages.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-comments w-4 text-center"></i>
-                    Messages
-                </a>
-            @endif
-
-            {{-- Messages for Admin/Staff --}}
-            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                @php $unreadMessages = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count(); @endphp
-                <a href="{{ route('messages.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('messages.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-comments w-4 text-center"></i>
-                    Messages
-                    @if($unreadMessages > 0)
-                        <span class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full ml-auto">
-                            {{ $unreadMessages }}
-                        </span>
-                    @endif
-                </a>
-            @endif
-
-
-            @if(Auth::user()->isBarangayUser())
-                <a href="{{ route('endorsements.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition
-                              {{ request()->routeIs('endorsements.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-handshake w-4"></i>
-                    <span>Endorsements</span>
-                </a>
-            @endif
-
-            @if(Auth::user()->isAdmin())
-                <a href="{{ route('users.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition
-                                          {{ request()->routeIs('users.*') ? 'bg-white text-primary-dark font-semibold' : 'text-white/90 hover:bg-white/10' }}">
-                    <i class="fa-solid fa-users-gear w-4 text-center"></i>
-                    User Management
-                </a>
-            @endif
-
-        </nav>
-
-        {{-- User Profile at Bottom of Sidebar --}}
-        <div class="border-t border-white/15 p-3">
-            <div class="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-white/10 cursor-pointer transition"
-                onclick="window.location.href='{{ route('profile.show') }}'">
-                @if(Auth::user()->photo)
-                    <img src="{{ asset('storage/' . Auth::user()->photo) }}"
-                        class="w-8 h-8 rounded-full object-cover flex-shrink-0 border-2 border-white/30" />
-                @else
-                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                        <span class="text-primary-dark text-xs font-bold">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                        </span>
+                {{-- Reports & Forms dropdown: admin/staff only --}}
+                @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+                    @php $reportsFormsActive = request()->routeIs('reports.*') || request()->routeIs('forms.*'); @endphp
+                    <div class="relative nav-dropdown">
+                        <button type="button" onclick="toggleNavGroup('navGroupReportsForms')"
+                            class="px-4 py-2.5 rounded text-sm font-medium transition flex items-center gap-1.5
+                                  {{ $reportsFormsActive ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                            Reports & Forms
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="navGroupReportsFormsPanel"
+                            class="nav-dropdown-panel hidden absolute left-0 mt-1 min-w-[180px] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border-soft dark:border-gray-700 z-50 overflow-hidden">
+                            <a href="{{ route('reports.index') }}"
+                                class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('reports.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                                Reports
+                            </a>
+                            <a href="{{ route('forms.index') }}"
+                                class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('forms.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
+                                Forms & Documents
+                            </a>
+                        </div>
                     </div>
                 @endif
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-semibold text-white truncate">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-green-100 truncate capitalize">
-                        @if(Auth::user()->role?->name === 'barangay_user')
-                            {{ Auth::user()->barangayAccount?->barangay?->name ?? 'Barangay Rep' }}
-                        @else
-                            {{ ucfirst(str_replace('_', ' ', Auth::user()->role?->name ?? 'User')) }}
+
+                @if(Auth::user()->role?->name === 'barangay_user')
+                    <a href="{{ route('messages.chat') }}"
+                        class="px-4 py-2.5 text-sm font-medium transition
+                              {{ request()->routeIs('messages.*') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Messages
+                    </a>
+                @endif
+
+                @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+                    @php $unreadMessages = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count(); @endphp
+                    <a href="{{ route('messages.index') }}"
+                        class="px-4 py-2.5 text-sm font-medium transition flex items-center gap-2
+                              {{ request()->routeIs('messages.*') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Messages
+                        @if($unreadMessages > 0)
+                            <span class="bg-white text-primary-dark text-xs font-bold px-1.5 py-0.5 rounded-full">
+                                {{ $unreadMessages }}
+                            </span>
                         @endif
-                    </p>
-                </div>
-                <i class="fa-solid fa-chevron-right text-white/40 text-xs"></i>
-            </div>
-        </div>
+                    </a>
+                @endif
 
-    </aside>
+                @if(Auth::user()->isBarangayUser())
+                    <a href="{{ route('endorsements.index') }}"
+                        class="px-4 py-2.5 text-sm font-medium transition
+                              {{ request()->routeIs('endorsements.*') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Endorsements
+                    </a>
+                @endif
 
-    <button id="sidebarToggle" onclick="toggleSidebar()"
-        class="fixed top-20 z-30 bg-white border border-gray-300 rounded-full w-6 h-6 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-50 transition-all duration-300 shadow-sm"
-        style="left: 216px;">
-        <i class="fa-solid fa-chevron-left text-xs" id="sidebarToggleIcon"></i>
-    </button>
+                @if(Auth::user()->isAdmin())
+                    <a href="{{ route('users.index') }}"
+                        class="px-4 py-2.5 text-sm font-medium transition
+                              {{ request()->routeIs('users.*') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        User Management
+                    </a>
+                @endif
 
-    {{-- Main Content --}}
-    <div id="mainContent" class="ml-56 flex-1 flex flex-col min-h-screen transition-all duration-300">
+            </nav>
 
-        {{-- Top Bar --}}
-        <header class="bg-gradient-to-r from-primary to-primary-dark shadow-sm px-6 py-3 flex items-center justify-end sticky top-0 z-10">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 flex-shrink-0">
 
                 {{-- Notification Bell --}}
                 @php
@@ -293,65 +275,90 @@
 
                 <div class="relative" id="notifDropdown">
                     <button onclick="toggleNotif()"
-                        class="relative text-white hover:text-gray-100 transition p-2 rounded-full hover:bg-white/10">
+                        class="relative text-white hover:text-accent transition p-2 rounded-full hover:bg-white/10">
                         <i class="fa-solid fa-bell text-lg"></i>
                         @if($notifications->count() > 0)
                             <span id="notifBadge"
-                                class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                class="absolute top-0 right-0 w-4 h-4 bg-accent text-primary-dark text-xs font-bold rounded-full flex items-center justify-center">
                                 {{ $notifications->count() }}
                             </span>
                         @endif
                     </button>
 
-                    {{-- Notification Dropdown --}}
                     <div id="notifPanel"
-                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                            <h3 class="text-sm font-bold text-gray-800">Notifications</h3>
-                            <span class="text-xs text-gray-400">{{ now()->format('M d, Y') }}</span>
+                        class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-border-soft dark:border-gray-700 z-50 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-border-soft dark:border-gray-700 flex items-center justify-between bg-primary-light dark:bg-gray-900">
+                            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100">Notifications</h3>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ now()->format('M d, Y') }}</span>
                         </div>
                         <div class="max-h-80 overflow-y-auto">
                             @forelse($notifications as $notif)
                                 <a href="{{ $notif['link'] }}"
-                                    class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition">
+                                    class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-50 dark:border-gray-700 last:border-0 transition">
                                     <div class="{{ $notif['bg'] }} p-2 rounded-lg flex-shrink-0">
                                         <i class="fa-solid {{ $notif['icon'] }} {{ $notif['color'] }} text-sm"></i>
                                     </div>
-                                    <p class="text-xs text-gray-700 mt-1">{{ $notif['text'] }}</p>
+                                    <p class="text-xs text-gray-700 dark:text-gray-300 mt-1">{{ $notif['text'] }}</p>
                                 </a>
                             @empty
                                 <div class="px-4 py-8 text-center">
-                                    <i class="fa-solid fa-bell-slash text-gray-300 text-2xl mb-2"></i>
+                                    <i class="fa-solid fa-bell-slash text-gray-300 dark:text-gray-600 text-2xl mb-2"></i>
                                     <p class="text-xs text-gray-400">No new notifications</p>
                                 </div>
                             @endforelse
                         </div>
-                        <div class="px-4 py-2 border-t border-gray-100 bg-gray-50">
-                            <p class="text-xs text-gray-400 text-center">{{ $notifications->count() }} notification(s)
-                            </p>
+                        <div class="px-4 py-2 border-t border-border-soft dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                            <p class="text-xs text-gray-400 text-center">{{ $notifications->count() }} notification(s)</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="text-right">
-                    <p class="text-sm font-semibold text-white">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-green-100 capitalize">{{ Auth::user()->role?->name ?? 'User' }}</p>
-                </div>
+                {{-- Dark Mode Toggle --}}
+                <button type="button" onclick="toggleTheme()" id="themeToggle"
+                    class="text-white hover:text-accent transition p-2 rounded-full hover:bg-white/10" title="Toggle dark mode">
+                    <i class="fa-solid fa-moon text-lg" id="themeToggleIconMoon"></i>
+                    <i class="fa-solid fa-sun text-lg hidden" id="themeToggleIconSun"></i>
+                </button>
+
+                {{-- Profile: avatar + name/role, wrapped in one clickable link --}}
+                <a href="{{ route('profile.show') }}"
+                    class="hidden sm:flex items-center gap-2 hover:bg-white/10 rounded-lg px-2 py-1 transition">
+                    @if(Auth::user()->photo)
+                        <img src="{{ asset('storage/' . Auth::user()->photo) }}" alt="Profile photo"
+                            class="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                    @else
+                        <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary-dark text-xs font-bold">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </span>
+                        </div>
+                    @endif
+                    <div>
+                        <p class="text-sm font-semibold text-white leading-tight">{{ Auth::user()->name }}</p>
+                        <p class="text-xs text-accent font-medium capitalize leading-tight">
+                            @if(Auth::user()->role?->name === 'barangay_user')
+                                {{ Auth::user()->barangayAccount?->barangay?->name ?? 'Barangay Rep' }}
+                            @else
+                                {{ ucfirst(str_replace('_', ' ', Auth::user()->role?->name ?? 'User')) }}
+                            @endif
+                        </p>
+                    </div>
+                </a>
+
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="text-white hover:text-red-200 transition" title="Logout">
+                    <button type="submit" class="text-white hover:text-accent transition" title="Logout">
                         <i class="fa-solid fa-right-from-bracket text-lg"></i>
                     </button>
                 </form>
             </div>
-        </header>
+        </div>
+    </header>
 
-        {{-- Page Content --}}
-        <main class="flex-1 p-6">
-            @yield('content')
-        </main>
-
-    </div>
+    {{-- Page Content --}}
+    <main class="p-6 max-w-[1400px] mx-auto">
+        @yield('content')
+    </main>
 
     {{-- Floating Chat Bubble for Barangay Reps --}}
     @if(Auth::user()->role?->name === 'barangay_user')
@@ -367,11 +374,10 @@
 
         <div id="chatBubble" class="fixed bottom-6 right-6 z-50">
             <button onclick="toggleChat()"
-                class="bg-primary hover:bg-primary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition relative">
+                class="bg-accent hover:bg-accent-dark text-primary-dark w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition relative border-2 border-white">
                 <i class="fa-solid fa-comments text-xl"></i>
                 @if($unreadFromAdmin > 0)
-                    <span
-                        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                         {{ $unreadFromAdmin }}
                     </span>
                 @endif
@@ -379,31 +385,30 @@
         </div>
 
         <div id="chatWindow"
-            class="fixed bottom-24 right-6 z-50 hidden w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
-            <div class="bg-primary px-4 py-3 flex items-center justify-between">
+            class="fixed bottom-24 right-6 z-50 hidden w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-border-soft dark:border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-primary-dark px-4 py-3 flex items-center justify-between border-b-2 border-accent">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                        <i class="fa-solid fa-headset text-white text-sm"></i>
+                    <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+                        <i class="fa-solid fa-headset text-primary-dark text-sm"></i>
                     </div>
                     <div>
                         <p class="text-white text-sm font-semibold">MAO Support</p>
                         <p class="text-white text-xs opacity-75">Municipal Agriculture Office</p>
                     </div>
                 </div>
-                <button onclick="toggleChat()" class="text-white hover:text-gray-200">
+                <button onclick="toggleChat()" class="text-white hover:text-accent">
                     <i class="fa-solid fa-x text-sm"></i>
                 </button>
             </div>
 
-            <div class="h-64 overflow-y-auto p-4 space-y-3 bg-gray-50" id="chatMessages">
+            <div class="h-64 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900" id="chatMessages">
                 @forelse($chatMessages as $msg)
                     @php $isMine = $msg->sender_id === Auth::id(); @endphp
                     <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
                         <div class="max-w-48">
                             @if($msg->message)
-                                <div
-                                    class="px-3 py-2 rounded-2xl text-xs
-                                                                        {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm' }}">
+                                <div class="px-3 py-2 rounded-2xl text-xs
+                                    {{ $isMine ? 'bg-primary text-white rounded-br-sm' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-sm shadow-sm' }}">
                                     {{ $msg->message }}
                                 </div>
                             @endif
@@ -413,13 +418,12 @@
                                     @if($msg->attachment_type === 'image')
                                         <a href="{{ asset('storage/' . $msg->attachment_path) }}" target="_blank">
                                             <img src="{{ asset('storage/' . $msg->attachment_path) }}"
-                                                class="rounded border border-gray-300 max-w-full max-h-32 object-cover">
+                                                class="rounded border border-gray-300 dark:border-gray-600 max-w-full max-h-32 object-cover">
                                         </a>
                                     @else
                                         <a href="{{ asset('storage/' . $msg->attachment_path) }}" target="_blank"
-                                            class="flex items-center gap-1.5 px-2 py-1.5 rounded border {{ $isMine ? 'bg-primary-dark border-primary-dark text-white' : 'bg-white border-gray-300 text-gray-700' }} text-xs hover:opacity-80 transition">
-                                            <i
-                                                class="fa-solid {{ $msg->attachment_type === 'pdf' ? 'fa-file-pdf' : 'fa-file-lines' }}"></i>
+                                            class="flex items-center gap-1.5 px-2 py-1.5 rounded border {{ $isMine ? 'bg-primary-dark border-primary-dark text-white' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300' }} text-xs hover:opacity-80 transition">
+                                            <i class="fa-solid {{ $msg->attachment_type === 'pdf' ? 'fa-file-pdf' : 'fa-file-lines' }}"></i>
                                             <span class="truncate max-w-[100px]">{{ $msg->attachment_name }}</span>
                                         </a>
                                     @endif
@@ -440,15 +444,13 @@
                 @endforelse
             </div>
 
-            <div class="p-3 border-t border-gray-100 bg-white">
+            <div class="p-3 border-t border-border-soft dark:border-gray-700 bg-white dark:bg-gray-800">
                 @if($adminUser)
-                    <form method="POST" action="{{ route('messages.send') }}" enctype="multipart/form-data" id="widgetChatForm"
-                        class="space-y-2">
+                    <form method="POST" action="{{ route('messages.send') }}" enctype="multipart/form-data" id="widgetChatForm" class="space-y-2">
                         @csrf
                         <input type="hidden" name="receiver_id" value="{{ $adminUser->id }}">
 
-                        <div id="widgetFilePreview"
-                            class="hidden items-center gap-1.5 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs text-gray-600 w-fit">
+                        <div id="widgetFilePreview" class="hidden items-center gap-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-600 dark:text-gray-300 w-fit">
                             <i class="fa-solid fa-paperclip"></i>
                             <span id="widgetFileName" class="truncate max-w-[120px]"></span>
                             <button type="button" onclick="clearWidgetFile()" class="text-red-500 hover:text-red-700 ml-1">
@@ -457,15 +459,14 @@
                         </div>
 
                         <div class="flex gap-2">
-                            <label for="widgetAttachmentInput"
-                                class="flex-shrink-0 text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center cursor-pointer transition">
+                            <label for="widgetAttachmentInput" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer transition">
                                 <i class="fa-solid fa-paperclip text-sm"></i>
                             </label>
                             <input type="file" name="attachment" id="widgetAttachmentInput" class="hidden"
                                 accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
 
                             <input type="text" name="message" placeholder="Type a message..." autocomplete="off"
-                                class="flex-1 border border-gray-200 rounded-full px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary" />
+                                class="flex-1 border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 rounded-full px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary" />
                             <button type="submit"
                                 class="bg-primary hover:bg-primary-dark text-white w-8 h-8 rounded-full flex items-center justify-center transition">
                                 <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -484,11 +485,10 @@
         @php $adminUnread = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count(); @endphp
         <div class="fixed bottom-6 right-6 z-50">
             <a href="{{ route('messages.index') }}"
-                class="bg-primary hover:bg-primary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition relative">
+                class="bg-accent hover:bg-accent-dark text-primary-dark w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition relative border-2 border-white">
                 <i class="fa-solid fa-comments text-xl"></i>
                 @if($adminUnread > 0)
-                    <span
-                        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
                         {{ $adminUnread }}
                     </span>
                 @endif
@@ -497,11 +497,45 @@
     @endif
 
     <script>
+        function updateThemeIcon() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const moonIcon = document.getElementById('themeToggleIconMoon');
+            const sunIcon = document.getElementById('themeToggleIconSun');
+            if (moonIcon && sunIcon) {
+                moonIcon.classList.toggle('hidden', isDark);
+                sunIcon.classList.toggle('hidden', !isDark);
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon();
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+        function closeAllNavGroups() {
+            document.querySelectorAll('.nav-dropdown-panel').forEach(function (p) {
+                p.classList.add('hidden');
+            });
+        }
+
         function toggleNotif() {
             const panel = document.getElementById('notifPanel');
+            closeAllNavGroups();
             panel.classList.toggle('hidden');
             const badge = document.getElementById('notifBadge');
             if (badge) badge.classList.add('hidden');
+        }
+
+        function toggleNavGroup(groupId) {
+            const panel = document.getElementById(groupId + 'Panel');
+            const isHidden = panel.classList.contains('hidden');
+            closeAllNavGroups();
+            const notifPanel = document.getElementById('notifPanel');
+            if (notifPanel) notifPanel.classList.add('hidden');
+            if (isHidden) panel.classList.remove('hidden');
         }
 
         document.addEventListener('click', function (e) {
@@ -510,6 +544,13 @@
             if (dropdown && !dropdown.contains(e.target)) {
                 panel.classList.add('hidden');
             }
+
+            document.querySelectorAll('.nav-dropdown').forEach(function (group) {
+                if (!group.contains(e.target)) {
+                    const groupPanel = group.querySelector('.nav-dropdown-panel');
+                    if (groupPanel) groupPanel.classList.add('hidden');
+                }
+            });
         });
 
         function toggleChat() {
@@ -547,59 +588,6 @@
             widgetFilePreview.classList.add('hidden');
             widgetFilePreview.classList.remove('flex');
         }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const main = document.getElementById('mainContent');
-            const btn = document.getElementById('sidebarToggle');
-            const icon = document.getElementById('sidebarToggleIcon');
-            const collapsed = sidebar.classList.toggle('sidebar-collapsed');
-
-            if (collapsed) {
-                sidebar.style.transform = 'translateX(-100%)';
-                main.style.marginLeft = '0';
-                btn.style.left = '8px';
-                icon.classList.remove('fa-chevron-left');
-                icon.classList.add('fa-chevron-right');
-                localStorage.setItem('sidebarCollapsed', '1');
-            } else {
-                sidebar.style.transform = 'translateX(0)';
-                main.style.marginLeft = '224px';
-                btn.style.left = '216px';
-                icon.classList.remove('fa-chevron-right');
-                icon.classList.add('fa-chevron-left');
-                localStorage.setItem('sidebarCollapsed', '0');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            if (localStorage.getItem('sidebarCollapsed') === '1') {
-                toggleSidebar();
-            }
-        });
-    </script>
-
-
-    <script>
-        window.addEventListener('beforeprint', function () {
-            document.querySelector('aside').style.display = 'none';
-            document.querySelectorAll('header').forEach(el => el.style.display = 'none');
-            const mainContent = document.querySelector('aside').nextElementSibling;
-            if (mainContent) {
-                mainContent.style.marginLeft = '0';
-                mainContent.style.width = '100%';
-            }
-        });
-
-        window.addEventListener('afterprint', function () {
-            document.querySelector('aside').style.display = '';
-            document.querySelectorAll('header').forEach(el => el.style.display = '');
-            const mainContent = document.querySelector('aside').nextElementSibling;
-            if (mainContent) {
-                mainContent.style.marginLeft = '';
-                mainContent.style.width = '';
-            }
-        });
     </script>
 
 </body>

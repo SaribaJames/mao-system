@@ -3,12 +3,12 @@
 @section('content')
 
 <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-800">New Request</h2>
-    <p class="text-gray-500 text-sm mt-1">Submit a farmer request</p>
+    <h2 class="text-3xl font-bold tracking-tight text-gray-900">New Request</h2>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Submit a farmer request</p>
 </div>
 
 @if($errors->any())
-    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+    <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-sm rounded-md p-3 mb-4">
         <ul class="list-disc list-inside">
             @foreach($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -20,14 +20,14 @@
 <form method="POST" action="{{ route('requests.store') }}">
 @csrf
 
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 mb-4">
-    <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Request Details</h3>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5 mb-4">
+    <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Request Details</h3>
 
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Farmer <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Farmer <span class="text-red-500">*</span></label>
             <select name="farmer_id" required
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">Select Farmer</option>
                 @foreach($farmers as $farmer)
                     <option value="{{ $farmer->id }}" {{ old('farmer_id') == $farmer->id ? 'selected' : '' }}>
@@ -37,9 +37,9 @@
             </select>
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Request Type <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Request Type <span class="text-red-500">*</span></label>
             <select name="request_type" required
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">Select Type</option>
                 <option value="seeds_distribution">Seeds Distribution</option>
                 <option value="fertilizer_request">Fertilizer Request</option>
@@ -55,14 +55,14 @@
 
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Item/Service <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Item/Service <span class="text-red-500">*</span></label>
             <input type="text" name="item_service" value="{{ old('item_service') }}" required
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                   class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Stock Item (if applicable)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Stock Item (if applicable)</label>
             <select name="stock_id"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">Select Stock Item</option>
                 @foreach($stocks as $stock)
                     <option value="{{ $stock->id }}" {{ old('stock_id') == $stock->id ? 'selected' : '' }}>
@@ -75,21 +75,21 @@
 
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Quantity</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Quantity</label>
             <input type="number" step="0.01" name="quantity" value="{{ old('quantity') }}"
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                   class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Unit</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Unit</label>
             <input type="text" name="quantity_unit" value="{{ old('quantity_unit', 'kg') }}"
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                   class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
         </div>
     </div>
 
     <div>
-        <label class="block text-xs font-medium text-gray-600 mb-1">Purpose</label>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Purpose</label>
         <textarea name="purpose" rows="3"
-                  class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">{{ old('purpose') }}</textarea>
+                  class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">{{ old('purpose') }}</textarea>
     </div>
 </div>
 
@@ -99,7 +99,7 @@
         Submit Request
     </button>
     <a href="{{ route('requests.index') }}"
-       class="border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-6 py-2.5 rounded-md transition text-sm">
+       class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium px-6 py-2.5 rounded-md transition text-sm">
         Cancel
     </a>
 </div>

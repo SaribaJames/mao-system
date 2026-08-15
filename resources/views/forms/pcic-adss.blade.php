@@ -4,22 +4,22 @@
 
     <div class="mb-4 flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">PCIC ADSS Form</h2>
-            <p class="text-gray-500 text-sm mt-1">Accident and Dismemberment Security Scheme</p>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">PCIC ADSS Form</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Accident and Dismemberment Security Scheme</p>
         </div>
         <a href="{{ route('forms.index') }}"
-            class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
+            class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium px-4 py-2 rounded-md transition">
             ← Back
         </a>
     </div>
 
     {{-- Farmer Selection --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4">
-        <h3 class="text-sm font-bold text-gray-800 mb-3">Select Farmer (Optional)</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border-soft dark:border-gray-700 p-5 mb-4">
+        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 mb-3">Select Farmer (Optional)</h3>
         <p class="text-xs text-gray-400 mb-3">Select a farmer to auto-fill their information, or fill manually.</p>
         <form method="GET" action="{{ route('forms.pcic-adss') }}" class="flex gap-3">
             <select name="farmer_id"
-                class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">-- Select Farmer to Auto-fill --</option>
                 @foreach($farmers as $f)
                     <option value="{{ $f->id }}" {{ request('farmer_id') == $f->id ? 'selected' : '' }}>
@@ -32,7 +32,7 @@
                 Auto-fill
             </button>
             <a href="{{ route('forms.pcic-adss') }}"
-                class="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-md text-sm transition">
+                class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2 rounded-md text-sm transition">
                 Clear
             </a>
         </form>

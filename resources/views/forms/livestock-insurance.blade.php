@@ -6,12 +6,12 @@
     <a href="{{ route('livestock-insurance.index') }}" class="text-xs text-gray-400 hover:text-primary">
         <i class="fa-solid fa-arrow-left"></i> Back to Applications
     </a>
-    <h2 class="text-2xl font-bold text-gray-800 mt-1">New Livestock Insurance Application</h2>
-    <p class="text-gray-500 text-sm mt-1">LIV-UPI-01</p>
+    <h2 class="text-3xl font-bold tracking-tight text-gray-900 mt-1">New Livestock Insurance Application</h2>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">LIV-UPI-01</p>
 </div>
 
 @if($errors->any())
-<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md p-3 mb-4">
+<div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-sm rounded-md p-3 mb-4">
     <ul class="list-disc list-inside">
         @foreach($errors->all() as $error)
         <li>{{ $error }}</li>
@@ -20,10 +20,10 @@
 </div>
 @endif
 
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
-    <label class="block text-xs text-gray-500 mb-1">Farmer <span class="text-red-500">*</span></label>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-4 mb-4">
+    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Farmer <span class="text-red-500">*</span></label>
     <select id="farmer-select" form="liv-form" name="farmer_id" required
-        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
         <option value="">Select farmer...</option>
         @foreach($farmers as $farmer)
         <option value="{{ $farmer->id }}">{{ $farmer->surname }}, {{ $farmer->first_name }} — {{ $farmer->barangay?->name }}</option>

@@ -4,7 +4,7 @@
 
     <div class="mb-4 flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Register Farmer</h2>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">Register Farmer</h2>
             <p class="text-gray-500 text-sm mt-1">ANI AT KITA — RSBSA Enrollment Form</p>
         </div>
         <a href="{{ route('farmers.index') }}"

@@ -4,8 +4,8 @@
 
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-2xl font-bold text-gray-800">Activities</h2>
-        <p class="text-gray-500 text-sm mt-1">Announcements, schedules, and upcoming events</p>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900">Activities</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Announcements, schedules, and upcoming events</p>
     </div>
     @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
     <button onclick="openAddModal()"
@@ -17,7 +17,7 @@
 
 {{-- Success Message --}}
 @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md p-3 mb-4">
+    <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm rounded-md p-3 mb-4">
         {{ session('success') }}
     </div>
 @endif
@@ -26,24 +26,24 @@
 <div class="flex gap-2 mb-6">
     <a href="{{ route('activities.index', ['type' => 'announcement']) }}"
        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
-              {{ $type === 'announcement' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
+              {{ $type === 'announcement' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
         <i class="fa-solid fa-bullhorn"></i>
         Announcements
-        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'announcement' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $announcements }}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'announcement' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ $announcements }}</span>
     </a>
     <a href="{{ route('activities.index', ['type' => 'training']) }}"
        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
-              {{ $type === 'training' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
+              {{ $type === 'training' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
         <i class="fa-solid fa-chalkboard-user"></i>
         Training Programs
-        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'training' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $trainings }}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'training' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ $trainings }}</span>
     </a>
     <a href="{{ route('activities.index', ['type' => 'event']) }}"
        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
-              {{ $type === 'event' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
+              {{ $type === 'event' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
         <i class="fa-solid fa-calendar-days"></i>
         Events
-        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'event' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $events }}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'event' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ $events }}</span>
     </a>
 </div>
 
@@ -74,7 +74,7 @@
         $actAuthor   = e($activity->createdBy?->name ?? 'System');
     @endphp
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition cursor-pointer"
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border-soft dark:border-gray-700 overflow-hidden hover:shadow-md transition cursor-pointer"
          onclick="openViewModal({{ $actId }})">
 
         {{-- Card Top Banner --}}
@@ -92,7 +92,7 @@
 
         {{-- Card Body --}}
         <div class="p-4">
-            <p class="text-sm text-gray-600 leading-relaxed line-clamp-3">
+            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
                 {{ $activity->content }}
             </p>
 
@@ -108,7 +108,7 @@
             </div>
             @endif
 
-            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50 dark:border-gray-700">
                 <div class="text-xs text-gray-400">
                     <span>{{ $activity->created_at->format('M j, Y') }}</span>
                     <span class="mx-1">•</span>
@@ -149,11 +149,11 @@
 @endif
 
 @else
-<div class="bg-white rounded-xl border border-gray-100 p-16 text-center">
-    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-border-soft dark:border-gray-700 p-16 text-center">
+    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
         <i class="fa-solid {{ $type === 'announcement' ? 'fa-bullhorn' : ($type === 'training' ? 'fa-chalkboard-user' : 'fa-calendar-days') }} text-gray-400 text-2xl"></i>
     </div>
-    <h3 class="text-base font-semibold text-gray-600 mb-1">No {{ ucfirst($type) }}s Yet</h3>
+    <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 mb-1">No {{ ucfirst($type) }}s Yet</h3>
     <p class="text-sm text-gray-400">No {{ $type }}s have been posted yet.</p>
     @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
     <button onclick="openAddModal()"
@@ -166,7 +166,7 @@
 
 {{-- View Full Modal --}}
 <div id="viewModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
         <div id="viewModalBanner" class="bg-primary p-6 text-white">
             <div class="flex items-center justify-between mb-3">
                 <span id="viewModalPriority" class="text-xs font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full"></span>
@@ -177,16 +177,16 @@
             <h2 id="viewModalTitle" class="text-xl font-bold leading-tight"></h2>
         </div>
         <div class="p-6">
-            <p id="viewModalContent" class="text-gray-700 text-sm leading-relaxed mb-4"></p>
+            <p id="viewModalContent" class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-4"></p>
             <div id="viewModalDate" class="text-xs text-primary font-medium mb-1 hidden">
                 <i class="fa-solid fa-calendar mr-1"></i>
                 <span id="viewModalDateText"></span>
             </div>
-            <div id="viewModalLocation" class="text-xs text-gray-500 mb-4 hidden">
+            <div id="viewModalLocation" class="text-xs text-gray-500 dark:text-gray-400 mb-4 hidden">
                 <i class="fa-solid fa-location-dot mr-1"></i>
                 <span id="viewModalLocationText"></span>
             </div>
-            <div class="border-t border-gray-100 pt-3 text-xs text-gray-400">
+            <div class="border-t border-border-soft dark:border-gray-700 pt-3 text-xs text-gray-400">
                 <span>Posted: </span><span id="viewModalPostedDate"></span>
                 <span class="mx-1">•</span>
                 <span>By: </span><span id="viewModalAuthor"></span>
@@ -198,10 +198,10 @@
 {{-- Add Modal --}}
 @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
 <div id="addModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 p-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg mx-4 p-6">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold text-gray-800">Add New Post</h3>
-            <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100">Add New Post</h3>
+            <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                 <i class="fa-solid fa-x"></i>
             </button>
         </div>
@@ -211,18 +211,18 @@
             <div class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Type</label>
                         <select name="type" id="typeSelect" required
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="announcement">Announcement</option>
                             <option value="training">Training Program</option>
                             <option value="event">Event</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Priority</label>
                         <select name="priority" required
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="normal">Normal</option>
                             <option value="high">High</option>
                             <option value="low">Low</option>
@@ -230,25 +230,25 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Title</label>
                     <input type="text" name="title" required
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                           class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Content</label>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Content</label>
                     <textarea name="body" rows="4" required
-                              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                              class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Date (optional)</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Date (optional)</label>
                         <input type="date" name="event_date"
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Location (optional)</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Location (optional)</label>
                         <input type="text" name="location"
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
             </div>
@@ -258,7 +258,7 @@
                     Post
                 </button>
                 <button type="button" onclick="closeAddModal()"
-                        class="flex-1 border border-gray-300 text-gray-600 font-medium py-2 rounded-md transition text-sm hover:bg-gray-50">
+                        class="flex-1 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-medium py-2 rounded-md transition text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
                     Cancel
                 </button>
             </div>

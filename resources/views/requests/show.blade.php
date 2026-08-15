@@ -4,11 +4,11 @@
 
 <div class="mb-6 flex items-center justify-between">
     <div>
-        <h2 class="text-2xl font-bold text-gray-800">Request Details</h2>
-        <p class="text-gray-500 text-sm mt-1 font-mono">{{ $request->request_number }}</p>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900">Request Details</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 font-mono">{{ $request->request_number }}</p>
     </div>
     <a href="{{ route('requests.index') }}"
-       class="border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2 rounded-md transition">
+       class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium px-4 py-2 rounded-md transition">
         ← Back
     </a>
 </div>
@@ -17,63 +17,63 @@
 
     {{-- Request Info --}}
     <div class="col-span-2 space-y-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-            <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Request Information</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Request Information</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Request Type</p>
-                    <p class="font-medium text-gray-800">{{ $request->request_type_label }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Request Type</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $request->request_type_label }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Item/Service</p>
-                    <p class="font-medium text-gray-800">{{ $request->item_service }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Item/Service</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $request->item_service }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Quantity</p>
-                    <p class="font-medium text-gray-800">
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Quantity</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">
                         {{ $request->quantity ? $request->quantity . ' ' . $request->quantity_unit : '—' }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Date Submitted</p>
-                    <p class="font-medium text-gray-800">
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Date Submitted</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">
                         {{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('M d, Y') : '—' }}
                     </p>
                 </div>
                 <div class="col-span-2">
-                    <p class="text-xs text-gray-400 mb-1">Purpose</p>
-                    <p class="font-medium text-gray-800">{{ $request->purpose ?? '—' }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Purpose</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $request->purpose ?? '—' }}</p>
                 </div>
                 @if($request->remarks)
                 <div class="col-span-2">
-                    <p class="text-xs text-gray-400 mb-1">Remarks</p>
-                    <p class="font-medium text-gray-800">{{ $request->remarks }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Remarks</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $request->remarks }}</p>
                 </div>
                 @endif
             </div>
         </div>
 
         {{-- Farmer Info --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-            <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Farmer Information</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Farmer Information</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Name</p>
-                    <p class="font-medium text-gray-800">
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Name</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">
                         {{ $request->farmer->first_name }} {{ $request->farmer->surname }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Barangay</p>
-                    <p class="font-medium text-gray-800">{{ $request->farmer->barangay?->name ?? '—' }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Barangay</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $request->farmer->barangay?->name ?? '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Contact</p>
-                    <p class="font-medium text-gray-800">{{ $request->farmer->mobile_number ?? '—' }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Contact</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $request->farmer->mobile_number ?? '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 mb-1">Reference No.</p>
-                    <p class="font-medium text-gray-800 font-mono text-xs">
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Reference No.</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100 font-mono text-xs">
                         {{ $request->farmer->reference_number }}
                     </p>
                 </div>
@@ -83,17 +83,17 @@
 
     {{-- Status & Actions --}}
     <div class="space-y-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-            <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Status</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Status</h3>
             @php
                 $colors = [
-                    'pending'   => 'bg-yellow-100 text-yellow-700',
-                    'approved'  => 'bg-blue-100 text-blue-700',
-                    'rejected'  => 'bg-red-100 text-red-700',
-                    'completed' => 'bg-green-100 text-green-700',
+                    'pending'   => 'bg-accent/10 text-accent border border-accent/30',
+                    'approved'  => 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+                    'rejected'  => 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+                    'completed' => 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
                 ];
             @endphp
-            <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $colors[$request->status] ?? 'bg-gray-100 text-gray-600' }}">
+            <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $colors[$request->status] ?? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                 {{ ucfirst($request->status) }}
             </span>
 
@@ -108,23 +108,23 @@
         {{-- Update Status (Admin & Staff only) --}}
         @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
         @if($request->status === 'pending')
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-            <h3 class="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Update Status</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Update Status</h3>
             <form method="POST" action="{{ route('requests.status', $request) }}">
                 @csrf
                 <div class="mb-3">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Action</label>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Action</label>
                     <select name="status" required
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="approved">Approve</option>
                         <option value="rejected">Reject</option>
                         <option value="completed">Complete</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Remarks</label>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Remarks</label>
                     <textarea name="remarks" rows="2"
-                              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                              class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                 </div>
                 <button type="submit"
                         class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2 rounded-md transition text-sm">
