@@ -3,13 +3,20 @@
 @section('content')
 
 <div class="mb-6 flex items-center gap-3">
-    <a href="{{ route('dashboard') }}"
+    <a href="{{ route('messages.chat') }}"
        class="text-gray-400 hover:text-gray-600 transition">
         <i class="fa-solid fa-arrow-left"></i>
     </a>
+    @if($user->photo)
+        <img src="{{ asset('storage/' . $user->photo) }}" class="w-9 h-9 rounded-full object-cover"/>
+    @else
+        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
+            <span class="text-white text-sm font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+        </div>
+    @endif
     <div>
-        <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">MAO Support</h2>
-        <p class="text-xs text-gray-400">Municipal Agriculture Office — Guinobatan</p>
+        <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">{{ $user->name }}</h2>
+        <p class="text-xs text-gray-400">{{ $isAdminThread ? 'MAO Admin' : 'Program Coordinator' }}</p>
     </div>
 </div>
 
@@ -31,11 +38,6 @@
                         ? 'bg-primary text-white border-primary-dark'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 border-gray-200 dark:border-gray-600' }}">
                     {{ $message->message }}
-                    @if($message->mentionedUser)
-                        <div class="mt-1.5 pt-1.5 border-t {{ $isMine ? 'border-white/20' : 'border-gray-300 dark:border-gray-600' }} text-xs {{ $isMine ? 'text-white/80' : 'text-primary dark:text-primary' }}">
-                            <i class="fa-solid fa-at mr-1"></i>{{ $message->mentionedUser->name }}
-                        </div>
-                    @endif
                 </div>
                 @endif
 
@@ -67,7 +69,7 @@
         <div class="text-center text-gray-400 py-8">
             <i class="fa-solid fa-comments text-2xl mb-2"></i>
             <p class="text-sm">No messages yet.</p>
-            <p class="text-xs mt-1">Send a message to MAO staff for assistance!</p>
+            <p class="text-xs mt-1">Send a message to get started!</p>
         </div>
         @endforelse
     </div>
@@ -76,8 +78,17 @@
     <div class="border-t border-gray-200 dark:border-gray-700 p-4">
         <form method="POST" action="{{ route('messages.send') }}" class="space-y-2" enctype="multipart/form-data" id="chatForm">
             @csrf
-            <input type="hidden" name="receiver_id" value="{{ $admin->id }}">
-            <input type="hidden" name="mentioned_user_id" id="mentionedUserId">
+
+            @if($isAdminThread)
+                <input type="hidden" name="receiver_id" value="{{ $user->id }}">
+                <input type="hidden" name="mentioned_user_id" id="mentionedUserId">
+            @else
+                {{-- Replying directly within a coordinator thread: message goes to
+                     Admin as usual, but is mentioned/routed to this same coordinator
+                     so it stays in this thread --}}
+                <input type="hidden" name="receiver_id" value="{{ $admin?->id }}">
+                <input type="hidden" name="mentioned_user_id" value="{{ $user->id }}">
+            @endif
 
             <div id="filePreview" class="hidden items-center gap-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded px-3 py-1.5 text-xs text-gray-600 dark:text-gray-300 w-fit">
                 <i class="fa-solid fa-paperclip"></i>
@@ -88,7 +99,9 @@
             </div>
 
             <div class="relative">
+                @if($isAdminThread)
                 <div id="mentionDropdown" class="hidden absolute bottom-full mb-1 left-0 w-64 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded shadow-lg z-20 max-h-48 overflow-y-auto"></div>
+                @endif
 
                 <div class="flex gap-3">
                     <label for="attachmentInput" class="flex-shrink-0 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition">
@@ -98,7 +111,7 @@
                            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
 
                     <input type="text" name="message" id="messageInput"
-                           placeholder="Type your message... use @ to ask a specific program coordinator"
+                           placeholder="{{ $isAdminThread ? 'Type your message... use @ to ask a specific program coordinator' : 'Reply to ' . $user->name . '...' }}"
                            autocomplete="off"
                            class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     <button type="submit"
@@ -107,7 +120,9 @@
                     </button>
                 </div>
             </div>
+            @if($isAdminThread)
             <p class="text-xs text-gray-400">Tip: type <span class="font-mono">@</span> followed by a coordinator's name to route your question to them directly.</p>
+            @endif
         </form>
     </div>
 </div>
@@ -134,7 +149,8 @@
         filePreview.classList.remove('flex');
     }
 
-    // @mention autocomplete
+    @if($isAdminThread)
+    // @mention autocomplete — only shown on the Admin thread
     const mentionable = @json($mentionable);
     const messageInput = document.getElementById('messageInput');
     const mentionDropdown = document.getElementById('mentionDropdown');
@@ -147,7 +163,7 @@
         const atIndex = upToCursor.lastIndexOf('@');
         if (atIndex === -1) return null;
         const afterAt = upToCursor.slice(atIndex + 1);
-        if (/\s/.test(afterAt)) return null; // space after @ means mention already finished
+        if (/\s/.test(afterAt)) return null;
         return { query: afterAt.toLowerCase(), atIndex };
     }
 
@@ -192,12 +208,12 @@
         }
     });
 
-    // Clear the mention lock if the user deletes the @name text entirely
     messageInput.addEventListener('input', function () {
         if (mentionedUserIdField.value && !messageInput.value.includes('@')) {
             mentionedUserIdField.value = '';
         }
     });
+    @endif
 </script>
 
 @endsection

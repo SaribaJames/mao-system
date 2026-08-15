@@ -3,18 +3,8 @@
 @section('content')
 
 <div class="mb-6">
-    <h2 class="text-3xl font-bold tracking-tight text-gray-900">Messages</h2>
-    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Conversations with Barangay Representatives</p>
-    @if(Auth::user()->role?->name === 'staff')
-    <a href="{{ route('messages.mentions') }}" class="text-xs font-semibold text-primary hover:underline mt-2 inline-block">
-        <i class="fa-solid fa-at mr-1"></i>View messages that mention you →
-    </a>
-    @endif
-    @if(Auth::user()->isAdmin())
-    <a href="{{ route('messages.monitor') }}" class="text-xs font-semibold text-primary hover:underline mt-2 inline-block">
-        <i class="fa-solid fa-eye mr-1"></i>View Coordinator Conversations →
-    </a>
-    @endif
+    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Messages</h2>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Municipal Agriculture Office — Guinobatan</p>
 </div>
 
 @if(session('success'))
@@ -26,38 +16,36 @@
 <div class="mb-4">
     <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="conversationSearch" placeholder="Search by name or barangay..."
+        <input type="text" id="conversationSearch" placeholder="Search conversations..."
                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
     </div>
 </div>
 
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border-soft dark:border-gray-700 overflow-hidden">
-    @forelse($conversations as $user)
-    <a href="{{ route('messages.conversation', $user) }}"
-       data-search="{{ strtolower($user->name . ' ' . ($user->barangayAccount?->barangay?->name ?? '')) }}"
+    @forelse($threads as $thread)
+    <a href="{{ route('messages.rep-conversation', $thread['user']) }}"
+       data-search="{{ strtolower($thread['user']->name . ' ' . $thread['label']) }}"
        class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition border-b border-gray-50 dark:border-gray-700 last:border-0">
         {{-- Avatar --}}
-        @if($user->photo)
-            <img src="{{ asset('storage/' . $user->photo) }}"
+        @if($thread['user']->photo)
+            <img src="{{ asset('storage/' . $thread['user']->photo) }}"
                  class="w-10 h-10 rounded-full object-cover flex-shrink-0"/>
         @else
             <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span class="text-white text-sm font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                <span class="text-white text-sm font-bold">{{ strtoupper(substr($thread['user']->name, 0, 1)) }}</span>
             </div>
         @endif
 
         {{-- Info --}}
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $user->name }}</p>
-            <p class="text-xs text-gray-400">
-                {{ $user->barangayAccount?->barangay?->name ?? 'Barangay Rep' }}
-            </p>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $thread['user']->name }}</p>
+            <p class="text-xs text-gray-400">{{ $thread['label'] }}</p>
         </div>
 
         {{-- Unread badge --}}
-        @if($user->unread_count > 0)
+        @if($thread['unread'] > 0)
         <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-            {{ $user->unread_count }}
+            {{ $thread['unread'] }}
         </span>
         @endif
 
@@ -67,7 +55,7 @@
     <div class="px-5 py-12 text-center text-gray-400">
         <i class="fa-solid fa-comments text-3xl mb-3"></i>
         <p class="text-sm">No conversations yet.</p>
-        <p class="text-xs mt-1">Barangay Reps can message you from their dashboard.</p>
+        <p class="text-xs mt-1">MAO Admin will appear here once you send a message.</p>
     </div>
     @endforelse
 </div>

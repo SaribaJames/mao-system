@@ -71,10 +71,15 @@ Route::middleware('auth')->group(function () {
 
     // Messages
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
-    Route::get('/messages/chat', [MessageController::class, 'chat'])->name('messages.chat');
+    Route::get('/messages/chat', [MessageController::class, 'repInbox'])->name('messages.chat');
+    Route::get('/messages/rep-conversation/{user}', [MessageController::class, 'repConversation'])->name('messages.rep-conversation');
     Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
     Route::get('/messages/unread', [MessageController::class, 'unreadCount'])->name('messages.unread');
+    Route::get('/messages/mentions', [MessageController::class, 'mentions'])->name('messages.mentions');
+    Route::get('/messages/monitor', [MessageController::class, 'monitorIndex'])->name('messages.monitor');
+    Route::get('/messages/monitor/{rep}/{coordinator}', [MessageController::class, 'monitorShow'])->name('messages.monitor.show');
     Route::get('/messages/{user}', [MessageController::class, 'conversation'])->name('messages.conversation');
+    
 
     // Forms & Documents
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
