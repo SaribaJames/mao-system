@@ -41,3 +41,5 @@ RUN printf '<VirtualHost *:80>\n\
 </VirtualHost>\n' > /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
+
+CMD ["sh", "-c", "php artisan storage:link || true; apache2-foreground"]
