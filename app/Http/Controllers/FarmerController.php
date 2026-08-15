@@ -155,7 +155,7 @@ class FarmerController extends Controller
 
     public function show(Farmer $farmer)
     {
-        $farmer->load(['barangay', 'registeredBy', 'coconutFarmProfile.coconutTreeRecords', 'coconutFarmProfile.farmIncomeRecords']);
+        $farmer->load(['barangay', 'registeredBy', 'farmParcels', 'coconutFarmProfile.coconutTreeRecords', 'coconutFarmProfile.farmIncomeRecords']);
         return view('farmers.show', compact('farmer'));
     }
 

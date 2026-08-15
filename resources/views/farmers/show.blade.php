@@ -334,6 +334,228 @@
                 </div>
             </div>
 
+            {{-- Farm Parcels --}}
+            @if($farmer->farmParcels && $farmer->farmParcels->count() > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+                <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    Farm Parcel Information ({{ $farmer->farmParcels->count() }})
+                </h3>
+                <div class="space-y-4">
+                    @foreach($farmer->farmParcels as $parcel)
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                        <p class="text-xs font-bold text-primary uppercase tracking-wide mb-3">Parcel {{ $parcel->parcel_number }}</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Location</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">
+                                    {{ $parcel->farm_location_barangay ?? '—' }}{{ $parcel->farm_location_municipality ? ', ' . $parcel->farm_location_municipality : '' }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Total Farm Area</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 2) . ' ha' : '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Ownership Type</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100 capitalize">{{ str_replace('_', ' ', $parcel->ownership_type ?? '—') }}</p>
+                            </div>
+                            @if($parcel->owner_name)
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Owner/Tenant/Lessee Name</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->owner_name }}</p>
+                            </div>
+                            @endif
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Crop/Commodity</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->crop_commodity ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Size</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->size_ha ? number_format($parcel->size_ha, 2) . ' ha' : '—' }}</p>
+                            </div>
+                            @if($parcel->no_of_head)
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">No. of Head</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->no_of_head }}</p>
+                            </div>
+                            @endif
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Organic Practitioner</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->organic_practitioner ? 'Yes' : 'No' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Ancestral Domain</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->within_ancestral_domain ? 'Yes' : 'No' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Agrarian Reform Beneficiary</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->agrarian_reform_beneficiary ? 'Yes' : 'No' }}</p>
+                            </div>
+                            @if($parcel->ownership_document_code)
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Ownership Document Code</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->ownership_document_code }}</p>
+                            </div>
+                            @endif
+                            @if($parcel->remarks)
+                            <div class="col-span-2">
+                                <p class="text-xs text-gray-400 mb-0.5">Remarks</p>
+                                <p class="font-medium text-gray-800 dark:text-gray-100">{{ $parcel->remarks }}</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            {{-- Coconut Farm Profile --}}
+            @if($farmer->coconutFarmProfile)
+            @php $ccp = $farmer->coconutFarmProfile; @endphp
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+                <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    Coconut Farm Profile Supplement
+                </h3>
+
+                <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Land Holding Status</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100 capitalize">{{ str_replace('_', ' ', $ccp->coconut_land_holding_status ?? '—') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Farm Location</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">
+                            {{ $ccp->coconut_farm_location_barangay ?? '' }}
+                            @if($ccp->coconut_farm_location_municipality), {{ $ccp->coconut_farm_location_municipality }}@endif
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Total Land Area</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">{{ $ccp->land_area_absolute ? $ccp->land_area_absolute . ' ha' : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Area Classification</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100 capitalize">{{ str_replace('_', ' ', $ccp->area_classification ?? '—') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Coconut Area</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">{{ $ccp->land_area_coconut ? $ccp->land_area_coconut . ' ha' : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Intercrop Area</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">{{ $ccp->land_area_intercrop ? $ccp->land_area_intercrop . ' ha' : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Other Crop Area</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">{{ $ccp->land_area_other_crop ? $ccp->land_area_other_crop . ' ha' : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Idle Area</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">{{ $ccp->land_area_idle ? $ccp->land_area_idle . ' ha' : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Distance to Market</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">{{ $ccp->distance_to_market_km ? $ccp->distance_to_market_km . ' km' : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Harvesting Cycle</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-100 capitalize">{{ str_replace('_', ' ', $ccp->coco_harvesting_cycle ?? '—') }}</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                    @if($ccp->organic_certified)
+                        <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs">Organic Certified</span>
+                    @endif
+                    @if($ccp->gap_certified)
+                        <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs">GAP Certified</span>
+                    @endif
+                    @if($ccp->processing_dryer)
+                        <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs">Dryer {{ $ccp->processing_dryer_specify ? '(' . $ccp->processing_dryer_specify . ')' : '' }}</span>
+                    @endif
+                    @if($ccp->processing_charcoal_kiln)
+                        <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs">Charcoal Kiln</span>
+                    @endif
+                    @if($ccp->processing_decort_machine)
+                        <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs">Decorticating Machine</span>
+                    @endif
+                    @if($ccp->processing_others)
+                        <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">{{ $ccp->processing_others_specify ?? 'Other Processing' }}</span>
+                    @endif
+                </div>
+
+                {{-- Coconut Tree Records --}}
+                @if($ccp->coconutTreeRecords && $ccp->coconutTreeRecords->count() > 0)
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">Coconut Tree Records</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-1.5 pr-2 font-medium">Variety</th>
+                                    <th class="py-1.5 pr-2 font-medium">Year Planted</th>
+                                    <th class="py-1.5 pr-2 font-medium">No. of Trees</th>
+                                    <th class="py-1.5 pr-2 font-medium">Avg. Nut/Tree/Year</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($ccp->coconutTreeRecords as $tree)
+                                <tr class="border-b border-gray-100 dark:border-gray-800">
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $tree->variety_code ?? '—' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $tree->year_planted ?? '—' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $tree->no_of_trees ?? '—' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $tree->ave_nut_per_tree_year ?? '—' }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
+
+                {{-- Farm Income Records --}}
+                @if($ccp->farmIncomeRecords && $ccp->farmIncomeRecords->count() > 0)
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">Farm Income &amp; Expenses</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-1.5 pr-2 font-medium">Income Type</th>
+                                    <th class="py-1.5 pr-2 font-medium">Qty/ha/yr</th>
+                                    <th class="py-1.5 pr-2 font-medium">Unit Price</th>
+                                    <th class="py-1.5 pr-2 font-medium">Expense Type</th>
+                                    <th class="py-1.5 pr-2 font-medium">Expense Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($ccp->farmIncomeRecords as $income)
+                                <tr class="border-b border-gray-100 dark:border-gray-800">
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $income->income_type_code ?? '—' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $income->quantity_per_hectare_year ?? '—' }} {{ $income->unit ?? '' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $income->unit_price ? '₱' . number_format($income->unit_price, 2) : '—' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $income->expense_type_code ?? '—' }}</td>
+                                    <td class="py-1.5 pr-2 text-gray-700 dark:text-gray-200">{{ $income->expense_amount ? '₱' . number_format($income->expense_amount, 2) : '—' }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
+
+                @if($ccp->owner_or_tenant_lastname || $ccp->owner_or_tenant_firstname)
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-sm">
+                    <p class="text-xs text-gray-400 mb-1">Owner/Tenant</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">
+                        {{ $ccp->owner_or_tenant_firstname }} {{ $ccp->owner_or_tenant_middlename }} {{ $ccp->owner_or_tenant_lastname }} {{ $ccp->owner_or_tenant_extension }}
+                    </p>
+                </div>
+                @endif
+            </div>
+            @endif
+
         </div>
 
         {{-- Right: Sidebar --}}
