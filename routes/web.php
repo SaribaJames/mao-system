@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Activities
     Route::resource('activities', ActivityController::class)->only(['index', 'store', 'destroy']);
+    
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -94,6 +95,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/programs/{program}/unlock', [ProgramController::class, 'unlock'])->name('programs.unlock');
     Route::post('/programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
     Route::post('/program-enrollments/{enrollment}/status', [ProgramController::class, 'updateEnrollment'])->name('program-enrollments.status');
+    Route::post('/programs/{program}/achievements', [ProgramController::class, 'storeAchievement'])->name('programs.achievements.store');
+    Route::delete('/programs/achievements/{achievement}', [ProgramController::class, 'destroyAchievement'])->name('programs.achievements.destroy');
 
     Route::get('/farmers/create/db', [FarmerController::class, 'createDb'])->name('farmers.create.db');
 

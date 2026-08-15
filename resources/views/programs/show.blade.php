@@ -477,6 +477,70 @@
         @endif
         {{-- End Swine Dispersal only section --}}
 
+        {{-- Program Achievements — bulletin board, also shown publicly on the landing page --}}
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Achievements Bulletin Board</h3>
+            @if($isAssignedUser && $isUnlocked)
+                <button onclick="document.getElementById('add-achievement-modal').classList.remove('hidden')"
+                    class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+                    <i class="fa-solid fa-camera"></i> Post Photo
+                </button>
+            @endif
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            @forelse($program->achievements as $achievement)
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 overflow-hidden">
+                <img src="{{ asset('storage/' . $achievement->photo_path) }}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition"
+                     onclick="openLightbox('{{ asset('storage/' . $achievement->photo_path) }}', '{{ addslashes($achievement->caption ?: 'No caption') }}')">
+                <div class="p-3">
+                    <p class="text-sm text-gray-700 dark:text-gray-200">{{ $achievement->caption ?: 'No caption' }}</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <p class="text-xs text-gray-400">{{ $achievement->created_at->format('M d, Y') }}</p>
+                        @if($isAssignedUser && $isUnlocked)
+                        <form method="POST" action="{{ route('programs.achievements.destroy', $achievement) }}"
+                              onsubmit="return confirm('Remove this photo?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="text-red-500 hover:underline text-xs font-medium">Remove</button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-8 text-center text-gray-400 text-sm">
+                No achievement photos posted yet.
+            </div>
+            @endforelse
+        </div>
+
+        @if($isAssignedUser && $isUnlocked)
+        <div id="add-achievement-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-800 dark:text-gray-100">Post Achievement Photo</h3>
+                    <button onclick="document.getElementById('add-achievement-modal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form method="POST" action="{{ route('programs.achievements.store', $program) }}" enctype="multipart/form-data">
+                    @csrf
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Photo</label>
+                    <input type="file" name="photo" accept="image/*" required
+                        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm mb-3">
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Caption (optional)</label>
+                    <textarea name="caption" rows="3" placeholder="e.g. Piglet distribution day at Barangay Poblacion, August 2026"
+                        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                    <button type="submit"
+                        class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
+                        Post Photo
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
+
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Activities & Budget Planning</h3>
             <div class="flex items-center gap-2">
@@ -901,5 +965,29 @@
         </script>
 
     @endif
+
+    {{-- Achievement photo lightbox --}}
+    <div id="lightbox" class="hidden fixed inset-0 bg-black/90 z-50 items-center justify-center p-6" onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-2xl hover:text-accent transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-4xl w-full" onclick="event.stopPropagation()">
+            <img id="lightboxImg" src="" class="w-full max-h-[75vh] object-contain rounded-lg">
+            <p id="lightboxCaption" class="text-white text-base text-center mt-4"></p>
+        </div>
+    </div>
+
+    <script>
+        function openLightbox(src, caption) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxCaption').textContent = caption;
+            document.getElementById('lightbox').classList.remove('hidden');
+            document.getElementById('lightbox').classList.add('flex');
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.getElementById('lightbox').classList.remove('flex');
+        }
+    </script>
 
 @endsection

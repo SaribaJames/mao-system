@@ -45,10 +45,13 @@ class Program extends Model
         };
     }
 
+    public function achievements()
+    {
+        return $this->hasMany(ProgramAchievement::class)->latest();
+    }
+
     public function activities()
     {
         return $this->hasMany(ProgramActivity::class);
     }
-
-    
 }

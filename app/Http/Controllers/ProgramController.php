@@ -64,6 +64,7 @@ class ProgramController extends Controller
             'isAssignedUser',
             'isUnlocked'
         ));
+        $program->load('achievements');
     }
 
     public function unlock(Request $request, Program $program)
@@ -175,6 +176,37 @@ class ProgramController extends Controller
 
         return redirect()->route('programs.show', $program)
             ->with('success', 'Activity added successfully!');
+    }
+
+    public function storeAchievement(Request $request, Program $program)
+    {
+        $this->authorizeManage($program);
+
+        $request->validate([
+            'photo' => 'required|image|max:5120',
+            'caption' => 'nullable|string|max:500',
+        ]);
+
+        $path = $request->file('photo')->store('program-achievements', 'public');
+
+        $program->achievements()->create([
+            'photo_path' => $path,
+            'caption' => $request->caption,
+            'posted_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('programs.show', $program)
+            ->with('success', 'Achievement photo posted!');
+    }
+
+    public function destroyAchievement(\App\Models\ProgramAchievement $achievement)
+    {
+        $this->authorizeManage($achievement->program);
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($achievement->photo_path);
+        $achievement->delete();
+
+        return redirect()->back()->with('success', 'Achievement photo removed.');
     }
 
     public function updateActivity(Request $request, \App\Models\ProgramActivity $activity)

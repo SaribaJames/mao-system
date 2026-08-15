@@ -12,11 +12,9 @@ class StockController extends Controller
 {
     public function index(Request $request)
     {
-        // The link stays visible to all staff — access is enforced with an
-        // in-page note instead of hiding the nav item or throwing a 403 page.
-        $canAccess = Auth::user()->isAdmin() || Auth::user()->managesStocks();
+        $canAccess = Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff';
 
-        if (!$canAccess) {
+        if (! $canAccess) {
             return view('stocks.index', [
                 'canAccess' => false,
                 'stocks' => collect(),
@@ -33,8 +31,8 @@ class StockController extends Controller
         }
 
         $stocks = $query->latest()->paginate(15)->withQueryString();
-        $totalStock = Stock::sum('total_stock');
-        $releasedStock = Stock::sum('released_stock');
+        $totalStock     = Stock::sum('total_stock');
+        $releasedStock  = Stock::sum('released_stock');
         $remainingStock = Stock::sum('remaining_stock');
         return view('stocks.index', compact('stocks', 'totalStock', 'releasedStock', 'remainingStock', 'canAccess'));
     }
@@ -45,38 +43,43 @@ class StockController extends Controller
 
         $request->validate([
             'item_name' => 'required|string|max:100',
-            'category' => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
-            'unit' => 'required|string|max:20',
-            'quantity' => 'required|numeric|min:0.01',
+            'category'  => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
+            'unit'      => 'required|string|max:20',
+            'quantity'  => 'required|numeric|min:0.01',
         ]);
 
+        // Equipment and Tools are countable items — no fractional units
+        if (in_array($request->category, ['equipment', 'tools']) && floor($request->quantity) != $request->quantity) {
+            return back()->withErrors(['quantity' => 'Equipment and Tools must be added in whole numbers (no decimals).'])->withInput();
+        }
+
         $stock = Stock::where('item_name', $request->item_name)
-            ->where('category', $request->category)
-            ->first();
+                      ->where('category', $request->category)
+                      ->first();
 
         if ($stock) {
-            $stock->total_stock += $request->quantity;
+            $stock->total_stock     += $request->quantity;
             $stock->remaining_stock += $request->quantity;
             $stock->updateStatus();
         } else {
             $stock = Stock::create([
-                'item_name' => $request->item_name,
-                'category' => $request->category,
-                'unit' => $request->unit,
-                'total_stock' => $request->quantity,
-                'released_stock' => 0,
+                'item_name'       => $request->item_name,
+                'category'        => $request->category,
+                'unit'            => $request->unit,
+                'total_stock'     => $request->quantity,
+                'released_stock'  => 0,
                 'remaining_stock' => $request->quantity,
-                'description' => $request->description,
-                'added_by' => Auth::id(),
+                'description'     => $request->description,
+                'added_by'        => Auth::id(),
             ]);
             $stock->updateStatus();
         }
 
         StockTransaction::create([
-            'stock_id' => $stock->id,
-            'type' => 'add',
-            'quantity' => $request->quantity,
-            'notes' => $request->notes,
+            'stock_id'     => $stock->id,
+            'type'         => 'add',
+            'quantity'     => $request->quantity,
+            'notes'        => $request->notes,
             'processed_by' => Auth::id(),
         ]);
 
@@ -89,21 +92,26 @@ class StockController extends Controller
         $this->authorizeAccess();
 
         $request->validate([
-            'quantity' => 'required|numeric|min:0.01|max:' . $stock->remaining_stock,
+            'quantity'  => 'required|numeric|min:0.01|max:' . $stock->remaining_stock,
             'recipient' => 'required|string|max:100',
         ]);
 
-        $stock->released_stock += $request->quantity;
+        // Equipment and Tools are countable items — no fractional units
+        if (in_array($stock->category, ['equipment', 'tools']) && floor($request->quantity) != $request->quantity) {
+            return back()->withErrors(['quantity' => 'Equipment and Tools must be released in whole numbers (no decimals).'])->withInput();
+        }
+
+        $stock->released_stock  += $request->quantity;
         $stock->remaining_stock -= $request->quantity;
         $stock->updateStatus();
 
         StockTransaction::create([
-            'stock_id' => $stock->id,
-            'type' => 'release',
-            'quantity' => $request->quantity,
-            'recipient' => $request->recipient,
-            'farmer_id' => $request->farmer_id,
-            'notes' => $request->notes,
+            'stock_id'     => $stock->id,
+            'type'         => 'release',
+            'quantity'     => $request->quantity,
+            'recipient'    => $request->recipient,
+            'farmer_id'    => $request->farmer_id,
+            'notes'        => $request->notes,
             'processed_by' => Auth::id(),
         ]);
 
@@ -120,15 +128,10 @@ class StockController extends Controller
             ->with('success', 'Stock item deleted successfully!');
     }
 
-    /**
-     * Actions (add/release/delete) still hard-block via abort — only index()
-     * shows a soft in-page note, since those aren't reachable from the UI
-     * anyway for restricted users, but this covers direct requests too.
-     */
     protected function authorizeAccess(): void
     {
         abort_unless(
-            Auth::user()->isAdmin() || Auth::user()->managesStocks(),
+            Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff',
             403,
             'You are not assigned to manage Stocks.'
         );

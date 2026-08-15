@@ -82,7 +82,7 @@
         <div class="text-center mb-12">
             <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-2">What We Offer</p>
             <h2 class="text-3xl font-bold text-gray-900">Our Services</h2>
-            <p class="text-gray-500 text-sm mt-2 max-w-xl mx-auto">
+            <p class="text-gray-500 text-sm mt-3 max-w-2xl mx-auto leading-relaxed">
                 Managed through this system by authorized barangay representatives and MAO personnel.
             </p>
         </div>
@@ -182,6 +182,37 @@
         </div>
     </section>
 
+    {{-- Program Achievements — real photos posted by coordinators --}}
+    @if($achievements->count() > 0)
+    <section class="bg-primary-light py-16">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-2">From the Field</p>
+                <h2 class="text-3xl font-bold text-gray-900">Program Achievements</h2>
+                <p class="text-gray-500 text-sm mt-2 max-w-xl mx-auto">
+                    Recent activities and milestones shared by our program coordinators.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                @foreach($achievements as $achievement)
+                <div class="rounded-xl overflow-hidden relative h-64 group cursor-pointer"
+                     onclick="openLightbox('{{ asset('storage/' . $achievement->photo_path) }}', '{{ addslashes($achievement->program->name) }}', '{{ addslashes($achievement->caption ?: 'Program activity update') }}')">
+                    <img src="{{ asset('storage/' . $achievement->photo_path) }}" alt="{{ $achievement->program->name }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-primary-dark/95 via-primary-dark/40 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-5">
+                        <p class="text-xs font-bold uppercase tracking-widest text-accent mb-1.5">{{ $achievement->program->name }}</p>
+                        <p class="text-sm text-gray-100 leading-relaxed">{{ $achievement->caption ?: 'Program activity update' }}</p>
+                        <p class="text-xs text-gray-300 mt-1.5">{{ $achievement->created_at->format('M d, Y') }}</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
     {{-- Access note --}}
     <section class="bg-white border-t border-b border-border-soft py-10">
         <div class="max-w-3xl mx-auto px-6 text-center">
@@ -201,6 +232,35 @@
             <p class="text-gray-300 text-xs mt-1">Municipality of Guinobatan, Province of Albay, Philippines</p>
         </div>
     </footer>
+
+
+    {{-- Lightbox --}}
+    <div id="lightbox" class="hidden fixed inset-0 bg-black/90 z-50 items-center justify-center p-6" onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-2xl hover:text-accent transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-4xl w-full" onclick="event.stopPropagation()">
+            <img id="lightboxImg" src="" class="w-full max-h-[75vh] object-contain rounded-lg">
+            <div class="mt-4 text-center">
+                <p id="lightboxProgram" class="text-accent font-bold text-sm uppercase tracking-widest mb-1"></p>
+                <p id="lightboxCaption" class="text-white text-base"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openLightbox(src, program, caption) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxProgram').textContent = program;
+            document.getElementById('lightboxCaption').textContent = caption;
+            document.getElementById('lightbox').classList.remove('hidden');
+            document.getElementById('lightbox').classList.add('flex');
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.getElementById('lightbox').classList.remove('flex');
+        }
+    </script>
 
 </body>
 </html>
