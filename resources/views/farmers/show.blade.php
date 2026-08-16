@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-4">
             @if($farmer->photo)
-                <img src="{{ asset('storage/' . $farmer->photo) }}" alt="Photo"
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($farmer->photo) }}" alt="Photo"
                     class="w-16 h-16 rounded-full object-cover border border-gray-200 flex-shrink-0">
             @else
                 <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center flex-shrink-0">

@@ -107,9 +107,15 @@ class FarmerController extends Controller
             $registrationStatus = 'pending';
         }
 
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('farmer-photos', 'cloudinary');
+        }
+
         $farmer = Farmer::create(array_merge(
-            $request->except('_token'),
+            $request->except('_token', 'photo'),
             [
+                'photo' => $photoPath,
                 'registered_by' => Auth::id(),
                 'barangay_id' => $barangayId,
                 'registration_status' => $registrationStatus,
@@ -170,8 +176,14 @@ class FarmerController extends Controller
     {
         $this->cleanNumericFields($request);
 
+        $updateData = $request->except('_token', '_method', 'photo');
+
+        if ($request->hasFile('photo')) {
+            $updateData['photo'] = $request->file('photo')->store('farmer-photos', 'cloudinary');
+        }
+
         $farmer->update(array_merge(
-            $request->except('_token', '_method'),
+            $updateData,
             [
                 'religion' => $request->religion === 'others' ? $request->religion_other : $request->religion,
                 'is_household_head' => $request->boolean('is_household_head'),

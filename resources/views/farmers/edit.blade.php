@@ -134,7 +134,7 @@
             <div class="photo-upload" style="top:2.81%;left:74.42%;width:21.45%;height:13.93%;">
                 <input type="file" name="photo" id="photoInput" accept="image/*" autocomplete="off">
                 <img id="photoPreview" class="photo-preview" alt="Preview"
-                    src="{{ $farmer->photo ? asset('storage/' . $farmer->photo) : '' }}"
+                    src="{{ $farmer->photo ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($farmer->photo) : '' }}"
                     style="display:{{ $farmer->photo ? 'block' : 'none' }};">
             </div>
 

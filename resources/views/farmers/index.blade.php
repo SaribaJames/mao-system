@@ -96,7 +96,7 @@
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
                         @if($farmer->photo)
-                        <img src="{{ asset('storage/' . $farmer->photo) }}"
+                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($farmer->photo) }}"
                              class="w-8 h-8 rounded-full object-cover border border-gray-200">
                         @else
                         <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary text-xs font-bold">
