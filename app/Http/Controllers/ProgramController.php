@@ -187,7 +187,7 @@ class ProgramController extends Controller
             'caption' => 'nullable|string|max:500',
         ]);
 
-        $path = $request->file('photo')->store('program-achievements', 'public');
+        $path = $request->file('photo')->store('program-achievements', 'cloudinary');
 
         $program->achievements()->create([
             'photo_path' => $path,

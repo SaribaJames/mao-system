@@ -491,8 +491,8 @@
         <div class="grid grid-cols-3 gap-4 mb-6">
             @forelse($program->achievements as $achievement)
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 overflow-hidden">
-                <img src="{{ asset('storage/' . $achievement->photo_path) }}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition"
-                     onclick="openLightbox('{{ asset('storage/' . $achievement->photo_path) }}', '{{ addslashes($achievement->caption ?: 'No caption') }}')">
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($achievement->photo_path) }}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition"
+                     onclick="openLightbox('{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($achievement->photo_path) }}', '{{ addslashes($achievement->caption ?: 'No caption') }}')">
                 <div class="p-3">
                     <p class="text-sm text-gray-700 dark:text-gray-200">{{ $achievement->caption ?: 'No caption' }}</p>
                     <div class="flex items-center justify-between mt-2">
