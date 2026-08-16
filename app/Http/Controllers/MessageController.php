@@ -72,7 +72,7 @@ class MessageController extends Controller
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
-            $attachmentPath = $file->store('chat-attachments', 'public');
+            $attachmentPath = $file->store('chat-attachments', 'cloudinary');
             $attachmentName = $file->getClientOriginalName();
             $attachmentSize = $file->getSize();
 

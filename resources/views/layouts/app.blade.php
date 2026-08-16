@@ -416,12 +416,12 @@
                             @if($msg->attachment_path)
                                 <div class="mt-1">
                                     @if($msg->attachment_type === 'image')
-                                        <a href="{{ asset('storage/' . $msg->attachment_path) }}" target="_blank">
-                                            <img src="{{ asset('storage/' . $msg->attachment_path) }}"
+                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($msg->attachment_path) }}" target="_blank">
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($msg->attachment_path) }}"
                                                 class="rounded border border-gray-300 dark:border-gray-600 max-w-full max-h-32 object-cover">
                                         </a>
                                     @else
-                                        <a href="{{ asset('storage/' . $msg->attachment_path) }}" target="_blank"
+                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($msg->attachment_path) }}" target="_blank"
                                             class="flex items-center gap-1.5 px-2 py-1.5 rounded border {{ $isMine ? 'bg-primary-dark border-primary-dark text-white' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300' }} text-xs hover:opacity-80 transition">
                                             <i class="fa-solid {{ $msg->attachment_type === 'pdf' ? 'fa-file-pdf' : 'fa-file-lines' }}"></i>
                                             <span class="truncate max-w-[100px]">{{ $msg->attachment_name }}</span>
