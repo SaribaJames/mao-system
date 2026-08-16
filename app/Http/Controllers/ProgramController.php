@@ -203,7 +203,7 @@ class ProgramController extends Controller
     {
         $this->authorizeManage($achievement->program);
 
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($achievement->photo_path);
+        \Illuminate\Support\Facades\Storage::disk('cloudinary')->delete($achievement->photo_path);
         $achievement->delete();
 
         return redirect()->back()->with('success', 'Achievement photo removed.');
