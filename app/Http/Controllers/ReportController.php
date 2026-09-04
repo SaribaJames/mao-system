@@ -225,7 +225,8 @@ class ReportController extends Controller
     {
         $totalFarmers = \App\Models\Farmer::count();
         $activeFarmers = \App\Models\Farmer::where('status', 'active')->count();
-        $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
+        $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)->count();
         $totalRequests = \App\Models\FarmerRequest::count();
         $pendingRequests = \App\Models\FarmerRequest::where('status', 'pending')->count();
         $completedRequests = \App\Models\FarmerRequest::where('status', 'completed')->count();
@@ -254,7 +255,8 @@ class ReportController extends Controller
     {
         $totalFarmers = \App\Models\Farmer::count();
         $activeFarmers = \App\Models\Farmer::where('status', 'active')->count();
-        $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)->count();
+        $newThisMonth = \App\Models\Farmer::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)->count();
         $totalRequests = \App\Models\FarmerRequest::count();
         $pendingRequests = \App\Models\FarmerRequest::where('status', 'pending')->count();
         $approvedRequests = \App\Models\FarmerRequest::where('status', 'approved')->count();

@@ -9,8 +9,9 @@ class FarmerRequest extends Model
     protected $table = 'requests';
 
     protected $fillable = [
-        'request_number', 'farmer_id', 'request_type',
-        'stock_id', 'item_service', 'quantity', 'quantity_unit',
+        'request_number', 'farmer_id', 'program_id', 'request_type',
+        'stock_id', 'stock_transaction_id', 'released_quantity',
+        'item_service', 'quantity', 'quantity_unit',
         'purpose', 'status', 'remarks',
         'submitted_by', 'processed_by', 'processed_at',
     ];
@@ -27,6 +28,18 @@ class FarmerRequest extends Model
     public function stock()
     {
         return $this->belongsTo(Stock::class);
+    }
+
+    /** The program this request falls under, if any. */
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    /** The actual stock release recorded when this request was completed. */
+    public function stockTransaction()
+    {
+        return $this->belongsTo(StockTransaction::class, 'stock_transaction_id');
     }
 
     public function submittedBy()

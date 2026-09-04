@@ -42,10 +42,14 @@ class StockController extends Controller
         $this->authorizeAccess();
 
         $request->validate([
-            'item_name' => 'required|string|max:100',
-            'category'  => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
-            'unit'      => 'required|string|max:20',
-            'quantity'  => 'required|numeric|min:0.01',
+            'item_name'        => 'required|string|max:100',
+            'category'         => 'required|in:seeds,fertilizer,pesticide,equipment,tools,others',
+            'unit'             => 'required|string|max:20',
+            'quantity'         => 'required|numeric|min:0.01',
+            'partner_name'     => 'required|string|max:150',
+            'reference_number' => 'nullable|string|max:100',
+            'received_date'    => 'required|date',
+            'attachment'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         // Equipment and Tools are countable items — no fractional units
@@ -53,8 +57,12 @@ class StockController extends Controller
             return back()->withErrors(['quantity' => 'Equipment and Tools must be added in whole numbers (no decimals).'])->withInput();
         }
 
+        // Match on unit too. Without it, 20 sacks added to an existing "kg" row
+        // becomes 20 kg — the quantities are added together as if the units
+        // were the same, and the row keeps showing the old unit.
         $stock = Stock::where('item_name', $request->item_name)
                       ->where('category', $request->category)
+                      ->where('unit', $request->unit)
                       ->first();
 
         if ($stock) {
@@ -75,16 +83,26 @@ class StockController extends Controller
             $stock->updateStatus();
         }
 
-        StockTransaction::create([
-            'stock_id'     => $stock->id,
-            'type'         => 'add',
-            'quantity'     => $request->quantity,
-            'notes'        => $request->notes,
-            'processed_by' => Auth::id(),
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('stock-receipts', 'cloudinary');
+        }
+
+        $transaction = StockTransaction::create([
+            'stock_id'         => $stock->id,
+            'type'             => 'add',
+            'quantity'         => $request->quantity,
+            'notes'            => $request->notes,
+            'processed_by'     => Auth::id(),
+            'partner_name'     => $request->partner_name,
+            'reference_number' => $request->reference_number,
+            'received_date'    => $request->received_date,
+            'attachment_path'  => $attachmentPath,
         ]);
 
         return redirect()->route('stocks.index')
-            ->with('success', "Stock '{$stock->item_name}' added successfully!");
+            ->with('success', "Stock '{$stock->item_name}' added successfully!")
+            ->with('newReceiptId', $transaction->id);
     }
 
     public function release(Request $request, Stock $stock)
@@ -128,12 +146,64 @@ class StockController extends Controller
             ->with('success', 'Stock item deleted successfully!');
     }
 
+    /**
+     * Receiving history — every "add" transaction, i.e. every batch of
+     * resources received from a partner/donor/source, filterable so the
+     * admin can pull up everything received from a specific partnership.
+     */
+    public function receipts(Request $request)
+    {
+        $this->authorizeAccess();
+
+        $query = StockTransaction::with(['stock', 'processedBy'])
+            ->where('type', 'add');
+
+        if ($request->filled('partner')) {
+            $query->where('partner_name', 'like', '%' . $request->partner . '%');
+        }
+
+        if ($request->filled('category')) {
+            $query->whereHas('stock', fn ($q) => $q->where('category', $request->category));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('received_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('received_date', '<=', $request->date_to);
+        }
+
+        $receipts = $query->latest('received_date')->paginate(15)->withQueryString();
+
+        return view('stocks.receipts', compact('receipts'));
+    }
+
+    /**
+     * Printable "Goods Received Report" for a single receiving transaction —
+     * the documentation proving the office received a specific batch of
+     * resources from a specific partner.
+     */
+    public function printReceipt(StockTransaction $transaction)
+    {
+        $this->authorizeAccess();
+
+        abort_unless($transaction->type === 'add', 404);
+
+        $transaction->load(['stock', 'processedBy']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.stock-receipt-pdf', compact('transaction'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('MAO-Goods-Received-' . $transaction->id . '.pdf');
+    }
+
     protected function authorizeAccess(): void
     {
         abort_unless(
             Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff',
             403,
-            'You are not assigned to manage Stocks.'
+            'Only MAO staff and admins can manage Stocks.'
         );
     }
 }

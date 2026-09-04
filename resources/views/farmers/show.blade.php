@@ -5,8 +5,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-4">
-            @if($farmer->photo)
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($farmer->photo) }}" alt="Photo"
+            @if($farmer->photo_url)
+                <img src="{{ $farmer->photo_url }}" alt="Photo"
                     class="w-16 h-16 rounded-full object-cover border border-gray-200 flex-shrink-0">
             @else
                 <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center flex-shrink-0">
@@ -332,6 +332,42 @@
                         </div>
                     @endif
                 </div>
+            </div>
+
+            {{-- Program Enrolments: what this farmer is currently part of, plus
+                 anything they finished or dropped out of. --}}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+                <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-seedling text-primary mr-1"></i>
+                    Program Enrolment
+                    @if($farmer->enrollments->count() > 0)
+                        <span class="text-sm font-normal text-gray-400">({{ $farmer->enrollments->count() }})</span>
+                    @endif
+                </h3>
+
+                @forelse($farmer->enrollments->sortByDesc('enrollment_date') as $enrollment)
+                    <div class="flex items-start justify-between py-2 {{ !$loop->last ? 'border-b border-gray-100 dark:border-gray-700' : '' }}">
+                        <div>
+                            <p class="font-medium text-gray-800 dark:text-gray-100 text-sm">
+                                {{ $enrollment->program?->name ?? 'Unknown program' }}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                Enrolled {{ $enrollment->enrollment_date?->format('M d, Y') ?? '—' }}
+                                @if($enrollment->processedBy)
+                                    · by {{ $enrollment->processedBy->name }}
+                                @endif
+                            </p>
+                            @if($enrollment->remarks)
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $enrollment->remarks }}</p>
+                            @endif
+                        </div>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 {{ $enrollment->status_color }}">
+                            {{ ucfirst($enrollment->status) }}
+                        </span>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-400">This farmer is not enrolled in any program yet.</p>
+                @endforelse
             </div>
 
             {{-- Farm Parcels --}}

@@ -221,18 +221,12 @@
                     </select>
                 </div>
 
-                {{-- Module Assignment: mutually exclusive Programs vs Stocks --}}
+                {{-- Program Assignment: optional. Stocks & Activities are open to every staff member — no assignment needed. --}}
                 <div id="moduleField" style="display:none;">
-                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Module Assignment</label>
-                    <select name="module_assignment" id="moduleSelect" onchange="toggleProgramsCheckboxes()"
-                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="">None</option>
-                        <option value="programs">Programs (choose specific program(s))</option>
-                        <option value="stocks">Stocks</option>
-                    </select>
-                    <p class="text-xs text-gray-400 mt-1">A staff member can be assigned to Programs OR Stocks, not both.</p>
+                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Assigned Program(s) <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <p class="text-xs text-gray-400 mb-1">Stocks and Activities are available to all staff automatically. Only check a program here if this person coordinates it specifically.</p>
 
-                    <div id="programsCheckboxes" style="display:none;" class="mt-2">
+                    <div id="programsCheckboxes" class="mt-1">
                         <div class="border border-gray-300 dark:border-gray-600 rounded-md p-2 max-h-36 overflow-y-auto space-y-1">
                             @foreach(\App\Models\Program::orderBy('name')->get() as $program)
                             <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 py-0.5">
@@ -294,16 +288,6 @@ function toggleRoleFields() {
 
     document.getElementById('barangayField').style.display = (roleName === 'barangay_user') ? 'block' : 'none';
     document.getElementById('moduleField').style.display = (roleName === 'staff') ? 'block' : 'none';
-
-    if (roleName !== 'staff') {
-        document.getElementById('moduleSelect').value = '';
-        document.getElementById('programsCheckboxes').style.display = 'none';
-    }
-}
-
-function toggleProgramsCheckboxes() {
-    const moduleSelect = document.getElementById('moduleSelect');
-    document.getElementById('programsCheckboxes').style.display = (moduleSelect.value === 'programs') ? 'block' : 'none';
 }
 
 document.getElementById('addUserModal').addEventListener('click', function(e) {

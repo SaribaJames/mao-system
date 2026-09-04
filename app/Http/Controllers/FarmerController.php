@@ -11,7 +11,9 @@ class FarmerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Farmer::with('barangay');
+        // activePrograms is eager-loaded so the program badge on each row
+        // doesn't fire a query per farmer.
+        $query = Farmer::with(['barangay', 'activePrograms']);
 
         if (Auth::user()->isBarangayUser()) {
             // Barangay user can only see their own barangay's farmers,
@@ -161,7 +163,9 @@ class FarmerController extends Controller
 
     public function show(Farmer $farmer)
     {
-        $farmer->load(['barangay', 'registeredBy', 'farmParcels', 'coconutFarmProfile.coconutTreeRecords', 'coconutFarmProfile.farmIncomeRecords']);
+        $farmer->load(['barangay', 'registeredBy', 'farmParcels',
+            'coconutFarmProfile.coconutTreeRecords', 'coconutFarmProfile.farmIncomeRecords',
+            'enrollments.program', 'enrollments.processedBy']);
         return view('farmers.show', compact('farmer'));
     }
 
@@ -244,6 +248,28 @@ class FarmerController extends Controller
         $templateId = $pdf->setSourceFile(resource_path('pdf/rsbsa_template.pdf'));
         $tpl = $pdf->importPage(1);
         $pdf->useTemplate($tpl, 0, 0, 595, 893);
+
+        // 2x2 ID photo, drawn into the "2x2 PICTURE" box on the template
+        if ($farmer->photo_url) {
+            $tmpPhoto = null;
+            try {
+                $imageContents = @file_get_contents($farmer->photo_url);
+                if ($imageContents !== false && $imageContents !== '') {
+                    $tmpPhoto = tempnam(sys_get_temp_dir(), 'farmer_photo_') . '.jpg';
+                    file_put_contents($tmpPhoto, $imageContents);
+                    // Box coordinates (pt) measured off the template: x 435.6-572.4, y 25.2-147.6
+                    $pdf->Image($tmpPhoto, 435.6, 25.2, 136.8, 122.4, '', '', '', true, 300, '', false, false, 0, 'CM', false, false, false);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning(
+                    "Farmer #{$farmer->id}: could not draw photo on printed form: {$e->getMessage()}"
+                );
+            } finally {
+                if ($tmpPhoto && file_exists($tmpPhoto)) {
+                    @unlink($tmpPhoto);
+                }
+            }
+        }
 
         $pdf->SetFont('helvetica', 'B', 9);
         $pdf->SetTextColor(0, 0, 0);

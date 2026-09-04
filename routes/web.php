@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     // Stocks
     Route::resource('stocks', StockController::class)->only(['index', 'store', 'destroy']);
     Route::post('/stocks/{stock}/release', [StockController::class, 'release'])->name('stocks.release');
+    Route::get('/stocks/receipts', [StockController::class, 'receipts'])->name('stocks.receipts.index');
+    Route::get('/stocks/receipts/{transaction}/print', [StockController::class, 'printReceipt'])->name('stocks.receipts.print');
 
     // Requests
     Route::get('/requests', [RequestController::class, 'index'])->name('requests.index');
@@ -45,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
     Route::get('/requests/{farmerRequest}', [RequestController::class, 'show'])->name('requests.show');
     Route::post('/requests/{farmerRequest}/status', [RequestController::class, 'updateStatus'])->name('requests.status');
+    Route::delete('/requests/{farmerRequest}', [RequestController::class, 'destroy'])->name('requests.destroy');
 
     // Users
     Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
@@ -106,11 +109,21 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/programs/{program}/report', [ProgramController::class, 'report'])->name('programs.report');
 
+    // Activity Recipients — the list of farmers who actually received resources
+    // during a program activity. Replaces the old Stocks-level "Group Release":
+    // releasing to a group now happens inside the coordinator's own program,
+    // so the accomplishment record and the released stock stay together.
+    Route::post('/programs/activities/{activity}/items', [ProgramController::class, 'updateActivityItems'])->name('programs.activities.items');
+    Route::post('/programs/activities/{activity}/recipients', [ProgramController::class, 'storeRecipient'])->name('programs.activities.recipients.store');
+    Route::post('/programs/activities/{activity}/recipients/bulk', [ProgramController::class, 'storeRecipientsFromFarmers'])->name('programs.activities.recipients.bulk');
+    Route::delete('/programs/recipients/{recipient}', [ProgramController::class, 'destroyRecipient'])->name('programs.recipients.destroy');
+    Route::get('/programs/activities/{activity}/recipients/print', [ProgramController::class, 'printRecipients'])->name('programs.activities.recipients.print');
 
     Route::get('/endorsements', [EndorsementController::class, 'index'])->name('endorsements.index');
     Route::post('/endorsements', [EndorsementController::class, 'store'])->name('endorsements.store');
     Route::post('/endorsements/{endorsement}/approve', [EndorsementController::class, 'approve'])->name('endorsements.approve');
     Route::post('/endorsements/{endorsement}/reject', [EndorsementController::class, 'reject'])->name('endorsements.reject');
+    Route::delete('/endorsements/{endorsement}', [EndorsementController::class, 'destroy'])->name('endorsements.destroy');
 
     Route::post('/farmers/{farmer}/approve', [FarmerController::class, 'approveRegistration'])->name('farmers.approve');
     Route::post('/farmers/{farmer}/reject', [FarmerController::class, 'rejectRegistration'])->name('farmers.reject');

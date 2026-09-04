@@ -18,7 +18,6 @@ class User extends Authenticatable
         'status',
         'photo',
         'pin',
-        'manages_stocks',
     ];
 
     protected $hidden = [
@@ -33,7 +32,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'pin' => 'hashed',
-            'manages_stocks' => 'boolean',
         ];
     }
 
@@ -86,11 +84,6 @@ class User extends Authenticatable
     public function hasAssignedProgram(): bool
     {
         return $this->assignedPrograms()->exists();
-    }
-
-    public function managesStocks(): bool
-    {
-        return (bool) $this->manages_stocks;
     }
 
     public function hasPin(): bool

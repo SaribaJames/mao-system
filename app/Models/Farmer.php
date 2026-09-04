@@ -142,6 +142,50 @@ class Farmer extends Model
         return "{$this->first_name} {$this->middle_name} {$this->surname}";
     }
 
+    /**
+     * Safely resolve the Cloudinary URL for this farmer's photo.
+     * Returns null instead of throwing if the asset can't be found or
+     * Cloudinary can't be reached, so a missing/broken photo never
+     * breaks printing or viewing the farmer's profile.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (!$this->photo) {
+            return null;
+        }
+        try {
+            return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($this->photo);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning(
+                "Farmer #{$this->id}: could not resolve Cloudinary photo URL for '{$this->photo}': {$e->getMessage()}"
+            );
+            return null;
+        }
+    }
+
+    /** Every program enrolment this farmer has, in any state. */
+    public function enrollments()
+    {
+        return $this->hasMany(ProgramEnrollment::class);
+    }
+
+    /** Programs this farmer belongs to, with the enrolment state on the pivot. */
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'program_enrollments')
+            ->withPivot(['status', 'enrollment_date', 'remarks'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Only the programs the farmer is CURRENTLY in — completed and dropped
+     * enrolments are history, not current membership.
+     */
+    public function activePrograms()
+    {
+        return $this->programs()->wherePivot('status', 'active');
+    }
+
     public function farmParcels()
     {
         return $this->hasMany(FarmParcel::class)->orderBy('parcel_number');

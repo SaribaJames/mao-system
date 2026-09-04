@@ -11,18 +11,34 @@ class LivestockInsuranceController extends Controller
 {
     public function index()
     {
-        $applications = LivestockInsuranceApplication::with('farmer')
-            ->latest()
-            ->paginate(15);
+        $query = LivestockInsuranceApplication::with('farmer')->latest();
+
+        // A barangay rep only sees applications for farmers in their barangay.
+        if (Auth::user()->isBarangayUser()) {
+            $barangayId = Auth::user()->barangayAccount?->barangay_id;
+            $barangayId
+                ? $query->whereHas('farmer', fn ($q) => $q->where('barangay_id', $barangayId))
+                : $query->whereRaw('1 = 0');
+        }
+
+        $applications = $query->paginate(15);
 
         return view('forms.livestock-insurance-list', compact('applications'));
     }
 
     public function create()
     {
-        $farmers = Farmer::where('registration_status', 'approved')
-            ->orderBy('surname')
-            ->get();
+        $farmersQuery = Farmer::where('registration_status', 'approved')->orderBy('surname');
+
+        // Reps file for their own farmers only.
+        if (Auth::user()->isBarangayUser()) {
+            $barangayId = Auth::user()->barangayAccount?->barangay_id;
+            $barangayId
+                ? $farmersQuery->where('barangay_id', $barangayId)
+                : $farmersQuery->whereRaw('1 = 0');
+        }
+
+        $farmers = $farmersQuery->get();
 
         return view('forms.livestock-insurance', compact('farmers'));
     }

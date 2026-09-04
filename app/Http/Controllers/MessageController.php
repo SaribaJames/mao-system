@@ -13,8 +13,13 @@ class MessageController extends Controller
     // Admin/Staff: view all conversations with barangay reps
     public function index()
     {
-        $conversations = User::whereHas('sentMessages')
-            ->orWhereHas('receivedMessages')
+        // The "has messaged either way" test must be grouped. Left ungrouped,
+        // SQL binds AND tighter than OR, so the sent-messages branch escaped
+        // both the exclude-self and barangay-rep filters — the admin saw their
+        // own row and every staff coordinator in the list.
+        $conversations = User::where(function ($q) {
+                $q->whereHas('sentMessages')->orWhereHas('receivedMessages');
+            })
             ->where('id', '!=', Auth::id())
             ->whereHas('role', fn($q) => $q->where('name', 'barangay_user'))
             ->withCount([

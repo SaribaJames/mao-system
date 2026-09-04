@@ -95,8 +95,8 @@
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
-                        @if($farmer->photo)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($farmer->photo) }}"
+                        @if($farmer->photo_url)
+                        <img src="{{ $farmer->photo_url }}"
                              class="w-8 h-8 rounded-full object-cover border border-gray-200">
                         @else
                         <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary text-xs font-bold">
@@ -108,6 +108,15 @@
                             <p class="text-xs text-gray-400">{{ $farmer->sex }} ·
                                 {{ \Carbon\Carbon::parse($farmer->date_of_birth)->age }} yrs
                             </p>
+                            @if($farmer->activePrograms->count() > 0)
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    @foreach($farmer->activePrograms as $prog)
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-primary/10 text-primary dark:bg-primary/20">
+                                            <i class="fa-solid fa-seedling"></i> {{ $prog->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                             @if(Auth::user()->isBarangayUser())
                             <span class="text-xs px-2 py-0.5 rounded-full font-medium mt-1 inline-block
                                 {{ ($farmer->registration_status ?? 'approved') === 'approved' ? 'bg-green-100 text-green-700' :

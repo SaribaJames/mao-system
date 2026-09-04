@@ -24,6 +24,13 @@
 
 {{-- Tabs --}}
 <div class="flex gap-2 mb-6">
+    <a href="{{ route('activities.index', ['type' => 'all']) }}"
+       class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
+              {{ $type === 'all' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+        <i class="fa-solid fa-layer-group"></i>
+        All
+        <span class="text-xs px-1.5 py-0.5 rounded-full {{ $type === 'all' ? 'bg-white bg-opacity-30 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ $total }}</span>
+    </a>
     <a href="{{ route('activities.index', ['type' => 'announcement']) }}"
        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
               {{ $type === 'announcement' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
@@ -58,11 +65,19 @@
             'low'    => 'bg-blue-400',
             default  => 'bg-gray-400',
         };
-        $icon = match($type) {
+        // Keyed off the activity's own type so the All view shows the right
+        // icon per card instead of one icon for the whole page.
+        $icon = match($activity->type) {
             'announcement' => 'fa-bullhorn',
             'training'     => 'fa-chalkboard-user',
             'event'        => 'fa-calendar-days',
             default        => 'fa-bell',
+        };
+        $typeLabel = match($activity->type) {
+            'announcement' => 'Announcement',
+            'training'     => 'Training',
+            'event'        => 'Event',
+            default        => ucfirst($activity->type),
         };
         $actId       = $activity->id;
         $actTitle    = e($activity->title);
@@ -83,9 +98,16 @@
                 <div class="bg-white bg-opacity-20 p-2 rounded-lg">
                     <i class="fa-solid {{ $icon }} text-lg"></i>
                 </div>
-                <span class="text-xs font-medium bg-white bg-opacity-20 px-2 py-1 rounded-full">
-                    {{ $actPriority }} Priority
-                </span>
+                <div class="flex items-center gap-1.5">
+                    @if($type === 'all')
+                        <span class="text-xs font-medium bg-white bg-opacity-20 px-2 py-1 rounded-full">
+                            {{ $typeLabel }}
+                        </span>
+                    @endif
+                    <span class="text-xs font-medium bg-white bg-opacity-20 px-2 py-1 rounded-full">
+                        {{ $actPriority }} Priority
+                    </span>
+                </div>
             </div>
             <h3 class="text-base font-bold mt-3 leading-tight">{{ $activity->title }}</h3>
         </div>
@@ -151,14 +173,28 @@
 @else
 <div class="bg-white dark:bg-gray-800 rounded-xl border border-border-soft dark:border-gray-700 p-16 text-center">
     <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fa-solid {{ $type === 'announcement' ? 'fa-bullhorn' : ($type === 'training' ? 'fa-chalkboard-user' : 'fa-calendar-days') }} text-gray-400 text-2xl"></i>
+        @php
+            $emptyIcon = match($type) {
+                'announcement' => 'fa-bullhorn',
+                'training'     => 'fa-chalkboard-user',
+                'event'        => 'fa-calendar-days',
+                default        => 'fa-layer-group',
+            };
+            $emptyLabel = match($type) {
+                'announcement' => 'Announcements',
+                'training'     => 'Training Programs',
+                'event'        => 'Events',
+                default        => 'Posts',
+            };
+        @endphp
+        <i class="fa-solid {{ $emptyIcon }} text-gray-400 text-2xl"></i>
     </div>
-    <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 mb-1">No {{ ucfirst($type) }}s Yet</h3>
-    <p class="text-sm text-gray-400">No {{ $type }}s have been posted yet.</p>
+    <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 mb-1">No {{ $emptyLabel }} Yet</h3>
+    <p class="text-sm text-gray-400">Nothing has been posted here yet.</p>
     @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
     <button onclick="openAddModal()"
             class="mt-4 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
-        + Add First {{ ucfirst($type) }}
+        + Add New Post
     </button>
     @endif
 </div>
@@ -311,7 +347,8 @@ function closeViewModal() {
 }
 
 function openAddModal() {
-    document.getElementById('typeSelect').value = "{{ $type }}";
+    // "all" isn't a real post type — default the dropdown to Announcement.
+    document.getElementById('typeSelect').value = "{{ $type === 'all' ? 'announcement' : $type }}";
     document.getElementById('addModal').style.display = 'flex';
 }
 

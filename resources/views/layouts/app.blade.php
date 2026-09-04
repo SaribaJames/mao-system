@@ -113,12 +113,13 @@
                                 Service Records
                             </a>
                         @endif
-                        @unless(Auth::user()->role?->name === 'staff' && Auth::user()->hasAssignedProgram())
-                            <a href="{{ route('requests.index') }}"
+                        {{-- Coordinators used to be hidden from Requests entirely. Requests
+                             can now be tagged to a program, so they need access to the ones
+                             belonging to the programs they run. --}}
+                        <a href="{{ route('requests.index') }}"
                                 class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('requests.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
-                                Requests
-                            </a>
-                        @endunless
+                            Requests
+                        </a>
                     </div>
                 </div>
 
@@ -174,6 +175,18 @@
                     </div>
                 @endif
 
+                {{-- Barangay reps get Forms & Documents on its own: they register
+                     their farmers, so they file the PCIC and livestock insurance
+                     paperwork. Reports stays admin/staff — it exports every farmer
+                     in the municipality, not just one barangay. --}}
+                @if(Auth::user()->isBarangayUser())
+                    <a href="{{ route('forms.index') }}"
+                        class="px-4 py-2.5 text-sm font-medium transition
+                              {{ request()->routeIs('forms.*') || request()->routeIs('livestock-insurance.*') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Forms &amp; Documents
+                    </a>
+                @endif
+
                 @if(Auth::user()->role?->name === 'barangay_user')
                     <a href="{{ route('messages.chat') }}"
                         class="px-4 py-2.5 text-sm font-medium transition
@@ -225,6 +238,45 @@
                         if ($newFarmers > 0)
                             $notifications->push(['icon' => 'fa-person', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$newFarmers} new farmer(s) registered today", 'link' => route('farmers.index')]);
 
+                        // Requests tagged to a program the user coordinates — these are
+                        // theirs to act on, so surface them separately from the general queue.
+                        $coordProgramIds = \App\Models\Program::where('assigned_user_id', Auth::id())->pluck('id');
+                        if ($coordProgramIds->isNotEmpty()) {
+                            $myProgramReqs = \App\Models\FarmerRequest::whereIn('program_id', $coordProgramIds)
+                                ->where('status', 'pending')->count();
+                            if ($myProgramReqs > 0) {
+                                $notifications->push([
+                                    'icon'  => 'fa-inbox',
+                                    'color' => 'text-teal-500',
+                                    'bg'    => 'bg-teal-100',
+                                    'text'  => "{$myProgramReqs} request(s) for your program(s) need action",
+                                    'link'  => route('requests.index', ['program' => 'mine', 'status' => 'pending']),
+                                ]);
+                            }
+                        }
+
+                        // Endorsements are actioned by the program's ASSIGNED coordinator
+                        // (approve/reject requires assignment + PIN unlock), so this only
+                        // notifies the coordinator, and only about their own programs.
+                        $myProgramIds = \App\Models\Program::where('assigned_user_id', Auth::id())->pluck('id');
+                        if ($myProgramIds->isNotEmpty()) {
+                            $pendingEndorsements = \App\Models\ProgramEndorsement::whereIn('program_id', $myProgramIds)
+                                ->where('status', 'pending')->count();
+                            if ($pendingEndorsements > 0) {
+                                // Link straight to the program holding the oldest pending one,
+                                // which is where the approve/reject buttons actually live.
+                                $endorsementProgramId = \App\Models\ProgramEndorsement::whereIn('program_id', $myProgramIds)
+                                    ->where('status', 'pending')->oldest()->value('program_id');
+                                $notifications->push([
+                                    'icon' => 'fa-user-check',
+                                    'color' => 'text-indigo-500',
+                                    'bg' => 'bg-indigo-100',
+                                    'text' => "{$pendingEndorsements} farmer endorsement(s) awaiting your review",
+                                    'link' => route('programs.show', $endorsementProgramId),
+                                ]);
+                            }
+                        }
+
                         $pendingReqs = \App\Models\FarmerRequest::where('status', 'pending')->count();
                         if ($pendingReqs > 0)
                             $notifications->push(['icon' => 'fa-file-lines', 'color' => 'text-yellow-500', 'bg' => 'bg-yellow-100', 'text' => "{$pendingReqs} pending request(s) need attention", 'link' => route('requests.index')]);
@@ -242,12 +294,24 @@
                             $notifications->push(['icon' => 'fa-seedling', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$newEnrollments} farmer(s) enrolled in programs today", 'link' => route('programs.index')]);
 
                         $unreadMsgs = \App\Models\Message::where('receiver_id', Auth::id())->where('is_read', false)->count();
-                        if ($unreadMsgs > 0)
-                            $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s)", 'link' => route('messages.index')]);
+                        if ($unreadMsgs > 0) {
+                            // Link straight to the oldest unread conversation (not just the
+                            // inbox list) so clicking it actually marks those messages read
+                            // right away instead of leaving the badge stuck on the next load.
+                            $firstUnreadSenderId = \App\Models\Message::where('receiver_id', Auth::id())
+                                ->where('is_read', false)
+                                ->oldest()
+                                ->value('sender_id');
+                            $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s)", 'link' => $firstUnreadSenderId ? route('messages.conversation', $firstUnreadSenderId) : route('messages.index')]);
+                        }
 
-                        $pendingUsers = \App\Models\User::where('status', 'inactive')->whereHas('barangayAccount', fn($q) => $q->where('approval_status', 'pending'))->count();
-                        if ($pendingUsers > 0)
-                            $notifications->push(['icon' => 'fa-user-clock', 'color' => 'text-orange-500', 'bg' => 'bg-orange-100', 'text' => "{$pendingUsers} pending user registration(s)", 'link' => route('users.index')]);
+                        // Admin-only: user management is restricted to admins, so showing
+                        // this to staff would only send them to a 403 page.
+                        if (Auth::user()->isAdmin()) {
+                            $pendingUsers = \App\Models\User::where('status', 'inactive')->whereHas('barangayAccount', fn($q) => $q->where('approval_status', 'pending'))->count();
+                            if ($pendingUsers > 0)
+                                $notifications->push(['icon' => 'fa-user-clock', 'color' => 'text-orange-500', 'bg' => 'bg-orange-100', 'text' => "{$pendingUsers} pending user registration(s)", 'link' => route('users.index')]);
+                        }
 
                     } elseif (Auth::user()->role?->name === 'barangay_user') {
                         $barangayId = Auth::user()->barangayAccount?->barangay_id;
@@ -260,26 +324,49 @@
                         if ($myApproved > 0)
                             $notifications->push(['icon' => 'fa-circle-check', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$myApproved} request(s) approved", 'link' => route('requests.index')]);
 
+                        // Close the loop: the rep who submitted an endorsement should see
+                        // when the coordinator has acted on it.
+                        $myEndorsementsPending = \App\Models\ProgramEndorsement::where('endorsed_by', Auth::id())
+                            ->where('status', 'pending')->count();
+                        if ($myEndorsementsPending > 0)
+                            $notifications->push(['icon' => 'fa-user-clock', 'color' => 'text-indigo-500', 'bg' => 'bg-indigo-100', 'text' => "{$myEndorsementsPending} endorsement(s) awaiting review", 'link' => route('endorsements.index')]);
+
+                        $myEndorsementsApproved = \App\Models\ProgramEndorsement::where('endorsed_by', Auth::id())
+                            ->where('status', 'approved')->count();
+                        if ($myEndorsementsApproved > 0)
+                            $notifications->push(['icon' => 'fa-user-check', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$myEndorsementsApproved} endorsement(s) approved", 'link' => route('endorsements.index')]);
+
                         $adminUser = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->first();
                         if ($adminUser) {
                             $unreadMsgs = \App\Models\Message::where('sender_id', $adminUser->id)->where('receiver_id', Auth::id())->where('is_read', false)->count();
                             if ($unreadMsgs > 0)
-                                $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s) from MAO", 'link' => route('messages.chat')]);
+                                // Link straight to the MAO thread (marks it read on load) instead
+                                // of the thread list, so the badge actually clears when clicked.
+                                $notifications->push(['icon' => 'fa-comments', 'color' => 'text-primary', 'bg' => 'bg-green-100', 'text' => "{$unreadMsgs} unread message(s) from MAO", 'link' => route('messages.rep-conversation', $adminUser)]);
                         }
 
                         $newActivities = \App\Models\Activity::whereDate('created_at', today())->where('status', 'active')->count();
                         if ($newActivities > 0)
                             $notifications->push(['icon' => 'fa-bullhorn', 'color' => 'text-red-500', 'bg' => 'bg-red-100', 'text' => "{$newActivities} new announcement(s) posted today", 'link' => route('activities.index')]);
                     }
+
+                    // Fingerprint of what the bell is showing right now. The list is
+                    // recomputed live on every page load, so hiding the badge in JS
+                    // alone never sticks — it reappears on the next navigation.
+                    // Comparing this against what the user last opened lets the badge
+                    // stay gone until something actually changes.
+                    $notifSignature = md5($notifications->pluck('text')->implode('|'));
                 @endphp
 
-                <div class="relative" id="notifDropdown">
+                <div class="relative" id="notifDropdown" data-notif-signature="{{ $notifSignature }}">
                     <button onclick="toggleNotif()"
                         class="relative text-white hover:text-accent transition p-2 rounded-full hover:bg-white/10">
                         <i class="fa-solid fa-bell text-lg"></i>
                         @if($notifications->count() > 0)
+                            {{-- Starts hidden; the script below reveals it only if this
+                                 notification set differs from the one last opened. --}}
                             <span id="notifBadge"
-                                class="absolute top-0 right-0 w-4 h-4 bg-accent text-primary-dark text-xs font-bold rounded-full flex items-center justify-center">
+                                class="hidden absolute top-0 right-0 w-4 h-4 bg-accent text-primary-dark text-xs font-bold rounded-full items-center justify-center">
                                 {{ $notifications->count() }}
                             </span>
                         @endif
@@ -357,6 +444,26 @@
 
     {{-- Page Content --}}
     <main class="p-6 max-w-[1400px] mx-auto">
+        {{-- Global flash banners. Controllers redirect with 'error' in several
+             places (insufficient stock, invalid status change, blocked delete);
+             without this they would be set and never shown. --}}
+        @if(session('error'))
+            <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm rounded-md p-3 mb-4 flex items-start gap-2">
+                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if($errors->any() && !session('error'))
+            <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm rounded-md p-3 mb-4">
+                <ul class="list-disc list-inside space-y-0.5">
+                    @foreach($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         @yield('content')
     </main>
 
@@ -413,15 +520,15 @@
                                 </div>
                             @endif
 
-                            @if($msg->attachment_path)
+                            @if($msg->attachment_url)
                                 <div class="mt-1">
                                     @if($msg->attachment_type === 'image')
-                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($msg->attachment_path) }}" target="_blank">
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($msg->attachment_path) }}"
+                                        <a href="{{ $msg->attachment_url }}" target="_blank">
+                                            <img src="{{ $msg->attachment_url }}"
                                                 class="rounded border border-gray-300 dark:border-gray-600 max-w-full max-h-32 object-cover">
                                         </a>
                                     @else
-                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($msg->attachment_path) }}" target="_blank"
+                                        <a href="{{ $msg->attachment_url }}" target="_blank"
                                             class="flex items-center gap-1.5 px-2 py-1.5 rounded border {{ $isMine ? 'bg-primary-dark border-primary-dark text-white' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300' }} text-xs hover:opacity-80 transition">
                                             <i class="fa-solid {{ $msg->attachment_type === 'pdf' ? 'fa-file-pdf' : 'fa-file-lines' }}"></i>
                                             <span class="truncate max-w-[100px]">{{ $msg->attachment_name }}</span>
@@ -521,13 +628,46 @@
             });
         }
 
+        function notifSignature() {
+            var wrap = document.getElementById('notifDropdown');
+            return wrap ? (wrap.dataset.notifSignature || '') : '';
+        }
+
         function toggleNotif() {
             const panel = document.getElementById('notifPanel');
             closeAllNavGroups();
             panel.classList.toggle('hidden');
+
             const badge = document.getElementById('notifBadge');
-            if (badge) badge.classList.add('hidden');
+            if (badge) {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+
+            // Remember this exact set as "seen" so the badge stays gone on the
+            // next page load, and only returns when the set changes.
+            try {
+                localStorage.setItem('notifSeenSignature', notifSignature());
+            } catch (e) {
+                // Private mode / storage blocked — badge just won't persist as read.
+            }
         }
+
+        // Decide whether the badge should show at all for this page load.
+        document.addEventListener('DOMContentLoaded', function () {
+            const badge = document.getElementById('notifBadge');
+            if (!badge) return;
+
+            var seen = null;
+            try {
+                seen = localStorage.getItem('notifSeenSignature');
+            } catch (e) { /* storage unavailable — fall through and show it */ }
+
+            if (seen !== notifSignature()) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            }
+        });
 
         function toggleNavGroup(groupId) {
             const panel = document.getElementById(groupId + 'Panel');
@@ -590,6 +730,7 @@
         }
     </script>
 
+@include('partials.password-toggle')
 </body>
 
 </html>

@@ -52,7 +52,7 @@
                 @csrf
                 <div class="flex items-center justify-center gap-2 mb-5" id="pinBoxes">
                     @for ($i = 0; $i < 6; $i++)
-                        <input type="password" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                        <input type="password" data-no-toggle maxlength="1" inputmode="numeric" pattern="[0-9]"
                             class="pin-box w-10 h-12 text-center text-lg font-bold border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg
                                                       focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition" {{ $i === 0 ? 'autofocus' : '' }} />
                     @endfor
@@ -149,7 +149,7 @@
                                 </p>
                                 <p class="text-xs text-gray-400">{{ $enrollment->farmer->barangay?->name }}</p>
                             </td>
-                            <td class="px-4 py-3 text-gray-500 text-xs">{{ $enrollment->enrollment_date->format('M d, Y') }}</td>
+                            <td class="px-4 py-3 text-gray-500 text-xs">{{ $enrollment->enrollment_date?->format('M d, Y') ?? '—' }}</td>
                             <td class="px-4 py-3 text-gray-600 text-xs">{{ $enrollment->processedBy?->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-gray-600">{{ $enrollment->remarks ?? '—' }}</td>
                             <td class="px-4 py-3">
@@ -202,7 +202,7 @@
         @php
             $pendingEndorsements = \App\Models\ProgramEndorsement::where('program_id', $program->id)
                 ->where('status', 'pending')
-                ->with(['farmer', 'endorser'])
+                ->with(['farmer.barangay', 'endorser'])
                 ->get();
         @endphp
 
@@ -218,17 +218,26 @@
                             <div>
                                 <p class="font-medium text-gray-800 dark:text-gray-100 text-sm">
                                     {{ $endorsement->farmer->first_name }} {{ $endorsement->farmer->surname }}
+                                    @if($endorsement->farmer->barangay)
+                                        <span class="ml-1 text-xs font-normal px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
+                                            <i class="fa-solid fa-location-dot"></i>
+                                            Brgy. {{ $endorsement->farmer->barangay->name }}
+                                        </span>
+                                    @endif
                                 </p>
                                 <p class="text-xs text-gray-400">
                                     Endorsed by {{ $endorsement->endorser->name }}
                                     · {{ $endorsement->created_at->format('M d, Y') }}
                                 </p>
                                 @if($endorsement->notes)
-                                    <p class="text-xs text-gray-500 mt-0.5">Note: {{ $endorsement->notes }}</p>
+                                    <div class="mt-2 bg-gray-50 dark:bg-gray-900/40 border-l-2 border-primary rounded-r px-3 py-2">
+                                        <p class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold mb-0.5">Reason for Endorsement</p>
+                                        <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{{ $endorsement->notes }}</p>
+                                    </div>
                                 @endif
                             </div>
                             @if($isAssignedUser && $isUnlocked)
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-shrink-0">
                                     <form method="POST" action="{{ route('endorsements.approve', $endorsement) }}">
                                         @csrf
                                         <button type="submit"
@@ -236,16 +245,44 @@
                                             Approve
                                         </button>
                                     </form>
-                                    <form method="POST" action="{{ route('endorsements.reject', $endorsement) }}">
-                                        @csrf
-                                        <button type="submit"
-                                            class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition">
-                                            Reject
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        onclick="document.getElementById('reject-{{ $endorsement->id }}').classList.toggle('hidden')"
+                                        class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition">
+                                        Reject
+                                    </button>
                                 </div>
                             @endif
                         </div>
+
+                        @if($isAssignedUser && $isUnlocked)
+                            {{-- Hidden until Reject is clicked. A reason is required so the
+                                 barangay rep learns what was lacking instead of guessing. --}}
+                            <div id="reject-{{ $endorsement->id }}" class="hidden bg-white dark:bg-gray-800 rounded-md border border-red-200 dark:border-red-800 px-4 py-3 -mt-2">
+                                <form method="POST" action="{{ route('endorsements.reject', $endorsement) }}">
+                                    @csrf
+                                    <label class="block text-xs font-semibold text-red-700 dark:text-red-300 mb-1">
+                                        Reason for rejecting {{ $endorsement->farmer->first_name }} {{ $endorsement->farmer->surname }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <textarea name="rejection_reason" rows="2" required minlength="10" maxlength="500"
+                                              placeholder="e.g. Farmer is already enrolled in a similar program this cropping season, or landholding is outside the program's coverage area."
+                                              class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-400"></textarea>
+                                    @error('rejection_reason')
+                                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                    @enderror
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <button type="submit"
+                                            class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition">
+                                            Confirm Rejection
+                                        </button>
+                                        <button type="button"
+                                            onclick="document.getElementById('reject-{{ $endorsement->id }}').classList.add('hidden')"
+                                            class="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             </div>
@@ -490,9 +527,10 @@
 
         <div class="grid grid-cols-3 gap-4 mb-6">
             @forelse($program->achievements as $achievement)
+                @continue(!$achievement->photo_url)
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 overflow-hidden">
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($achievement->photo_path) }}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition"
-                     onclick="openLightbox('{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($achievement->photo_path) }}', '{{ addslashes($achievement->caption ?: 'No caption') }}')">
+                <img src="{{ $achievement->photo_url }}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition"
+                     onclick="openLightbox('{{ $achievement->photo_url }}', '{{ addslashes($achievement->caption ?: 'No caption') }}')">
                 <div class="p-3">
                     <p class="text-sm text-gray-700 dark:text-gray-200">{{ $achievement->caption ?: 'No caption' }}</p>
                     <div class="flex items-center justify-between mt-2">
@@ -601,7 +639,7 @@
                             <div class="flex flex-wrap gap-2">
                                 @foreach($activity->stockUsages as $usage)
                                     <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-xs">
-                                        {{ $usage->stock->item_name }} — {{ $usage->quantity_used }} {{ $usage->stock->unit }}
+                                        {{ $usage->stock?->item_name ?? 'Deleted item' }} — {{ $usage->quantity_used }} {{ $usage->stock?->unit }}
                                     </span>
                                 @endforeach
                             </div>
@@ -622,6 +660,215 @@
                                 <span class="text-gray-400">No budget set</span>
                             @endforelse
                         </div>
+                    </div>
+
+                    {{-- Distribution List: farmers who actually received resources during
+                         this activity. Releasing here deducts stock once, and the printed
+                         list is the coordinator's proof of distribution. --}}
+                    @php
+                        $actStocks = $activity->stockItems();
+                        $actRecipients = $activity->recipients;
+                        $actHeadcount = $actRecipients->groupBy(fn($r) => $r->barangay?->name ?? 'Unspecified')->map->count()->sortDesc();
+                        $actAddedIds = $actRecipients->pluck('farmer_id')->filter()->all();
+                        $actAvailable = $enrolledFarmers->reject(fn($f) => in_array($f->id, $actAddedIds));
+                    @endphp
+
+                    <div class="border-t border-border-soft dark:border-gray-700 pt-3 mt-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                                <i class="fa-solid fa-people-group text-primary"></i>
+                                Distribution List
+                                <span class="font-normal text-gray-400">({{ $actRecipients->count() }} farmer{{ $actRecipients->count() == 1 ? '' : 's' }})</span>
+                            </p>
+                            <div class="flex items-center gap-3 text-xs">
+                                @if($actRecipients->count() > 0)
+                                    <a href="{{ route('programs.activities.recipients.print', $activity) }}" target="_blank"
+                                       class="text-primary hover:text-primary-dark font-medium">
+                                        <i class="fa-solid fa-print"></i> Print List
+                                    </a>
+                                @endif
+                                @if($isAssignedUser && $isUnlocked)
+                                    <button onclick="document.getElementById('dist-{{ $activity->id }}').classList.toggle('hidden')"
+                                            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium">
+                                        <i class="fa-solid fa-sliders"></i> Manage
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+
+                        @if($actHeadcount->count() > 0)
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                @foreach($actHeadcount as $brgy => $count)
+                                    <span class="px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-xs">
+                                        {{ $brgy }}: {{ $count }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if($actRecipients->count() > 0)
+                            <div class="overflow-x-auto border border-border-soft dark:border-gray-700 rounded-md">
+                                <table class="w-full text-xs">
+                                    <thead class="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+                                        <tr>
+                                            <th class="px-2 py-1.5 text-left font-medium">#</th>
+                                            <th class="px-2 py-1.5 text-left font-medium">Name</th>
+                                            <th class="px-2 py-1.5 text-left font-medium">Barangay</th>
+                                            @foreach($actStocks as $st)
+                                                <th class="px-2 py-1.5 text-left font-medium">{{ $st->item_name }}</th>
+                                            @endforeach
+                                            @if($isAssignedUser && $isUnlocked)
+                                                <th class="px-2 py-1.5"></th>
+                                            @endif
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-border-soft dark:divide-gray-700">
+                                        @foreach($actRecipients as $i => $rcp)
+                                            <tr class="text-gray-700 dark:text-gray-300">
+                                                <td class="px-2 py-1.5 text-gray-400">{{ $i + 1 }}</td>
+                                                <td class="px-2 py-1.5">{{ $rcp->farmer_name }}</td>
+                                                <td class="px-2 py-1.5">{{ $rcp->barangay?->name ?? '—' }}</td>
+                                                @foreach($actStocks as $st)
+                                                    <td class="px-2 py-1.5">
+                                                        {{ ($rcp->quantities[$st->id] ?? 0) > 0 ? ($rcp->quantities[$st->id] . ' ' . $st->unit) : '—' }}
+                                                    </td>
+                                                @endforeach
+                                                @if($isAssignedUser && $isUnlocked)
+                                                    <td class="px-2 py-1.5 text-right">
+                                                        <form method="POST" action="{{ route('programs.recipients.destroy', $rcp) }}"
+                                                              onsubmit="return confirm('Remove this farmer? The stock released to them will be returned to inventory.');">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit" class="text-red-500 hover:text-red-700">Remove</button>
+                                                        </form>
+                                                    </td>
+                                                @endif
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-xs text-gray-400">No farmers recorded yet.</p>
+                        @endif
+
+                        @if($isAssignedUser && $isUnlocked)
+                        <div id="dist-{{ $activity->id }}" class="hidden mt-3 space-y-4 bg-gray-50 dark:bg-gray-900/40 rounded-md p-3">
+
+                            {{-- Step 1: which items does this activity hand out --}}
+                            <form method="POST" action="{{ route('programs.activities.items', $activity) }}">
+                                @csrf
+                                <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">1. Items being distributed</p>
+                                <div class="max-h-32 overflow-y-auto border border-border-soft dark:border-gray-700 rounded-md p-2 bg-white dark:bg-gray-800 space-y-1">
+                                    @forelse($stocks as $stock)
+                                        <label class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
+                                            <input type="checkbox" name="stock_ids[]" value="{{ $stock->id }}"
+                                                   {{ in_array($stock->id, $activity->stock_ids ?? []) ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 text-primary focus:ring-primary">
+                                            {{ $stock->item_name }}
+                                            <span class="text-gray-400">({{ $stock->remaining_stock }} {{ $stock->unit }} left)</span>
+                                        </label>
+                                    @empty
+                                        <p class="text-xs text-gray-400">No stock items available.</p>
+                                    @endforelse
+                                </div>
+                                <button type="submit" class="mt-2 text-xs bg-gray-600 hover:bg-gray-700 text-white font-semibold px-3 py-1.5 rounded-md">
+                                    Save Items
+                                </button>
+                            </form>
+
+                            @if($actStocks->count() > 0)
+                                {{-- Step 2: tick enrolled farmers, same quantity each --}}
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">2. Add enrolled farmers</p>
+                                    @if($actAvailable->count() > 0)
+                                        <input type="text" onkeyup="filterList{{ $activity->id }}(this.value)"
+                                               placeholder="Search farmer name..."
+                                               class="w-full mb-1 px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                        <div id="flist-{{ $activity->id }}"
+                                             class="max-h-36 overflow-y-auto border border-border-soft dark:border-gray-700 rounded-md p-2 bg-white dark:bg-gray-800 space-y-1">
+                                            @foreach($actAvailable as $f)
+                                                <label class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300" data-name="{{ strtolower($f->full_name) }}">
+                                                    <input type="checkbox" form="bulk-{{ $activity->id }}" name="farmer_ids[]" value="{{ $f->id }}"
+                                                           class="rounded border-gray-300 text-primary focus:ring-primary">
+                                                    {{ $f->full_name }}
+                                                    <span class="text-gray-400">{{ $f->barangay?->name }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+
+                                        <form method="POST" action="{{ route('programs.activities.recipients.bulk', $activity) }}" id="bulk-{{ $activity->id }}" class="mt-2">
+                                            @csrf
+                                            <p class="text-xs text-gray-500 mb-1">Quantity for each ticked farmer:</p>
+                                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                                @foreach($actStocks as $st)
+                                                    <div>
+                                                        <label class="block text-xs text-gray-500 mb-0.5">{{ $st->item_name }} ({{ $st->unit }})</label>
+                                                        <input type="number" step="0.01" min="0" name="quantities[{{ $st->id }}]"
+                                                               class="w-full px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <button type="submit" class="text-xs bg-primary hover:bg-primary-dark text-white font-semibold px-3 py-1.5 rounded-md">
+                                                Add Selected &amp; Release Stock
+                                            </button>
+                                        </form>
+                                    @else
+                                        <p class="text-xs text-gray-400">All enrolled farmers are already on this list.</p>
+                                    @endif
+                                </div>
+
+                                {{-- Step 3: walk-in, not an enrolled farmer --}}
+                                <form method="POST" action="{{ route('programs.activities.recipients.store', $activity) }}">
+                                    @csrf
+                                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">3. Or add a walk-in by hand</p>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input type="text" name="farmer_name" placeholder="Full name" required
+                                               class="px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                        <select name="barangay_id" class="px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                            <option value="">— Barangay —</option>
+                                            @foreach($barangays as $b)
+                                                <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <input type="text" name="address" placeholder="Address (optional)"
+                                               class="px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <input type="number" name="age" placeholder="Age" min="1" max="120"
+                                                   class="px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                            <select name="sex" class="px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                                <option value="">Sex</option>
+                                                <option value="M">M</option>
+                                                <option value="F">F</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        @foreach($actStocks as $st)
+                                            <div>
+                                                <label class="block text-xs text-gray-500 mb-0.5">{{ $st->item_name }} ({{ $st->unit }})</label>
+                                                <input type="number" step="0.01" min="0" name="quantities[{{ $st->id }}]"
+                                                       class="w-full px-2 py-1 text-xs border border-border-soft dark:border-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <button type="submit" class="text-xs bg-gray-600 hover:bg-gray-700 text-white font-semibold px-3 py-1.5 rounded-md">
+                                        Add Farmer &amp; Release Stock
+                                    </button>
+                                </form>
+
+                                <script>
+                                function filterList{{ $activity->id }}(term) {
+                                    term = term.toLowerCase();
+                                    document.querySelectorAll('#flist-{{ $activity->id }} label').forEach(function (el) {
+                                        el.style.display = el.dataset.name.includes(term) ? 'flex' : 'none';
+                                    });
+                                }
+                                </script>
+                            @else
+                                <p class="text-xs text-gray-400">Pick at least one item above, then you can add farmers.</p>
+                            @endif
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -701,40 +948,6 @@
                                 </div>
                                 <button type="button" onclick="addBudgetRow('budget-rows-edit-{{ $activity->id }}')"
                                     class="text-xs text-primary hover:text-primary-dark font-medium mb-4">+ Add Year</button>
-
-                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-2">Stock Used (optional)</label>
-                                <div id="stock-rows-edit-{{ $activity->id }}" class="space-y-2 mb-2">
-                                    @forelse($activity->stockUsages as $usage)
-                                        <div class="flex gap-2">
-                                            <select name="stock_ids[]"
-                                                class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                                <option value="">Select stock item...</option>
-                                                @foreach(\App\Models\Stock::orderBy('item_name')->get() as $stockItem)
-                                                    <option value="{{ $stockItem->id }}" {{ $usage->stock_id == $stockItem->id ? 'selected' : '' }}>{{ $stockItem->item_name }} ({{ $stockItem->remaining_stock }} {{ $stockItem->unit }}
-                                                        left)</option>
-                                                @endforeach
-                                            </select>
-                                            <input type="number" name="stock_quantities[]" value="{{ $usage->quantity_used }}"
-                                                placeholder="Qty" min="1"
-                                                class="w-24 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                        </div>
-                                    @empty
-                                        <div class="flex gap-2">
-                                            <select name="stock_ids[]"
-                                                class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                                <option value="">Select stock item...</option>
-                                                @foreach(\App\Models\Stock::orderBy('item_name')->get() as $stockItem)
-                                                    <option value="{{ $stockItem->id }}">{{ $stockItem->item_name }}
-                                                        ({{ $stockItem->remaining_stock }} {{ $stockItem->unit }} left)</option>
-                                                @endforeach
-                                            </select>
-                                            <input type="number" name="stock_quantities[]" placeholder="Qty" min="1"
-                                                class="w-24 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                        </div>
-                                    @endforelse
-                                </div>
-                                <button type="button" onclick="addStockRow('stock-rows-edit-{{ $activity->id }}')"
-                                    class="text-xs text-primary hover:text-primary-dark font-medium mb-4">+ Add Stock Item</button>
 
                                 <button type="submit"
                                     class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
@@ -859,24 +1072,6 @@
                         <button type="button" onclick="addBudgetRow('budget-rows-add')"
                             class="text-xs text-primary hover:text-primary-dark font-medium mb-4">+ Add Year</button>
 
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-2">Stock Used (optional)</label>
-                        <div id="stock-rows-add" class="space-y-2 mb-2">
-                            <div class="flex gap-2">
-                                <select name="stock_ids[]"
-                                    class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                    <option value="">Select stock item...</option>
-                                    @foreach(\App\Models\Stock::orderBy('item_name')->get() as $stockItem)
-                                        <option value="{{ $stockItem->id }}">{{ $stockItem->item_name }}
-                                            ({{ $stockItem->remaining_stock }} {{ $stockItem->unit }} left)</option>
-                                    @endforeach
-                                </select>
-                                <input type="number" name="stock_quantities[]" placeholder="Qty" min="1"
-                                    class="w-24 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                            </div>
-                        </div>
-                        <button type="button" onclick="addStockRow('stock-rows-add')"
-                            class="text-xs text-primary hover:text-primary-dark font-medium mb-4">+ Add Stock Item</button>
-
                         <button type="submit"
                             class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
                             Add Activity
@@ -896,16 +1091,6 @@
                                     <input type="text" name="budget_amounts[]" placeholder="Amount"
                                            class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                                 `;
-                    container.appendChild(row);
-                }
-
-                function addStockRow(containerId) {
-                    const container = document.getElementById(containerId);
-                    const firstRow = container.querySelector('div');
-                    const row = document.createElement('div');
-                    row.className = 'flex gap-2';
-                    row.innerHTML = firstRow.innerHTML;
-                    row.querySelectorAll('select, input').forEach(el => el.value = '');
                     container.appendChild(row);
                 }
             </script>

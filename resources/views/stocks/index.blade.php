@@ -8,10 +8,16 @@
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage agricultural supplies inventory</p>
     </div>
     @if($canAccess)
-    <button onclick="document.getElementById('addStockModal').classList.remove('hidden')"
-            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
-        <i class="fa-solid fa-plus"></i> Add Stock
-    </button>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('stocks.receipts.index') }}"
+           class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+            <i class="fa-solid fa-clock-rotate-left"></i> Receiving History
+        </a>
+        <button onclick="document.getElementById('addStockModal').classList.remove('hidden')"
+                class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+            <i class="fa-solid fa-plus"></i> Add Stock
+        </button>
+    </div>
     @endif
 </div>
 
@@ -23,15 +29,21 @@
             <i class="fa-solid fa-lock text-yellow-600 dark:text-yellow-400 text-xl"></i>
         </div>
         <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-1">Restricted</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Only the registered/assigned Stocks personnel (or an admin) can access this module.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Only MAO staff and admins can access this module.</p>
     </div>
 
 @else
 
     {{-- Success Message --}}
     @if(session('success'))
-        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm rounded-md p-3 mb-4">
-            {{ session('success') }}
+        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm rounded-md p-3 mb-4 flex items-center justify-between">
+            <span>{{ session('success') }}</span>
+            @if(session('newReceiptId'))
+                <a href="{{ route('stocks.receipts.print', session('newReceiptId')) }}" target="_blank"
+                   class="text-primary dark:text-accent hover:underline font-semibold flex items-center gap-1 flex-shrink-0 ml-3">
+                    <i class="fa-solid fa-print"></i> Print Receipt
+                </a>
+            @endif
         </div>
     @endif
 
@@ -128,7 +140,9 @@
                         </span>
                     </td>
                     <td class="px-4 py-3 flex items-center gap-2">
-                        <button onclick="openReleaseModal({{ $stock->id }}, '{{ $stock->item_name }}', {{ $stock->remaining_stock }}, '{{ $stock->unit }}')"
+                        {{-- @js() emits a proper JS string literal, so an item name containing an
+                             apostrophe ("Farmer's Choice Seed") no longer breaks the handler. --}}
+                        <button onclick="openReleaseModal({{ $stock->id }}, {{ Js::from($stock->item_name) }}, {{ $stock->remaining_stock }}, {{ Js::from($stock->unit) }})"
                                 class="text-primary hover:underline text-xs font-medium">
                             Release
                         </button>
@@ -161,12 +175,21 @@
                     <i class="fa-solid fa-x"></i>
                 </button>
             </div>
-            <form method="POST" action="{{ route('stocks.store') }}">
+            <form method="POST" action="{{ route('stocks.store') }}" enctype="multipart/form-data">
                 @csrf
+                @if($errors->any())
+                    <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-md p-2 mb-3">
+                        <ul class="list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Item Name</label>
-                        <input type="text" name="item_name" required
+                        <input type="text" name="item_name" value="{{ old('item_name') }}" required
                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                     </div>
                     <div>
@@ -184,19 +207,48 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Quantity</label>
-                            <input type="number" step="0.01" name="quantity" required
+                            <input type="number" step="0.01" name="quantity" value="{{ old('quantity') }}" required
                                    class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Unit</label>
-                            <input type="text" name="unit" value="kg" required
+                            <input type="text" name="unit" value="{{ old('unit', 'kg') }}" required
+                                   class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Receiving Details</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Received From (Partner / Source)</label>
+                        <input type="text" name="partner_name" value="{{ old('partner_name') }}" required
+                               placeholder="e.g. DA Regional Field Office V"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Reference / DR No.</label>
+                            <input type="text" name="reference_number" value="{{ old('reference_number') }}"
+                                   class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Date Received</label>
+                            <input type="date" name="received_date" value="{{ old('received_date', date('Y-m-d')) }}" required
                                    class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                         </div>
                     </div>
                     <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Proof of Delivery (optional)</label>
+                        <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.pdf"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"/>
+                        <p class="text-xs text-gray-400 mt-1">Photo/scan of the delivery receipt — JPG, PNG, or PDF, max 5MB.</p>
+                    </div>
+                    <div>
                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Notes</label>
                         <textarea name="notes" rows="2"
-                                  class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                                  class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">{{ old('notes') }}</textarea>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-4">
@@ -260,6 +312,10 @@
     </div>
 
     <script>
+    @if($errors->any() && old('item_name'))
+        document.getElementById('addStockModal').classList.remove('hidden');
+    @endif
+
     function openReleaseModal(id, name, remaining, unit) {
         document.getElementById('releaseItemName').value = name;
         document.getElementById('releaseMax').textContent = '(Max: ' + remaining + ' ' + unit + ')';

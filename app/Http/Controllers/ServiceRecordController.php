@@ -37,7 +37,8 @@ class ServiceRecordController extends Controller
         $total = ServiceRecord::count();
         $completed = ServiceRecord::where('status', 'completed')->count();
         $ongoing = ServiceRecord::where('status', 'ongoing')->count();
-        $thisMonth = ServiceRecord::whereMonth('service_date', now()->month)->count();
+        $thisMonth = ServiceRecord::whereMonth('service_date', now()->month)
+            ->whereYear('service_date', now()->year)->count();
 
         return view('service-records.index', compact(
             'records',

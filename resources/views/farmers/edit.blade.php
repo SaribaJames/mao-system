@@ -134,8 +134,8 @@
             <div class="photo-upload" style="top:2.81%;left:74.42%;width:21.45%;height:13.93%;">
                 <input type="file" name="photo" id="photoInput" accept="image/*" autocomplete="off">
                 <img id="photoPreview" class="photo-preview" alt="Preview"
-                    src="{{ $farmer->photo ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($farmer->photo) : '' }}"
-                    style="display:{{ $farmer->photo ? 'block' : 'none' }};">
+                    src="{{ $farmer->photo_url ?? '' }}"
+                    style="display:{{ $farmer->photo_url ? 'block' : 'none' }};">
             </div>
 
             <input type="checkbox" class="cb" id="cb_new" style="top:12.81%;left:18.26%;" {{ old('enrollment_type', $farmer->enrollment_type) === 'new' ? 'checked' : '' }}

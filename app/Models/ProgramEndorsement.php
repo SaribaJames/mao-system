@@ -8,7 +8,7 @@ class ProgramEndorsement extends Model
 {
     protected $fillable = [
         'farmer_id', 'program_id', 'endorsed_by', 'status',
-        'notes', 'reviewed_by', 'reviewed_at',
+        'notes', 'rejection_reason', 'reviewed_by', 'reviewed_at',
     ];
 
     protected $casts = [

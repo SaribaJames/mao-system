@@ -7,12 +7,30 @@ use App\Models\Role;
 use App\Models\Barangay;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    /**
+     * User management is admin-only. Without this guard any authenticated
+     * user — including a barangay representative — could reach these routes
+     * and create, edit or delete accounts, or change their own role_id to
+     * admin. Every method below calls this first.
+     */
+    protected function authorizeAdmin(): void
+    {
+        abort_unless(
+            Auth::user()->isAdmin(),
+            403,
+            'Only MAO admins can manage user accounts.'
+        );
+    }
+
     public function index()
     {
+        $this->authorizeAdmin();
+
         $query = User::with(['role', 'barangayAccount']);
 
         // Search by name or email
@@ -42,6 +60,8 @@ class UserController extends Controller
 
     public function create()
     {
+        $this->authorizeAdmin();
+
         $roles = Role::all();
         $barangays = Barangay::orderBy('name')->get();
         $programs = Program::orderBy('name')->get();
@@ -50,19 +70,28 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorizeAdmin();
+
         $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
             'pin' => 'nullable|digits_between:4,6',
-            'module_assignment' => 'nullable|in:programs,stocks',
             'assigned_programs' => 'nullable|array',
             'assigned_programs.*' => 'exists:programs,id',
         ]);
 
         $role = Role::find($request->role_id);
-        $managesStocks = $role->name === 'staff' && $request->module_assignment === 'stocks';
+
+        // A barangay rep with no barangay can log in but sees an empty system,
+        // and every farmer they register is saved with no barangay at all.
+        // Require it up front rather than silently creating a broken account.
+        if ($role->name === 'barangay_user') {
+            $request->validate([
+                'barangay_id' => 'required|exists:barangays,id',
+            ], [], ['barangay_id' => 'barangay']);
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -71,7 +100,6 @@ class UserController extends Controller
             'role_id' => $request->role_id,
             'status' => 'active',
             'pin' => $request->filled('pin') ? Hash::make($request->pin) : null,
-            'manages_stocks' => $managesStocks,
         ]);
 
         if ($role->name === 'barangay_user' && $request->barangay_id) {
@@ -84,7 +112,7 @@ class UserController extends Controller
             ]);
         }
 
-        if ($role->name === 'staff' && $request->module_assignment === 'programs' && $request->filled('assigned_programs')) {
+        if ($role->name === 'staff' && $request->filled('assigned_programs')) {
             Program::whereIn('id', $request->assigned_programs)
                 ->update(['assigned_user_id' => $user->id]);
         }
@@ -95,6 +123,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $this->authorizeAdmin();
+
         $roles = Role::all();
         $barangays = Barangay::orderBy('name')->get();
         $programs = Program::orderBy('name')->get();
@@ -104,25 +134,36 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $this->authorizeAdmin();
+
+        // An admin editing their OWN account cannot demote themselves or
+        // switch their account off — that would lock them out of user
+        // management with no way back in.
+        if ($user->id === Auth::id()) {
+            $ownRoleUnchanged = (int) $request->role_id === (int) $user->role_id;
+            if (!$ownRoleUnchanged || $request->status !== 'active') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'You cannot change your own role or deactivate your own account.');
+            }
+        }
+
         $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive,suspended',
-            'module_assignment' => 'nullable|in:programs,stocks',
             'assigned_programs' => 'nullable|array',
             'assigned_programs.*' => 'exists:programs,id',
         ]);
 
         $role = Role::find($request->role_id);
-        $managesStocks = $role->name === 'staff' && $request->module_assignment === 'stocks';
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role_id' => $request->role_id,
             'status' => $request->status,
-            'manages_stocks' => $managesStocks,
         ];
 
         if ($request->filled('password')) {
@@ -137,11 +178,12 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // Reset: unassign any programs this user currently manages...
+        // Reset: unassign any programs this user currently coordinates...
         Program::where('assigned_user_id', $user->id)->update(['assigned_user_id' => null]);
 
-        // ...then reassign only if "programs" was chosen (mutually exclusive with stocks)
-        if ($role->name === 'staff' && $request->module_assignment === 'programs' && $request->filled('assigned_programs')) {
+        // ...then reassign to whichever program(s) were checked. Stocks and Activities
+        // need no such assignment — every staff member already has access to those.
+        if ($role->name === 'staff' && $request->filled('assigned_programs')) {
             Program::whereIn('id', $request->assigned_programs)
                 ->update(['assigned_user_id' => $user->id]);
         }
@@ -152,6 +194,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $this->authorizeAdmin();
+
         if ($user->id === auth()->id()) {
             return redirect()->route('users.index')
                 ->with('error', 'You cannot delete your own account!');
@@ -164,6 +208,8 @@ class UserController extends Controller
 
     public function resetPassword(User $user)
     {
+        $this->authorizeAdmin();
+
         $user->update(['password' => Hash::make('Password@123')]);
         return redirect()->route('users.index')
             ->with('success', "Password for {$user->name} reset to Password@123");
@@ -171,6 +217,8 @@ class UserController extends Controller
 
     public function approvePending(User $user)
     {
+        $this->authorizeAdmin();
+
         $user->update(['status' => 'active']);
 
         if ($user->barangayAccount) {

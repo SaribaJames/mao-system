@@ -26,15 +26,21 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Farmer <span class="text-red-500">*</span></label>
-            <select name="farmer_id" required
+            <select name="farmer_id" id="farmerSelect" required onchange="showFarmerPrograms()"
                     class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">Select Farmer</option>
                 @foreach($farmers as $farmer)
-                    <option value="{{ $farmer->id }}" {{ old('farmer_id') == $farmer->id ? 'selected' : '' }}>
+                    {{-- data-programs feeds the hint below, so the rep can see at a
+                         glance which program this farmer already belongs to. --}}
+                    <option value="{{ $farmer->id }}"
+                            data-programs="{{ $farmer->activePrograms->pluck('name')->join(', ') }}"
+                            data-program-ids="{{ $farmer->activePrograms->pluck('id')->join(',') }}"
+                            {{ old('farmer_id') == $farmer->id ? 'selected' : '' }}>
                         {{ $farmer->first_name }} {{ $farmer->surname }} — {{ $farmer->barangay?->name }}
                     </option>
                 @endforeach
             </select>
+            <p id="farmerProgramHint" class="text-xs mt-1 hidden"></p>
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Request Type <span class="text-red-500">*</span></label>
@@ -51,6 +57,25 @@
                 <option value="others">Others</option>
             </select>
         </div>
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+            Program <span class="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <select name="program_id"
+                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="">Not part of a program</option>
+            @foreach($programs as $program)
+                <option value="{{ $program->id }}" {{ old('program_id') == $program->id ? 'selected' : '' }}>
+                    {{ $program->name }}
+                </option>
+            @endforeach
+        </select>
+        <p class="text-xs text-gray-400 mt-1">
+            Tagging a program sends this to that program's coordinator. Leave blank for
+            general requests like certifications or technical assistance.
+        </p>
     </div>
 
     <div class="grid grid-cols-2 gap-4 mb-4">
@@ -105,4 +130,34 @@
 </div>
 
 </form>
+<script>
+function showFarmerPrograms() {
+    var sel  = document.getElementById('farmerSelect');
+    var hint = document.getElementById('farmerProgramHint');
+    var opt  = sel.options[sel.selectedIndex];
+    var names = opt ? (opt.dataset.programs || '') : '';
+    var ids   = opt ? (opt.dataset.programIds || '') : '';
+
+    if (!names) {
+        hint.className = 'text-xs mt-1 text-gray-400';
+        hint.textContent = opt && opt.value ? 'Not enrolled in any program.' : '';
+        hint.classList.toggle('hidden', !opt || !opt.value);
+        return;
+    }
+
+    hint.className = 'text-xs mt-1 text-primary font-medium';
+    hint.textContent = 'Enrolled in: ' + names;
+    hint.classList.remove('hidden');
+
+    // If the farmer is in exactly one program, pre-select it — that is almost
+    // always the program the request belongs to.
+    var idList = ids.split(',').filter(Boolean);
+    var progSel = document.querySelector('select[name="program_id"]');
+    if (progSel && idList.length === 1 && !progSel.value) {
+        progSel.value = idList[0];
+    }
+}
+document.addEventListener('DOMContentLoaded', showFarmerPrograms);
+</script>
+
 @endsection

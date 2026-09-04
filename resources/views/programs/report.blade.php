@@ -99,5 +99,38 @@ th { background: #f3f4f6; font-size: 8px; }
     @endif
 </table>
 
+@if(!empty($resourceTotals))
+<h1 style="font-size: 14px; margin-top: 24px;">Resources Distributed</h1>
+<p class="subtitle">Totals released to farmers under this program, from each activity's distribution list.</p>
+<table>
+    <thead>
+        <tr>
+            <th style="width: 30%;">Item</th>
+            <th style="width: 20%;">Total Quantity</th>
+            <th style="width: 50%;">Unit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($resourceTotals as $resource)
+            <tr>
+                <td>{{ $resource['name'] }}</td>
+                <td>{{ number_format($resource['qty'], 2) }}</td>
+                <td>{{ $resource['unit'] }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+@php
+    $distActivities = $program->activities->filter(fn($a) => $a->recipients->count() > 0);
+    $totalRecipients = $distActivities->sum(fn($a) => $a->recipients->count());
+@endphp
+@if($distActivities->count() > 0)
+<p style="font-size: 9px; color: #666; margin-top: 6px;">
+    From {{ $distActivities->count() }} activity distribution list(s) covering {{ $totalRecipients }} farmer record(s):
+    {{ $distActivities->pluck('name')->join(', ') }}
+</p>
+@endif
+@endif
+
 </body>
 </html>

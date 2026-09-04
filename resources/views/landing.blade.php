@@ -196,9 +196,10 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach($achievements as $achievement)
+                @continue(!$achievement->photo_url)
                 <div class="rounded-xl overflow-hidden relative h-64 group cursor-pointer"
-                     onclick="openLightbox('{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($achievement->photo_path) }}', '{{ addslashes($achievement->program->name) }}', '{{ addslashes($achievement->caption ?: 'Program activity update') }}')">
-                  <img src="{{ \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($achievement->photo_path) }}" alt="{{ $achievement->program->name }}"
+                     onclick="openLightbox('{{ $achievement->photo_url }}', '{{ addslashes($achievement->program->name) }}', '{{ addslashes($achievement->caption ?: 'Program activity update') }}')">
+                  <img src="{{ $achievement->photo_url }}" alt="{{ $achievement->program->name }}"
                          class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-primary-dark/95 via-primary-dark/40 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-5">

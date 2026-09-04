@@ -23,10 +23,6 @@
     </div>
 @endif
 
-@php
-    $currentModule = $user->manages_stocks ? 'stocks' : (count($assignedProgramIds) > 0 ? 'programs' : '');
-@endphp
-
 <form method="POST" action="{{ route('users.update', $user) }}">
 @csrf @method('PUT')
 
@@ -69,18 +65,12 @@
         </div>
     </div>
 
-    {{-- Module Assignment: mutually exclusive Programs vs Stocks --}}
+    {{-- Program Assignment: optional. Stocks & Activities are open to every staff member — no assignment needed. --}}
     <div id="moduleField" class="mb-4" style="display:none;">
-        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Module Assignment</label>
-        <select name="module_assignment" id="moduleSelect" onchange="toggleProgramsCheckboxes()"
-                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-            <option value="" {{ $currentModule === '' ? 'selected' : '' }}>None</option>
-            <option value="programs" {{ $currentModule === 'programs' ? 'selected' : '' }}>Programs (choose specific program(s))</option>
-            <option value="stocks" {{ $currentModule === 'stocks' ? 'selected' : '' }}>Stocks</option>
-        </select>
-        <p class="text-xs text-gray-400 mt-1">A staff member can be assigned to Programs OR Stocks, not both. Changing this reassigns them — e.g. if a program coordinator retired, pick the new person here.</p>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Assigned Program(s) <span class="text-gray-400 font-normal">(optional)</span></label>
+        <p class="text-xs text-gray-400 mb-1">Stocks and Activities are available to all staff automatically. Only check a program here if this person coordinates it specifically — e.g. if a coordinator retired, pick the new person here.</p>
 
-        <div id="programsCheckboxes" style="display:none;" class="mt-2">
+        <div id="programsCheckboxes" class="mt-1">
             <div class="border border-gray-300 dark:border-gray-600 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
                 @foreach($programs as $program)
                 <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 py-0.5">
@@ -144,12 +134,6 @@ function toggleModuleField() {
     const selectedOption = roleSelect.options[roleSelect.selectedIndex];
     const roleName = selectedOption.getAttribute('data-name');
     document.getElementById('moduleField').style.display = (roleName === 'staff') ? 'block' : 'none';
-    toggleProgramsCheckboxes();
-}
-
-function toggleProgramsCheckboxes() {
-    const moduleSelect = document.getElementById('moduleSelect');
-    document.getElementById('programsCheckboxes').style.display = (moduleSelect.value === 'programs') ? 'block' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', toggleModuleField);
