@@ -145,7 +145,11 @@
                     <a href="{{ route('requests.index') }}" class="text-xs font-semibold text-primary hover:text-primary-dark">View all →</a>
                 </div>
                 @php
-                    $recentRequests = \App\Models\FarmerRequest::with('farmer')->latest()->take(5)->get();
+                    $recentRequestsQuery = \App\Models\FarmerRequest::with('farmer')->latest();
+                    if (Auth::user()->role?->name === 'barangay_user') {
+                        $recentRequestsQuery->whereHas('farmer', fn($q) => $q->where('barangay_id', Auth::user()->barangayAccount?->barangay_id));
+                    }
+                    $recentRequests = $recentRequestsQuery->take(5)->get();
                 @endphp
                 @forelse($recentRequests as $req)
                         <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
