@@ -319,10 +319,10 @@ class FarmerController extends Controller
             }
         }
 
-        $write(137.5, 172.5, strtoupper($farmer->surname));
-        $write(402.5, 172.5, strtoupper($farmer->first_name));
-        $write(137.5, 200.5, strtoupper($farmer->middle_name));
-        $write(320.5, 200.5, strtoupper($farmer->extension_name));
+        $write(137.5, 172.5, strtoupper($farmer->surname ?? ''));
+        $write(402.5, 172.5, strtoupper($farmer->first_name ?? ''));
+        $write(137.5, 200.5, strtoupper($farmer->middle_name ?? ''));
+        $write(320.5, 200.5, strtoupper($farmer->extension_name ?? ''));
 
         if ($farmer->sex === 'male')
             $mark(452.5, 206.9);
@@ -481,10 +481,10 @@ class FarmerController extends Controller
         $write(218.3, 709.3, $farmer->gross_annual_income_farming ? number_format($farmer->gross_annual_income_farming, 2) : '', 7);
         $write(438.3, 709.3, $farmer->gross_annual_income_non_farming ? number_format($farmer->gross_annual_income_non_farming, 2) : '', 7);
 
-        $write(130.0, 812.6, strtoupper($farmer->surname));
-        $write(410.0, 812.6, strtoupper($farmer->first_name));
-        $write(135.0, 837.0, strtoupper($farmer->middle_name));
-        $write(320.8, 837.0, strtoupper($farmer->extension_name));
+        $write(130.0, 812.6, strtoupper($farmer->surname ?? ''));
+        $write(410.0, 812.6, strtoupper($farmer->first_name ?? ''));
+        $write(135.0, 837.0, strtoupper($farmer->middle_name ?? ''));
+        $write(320.8, 837.0, strtoupper($farmer->extension_name ?? ''));
 
         // ═══ PAGE 2 — FARM PARCEL INFORMATION ═══
         $farmer->load('farmParcels');
@@ -624,7 +624,7 @@ class FarmerController extends Controller
         }
 
         $write($P2['date'][0], $P2['date'][1], now()->format('m/d/Y'), 7);
-        $write($P2['pname'][0], $P2['pname'][1], strtoupper(trim($farmer->first_name . ' ' . $farmer->middle_name . ' ' . $farmer->surname)), 7);
+        $write($P2['pname'][0], $P2['pname'][1], strtoupper(trim(($farmer->first_name ?? '') . ' ' . ($farmer->middle_name ?? '') . ' ' . ($farmer->surname ?? ''))), 7);
 
         return response($pdf->Output('Farmer-' . $farmer->reference_number . '.pdf', 'S'), 200)
             ->header('Content-Type', 'application/pdf');
