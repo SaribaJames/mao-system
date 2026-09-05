@@ -121,6 +121,10 @@
         $dateAdminVal = old('date_administered', $farmer->date_administered?->format('Y-m-d'));
         $dateAdminDigits = $dateAdminVal ? str_split(\Carbon\Carbon::parse($dateAdminVal)->format('mdY')) : [];
         $refDigits = str_split(preg_replace('/\D/', '', old('reference_number', $farmer->reference_number) ?? ''));
+        $mobDigits = str_split(preg_replace('/\D/', '', old('mobile_number', $farmer->mobile_number) ?? ''));
+        $landDigits = str_split(preg_replace('/\D/', '', old('landline_number', $farmer->landline_number) ?? ''));
+        $conDigits = str_split(preg_replace('/\D/', '', old('emergency_contact_number', $farmer->emergency_contact_number) ?? ''));
+        $dobDigitsVal = $dobValue ? str_split(\Carbon\Carbon::parse($dobValue)->format('mdY')) : [];
     @endphp
 
     <form method="POST" action="{{ route('farmers.update', $farmer) }}" enctype="multipart/form-data" id="farmerForm"
@@ -204,16 +208,24 @@
             <input type="text" name="region" value="{{ old('region', $farmer->region) }}" autocomplete="off" class="f"
                 style="top:28.75%;left:68.38%;width:26.46%;height:1.63%;">
 
-            <div style="position:absolute;top:32.78%;left:5.39%;width:20%;height:1.09%;display:flex;" id="mobBoxes"></div>
-            <input type="text" id="mobReal" maxlength="11" inputmode="numeric"
-                value="{{ old('mobile_number', $farmer->mobile_number) }}"
-                style="position:absolute;top:32.78%;left:5.39%;width:20%;height:1.09%;opacity:0;border:none;">
+            {{-- MOBILE NUMBER (11 real, individually-typeable boxes) --}}
+            <div style="position:absolute;top:32.78%;left:5.39%;width:20%;height:1.09%;display:flex;">
+                @for($i = 0; $i < 11; $i++)
+                    <input type="text" maxlength="1"
+                        style="width:9%;height:100%;text-align:center;border:none;background:transparent;font-size:10px;font-weight:bold;padding:0;outline:none;"
+                        class="mob-d" autocomplete="off" value="{{ $mobDigits[$i] ?? '' }}">
+                @endfor
+            </div>
             <input type="hidden" name="mobile_number" id="mobH" value="{{ old('mobile_number', $farmer->mobile_number) }}">
 
-            <div style="position:absolute;top:32.72%;left:29.62%;width:18%;height:1.19%;display:flex;" id="landBoxes"></div>
-            <input type="text" id="landReal" maxlength="10" inputmode="numeric"
-                value="{{ old('landline_number', $farmer->landline_number) }}"
-                style="position:absolute;top:32.72%;left:29.62%;width:18%;height:1.19%;opacity:0;border:none;">
+            {{-- LANDLINE NUMBER (10 real, individually-typeable boxes) --}}
+            <div style="position:absolute;top:32.72%;left:29.62%;width:18%;height:1.19%;display:flex;">
+                @for($i = 0; $i < 10; $i++)
+                    <input type="text" maxlength="1"
+                        style="width:10%;height:100%;text-align:center;border:none;background:transparent;font-size:10px;font-weight:bold;padding:0;outline:none;"
+                        class="land-d" autocomplete="off" value="{{ $landDigits[$i] ?? '' }}">
+                @endfor
+            </div>
             <input type="hidden" name="landline_number" id="landH"
                 value="{{ old('landline_number', $farmer->landline_number) }}">
 
@@ -237,10 +249,14 @@
             @endforeach
             <input type="hidden" name="highest_education" id="edu_h" value="{{ $eduVal }}">
 
-            <div style="position:absolute;top:36.06%;left:5.45%;width:17.5%;height:1.45%;display:flex;" id="dobBoxes"></div>
-            <input type="text" id="dobReal" maxlength="8" inputmode="numeric"
-                value="{{ $dobValue ? \Carbon\Carbon::parse($dobValue)->format('mdY') : '' }}"
-                style="position:absolute;top:36.06%;left:5.45%;width:17.5%;height:1.45%;opacity:0;border:none;">
+            {{-- DATE OF BIRTH (8 real, individually-typeable boxes) --}}
+            <div style="position:absolute;top:36.06%;left:5.45%;width:17.5%;height:1.45%;display:flex;">
+                @for($i = 0; $i < 8; $i++)
+                    <input type="text" maxlength="1"
+                        style="width:12%;height:100%;text-align:center;border:none;background:transparent;font-size:10px;font-weight:bold;padding:0;outline:none;"
+                        class="dob-d" autocomplete="off" value="{{ $dobDigitsVal[$i] ?? '' }}">
+                @endfor
+            </div>
             <input type="hidden" name="date_of_birth" id="dobH" value="{{ $dobValue }}">
 
             <input type="text" id="pob1" placeholder="City/Municipality" value="{{ $pobParts[0] ?? '' }}" autocomplete="off"
@@ -361,10 +377,14 @@
             <input type="text" name="emergency_contact_name"
                 value="{{ old('emergency_contact_name', $farmer->emergency_contact_name) }}" autocomplete="off" class="f"
                 style="top:55.61%;left:65.70%;width:28.97%;height:1.25%;">
-            <div style="position:absolute;top:57.63%;left:65.69%;width:28%;height:1.74%;display:flex;" id="conBoxes"></div>
-            <input type="text" id="conReal" maxlength="11" inputmode="numeric"
-                value="{{ old('emergency_contact_number', $farmer->emergency_contact_number) }}"
-                style="position:absolute;top:57.63%;left:65.69%;width:28%;height:1.74%;opacity:0;border:none;">
+            {{-- CONTACT NUMBER (11 real, individually-typeable boxes) --}}
+            <div style="position:absolute;top:57.63%;left:65.69%;width:28%;height:1.74%;display:flex;">
+                @for($i = 0; $i < 11; $i++)
+                    <input type="text" maxlength="1"
+                        style="width:9%;height:100%;text-align:center;border:none;background:transparent;font-size:10px;font-weight:bold;padding:0;outline:none;"
+                        class="con-d" autocomplete="off" value="{{ $conDigits[$i] ?? '' }}">
+                @endfor
+            </div>
             <input type="hidden" name="emergency_contact_number" id="conH"
                 value="{{ old('emergency_contact_number', $farmer->emergency_contact_number) }}">
 
@@ -614,40 +634,13 @@
         }
         mkDig('.dateadmin-d', 'dateAdminH');
         mkDig('.refnum-d', 'refH');
-
-        function setupDigitRow(boxesId, realId, hiddenId, length, boxWidthPct) {
-            const boxesDiv = document.getElementById(boxesId);
-            const real = document.getElementById(realId);
-            const hidden = document.getElementById(hiddenId);
-
-            function render() {
-                const val = real.value.padEnd(length, ' ');
-                boxesDiv.innerHTML = '';
-                for (let i = 0; i < length; i++) {
-                    const box = document.createElement('div');
-                    box.textContent = val[i].trim();
-                    box.style.cssText = `width:${boxWidthPct}%;height:100%;text-align:center;font-size:10px;font-weight:bold;border:1px solid #999;background:rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;`;
-                    boxesDiv.appendChild(box);
-                }
-                hidden.value = real.value;
-            }
-
-            real.addEventListener('input', () => {
-                real.value = real.value.replace(/\D/g, '').slice(0, length);
-                render();
-            });
-
-            render();
-            boxesDiv.addEventListener('click', () => real.focus());
-        }
-
-        setupDigitRow('mobBoxes', 'mobReal', 'mobH', 11, 9);
-        setupDigitRow('landBoxes', 'landReal', 'landH', 10, 10);
-        setupDigitRow('dobBoxes', 'dobReal', 'dobH', 8, 12);
-        setupDigitRow('conBoxes', 'conReal', 'conH', 11, 9);
+        mkDig('.mob-d', 'mobH');
+        mkDig('.land-d', 'landH');
+        mkDig('.con-d', 'conH');
+        const dobBoxes = mkDig('.dob-d', 'dobH');
 
         document.getElementById('farmerForm').addEventListener('submit', () => {
-            const dob = document.getElementById('dobReal').value;
+            const dob = dobBoxes.map(b => b.value).join('');
             if (dob.length === 8) document.getElementById('dobH').value = `${dob.slice(4, 8)}-${dob.slice(0, 2)}-${dob.slice(2, 4)}`;
         });
         document.getElementById('farmerForm').addEventListener('submit', () => {
