@@ -275,6 +275,7 @@ class FarmerController extends Controller
         $pdf->SetTextColor(0, 0, 0);
 
         $write = function ($x, $y, $text, $size = 9) use ($pdf) {
+            $text = $text === null ? '' : (string) $text;
             $pdf->SetFont('helvetica', 'B', $size);
             $yAdjusted = $y + max(0, (9 - $size) * 1.3);
             $pdf->SetXY($x, $yAdjusted);
@@ -282,6 +283,7 @@ class FarmerController extends Controller
         };
 
         $writeBoxed = function ($x, $y, $text, $size = 9) use ($pdf) {
+            $text = $text === null ? '' : (string) $text;
             $pdf->SetFont('helvetica', 'B', $size);
             $pdf->SetXY($x, $y + 1.5);
             $pdf->Cell(8, 10, $text, 0, 0, 'C');
