@@ -9,6 +9,7 @@ class Farmer extends Model
     protected $fillable = [
         'reference_number',
         'enrollment_type',
+        'date_administered',
         'surname',
         'first_name',
         'middle_name',
@@ -93,6 +94,7 @@ class Farmer extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'date_administered' => 'date',
         'is_household_head' => 'boolean',
         'is_pwd' => 'boolean',
         'is_4ps_beneficiary' => 'boolean',
