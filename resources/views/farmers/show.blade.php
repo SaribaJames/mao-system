@@ -89,6 +89,17 @@
         </div>
     @endif
 
+    {{-- RSBSA Form facsimile — the farmer's data laid over the actual form
+         images, on-screen only (view-only, not printable/exportable). --}}
+    @if(isset($rsbsaOverlay))
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5 mb-4">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                RSBSA Form
+            </h3>
+            @include('farmers.partials.rsbsa-form', ['overlay' => $rsbsaOverlay])
+        </div>
+    @endif
+
     <div class="grid grid-cols-3 gap-4">
 
         {{-- Left: Main Info --}}
