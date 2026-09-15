@@ -31,9 +31,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Farmers
-    Route::get('/farmers/pending', [FarmerController::class, 'pendingRegistrations'])->name('farmers.pending');
+    // These fixed-segment routes must be registered BEFORE the resource
+    // route below — otherwise /farmers/{farmer} (show) would swallow them
+    // as if "my-view-requests" etc. were a farmer ID.
+    Route::get('/farmers/my-view-requests', [FarmerController::class, 'myViewRequests'])->name('farmers.my-view-requests');
+    Route::get('/farmers/view-requests', [FarmerController::class, 'viewRequestsQueue'])->name('farmers.view-requests');
+    Route::post('/farmers/view-requests/{viewRequest}/approve', [FarmerController::class, 'approveViewRequest'])->name('farmers.view-requests.approve');
+    Route::post('/farmers/view-requests/{viewRequest}/deny', [FarmerController::class, 'denyViewRequest'])->name('farmers.view-requests.deny');
+    Route::get('/farmers/blank-form', [FarmerController::class, 'downloadBlankForm'])->name('farmers.blank-form');
     Route::resource('farmers', FarmerController::class);
-    Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
+    // Filled-PDF printing is retired — DA/MAO rules require the RSBSA form
+    // to be handwritten, not system-printed. Brgy Rep downloads a blank
+    // template instead (see farmers.blank-form above).
+    Route::post('/farmers/{farmer}/request-view', [FarmerController::class, 'requestView'])->name('farmers.request-view');
 
     // Stocks
     Route::resource('stocks', StockController::class)->only(['index', 'store', 'destroy']);
@@ -124,9 +134,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/endorsements/{endorsement}/approve', [EndorsementController::class, 'approve'])->name('endorsements.approve');
     Route::post('/endorsements/{endorsement}/reject', [EndorsementController::class, 'reject'])->name('endorsements.reject');
     Route::delete('/endorsements/{endorsement}', [EndorsementController::class, 'destroy'])->name('endorsements.destroy');
-
-    Route::post('/farmers/{farmer}/approve', [FarmerController::class, 'approveRegistration'])->name('farmers.approve');
-    Route::post('/farmers/{farmer}/reject', [FarmerController::class, 'rejectRegistration'])->name('farmers.reject');
 
     Route::post('/programs/{program}/dispersal', [ProgramController::class, 'storeDispersalRecord'])->name('programs.dispersal.store');
     Route::put('/programs/dispersal/{record}', [ProgramController::class, 'updateDispersalRecord'])->name('programs.dispersal.update');

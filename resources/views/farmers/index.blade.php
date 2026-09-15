@@ -9,15 +9,30 @@
     </div>
     <div class="flex items-center gap-2">
         @if(Auth::user()->isAdmin())
-        @php $pendingCount = \App\Models\Farmer::where('registration_status', 'pending')->count(); @endphp
-        @if($pendingCount > 0)
-        <a href="{{ route('farmers.pending') }}"
+        @php $viewRequestCount = \App\Models\FarmerViewRequest::where('status', 'pending')->count(); @endphp
+        @if($viewRequestCount > 0)
+        <a href="{{ route('farmers.view-requests') }}"
            class="bg-accent/10 text-accent border border-accent/30 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1 hover:bg-accent/20 transition">
-            <i class="fa-solid fa-clock"></i> {{ $pendingCount }} Pending
+            <i class="fa-solid fa-user-lock"></i> {{ $viewRequestCount }} View Request{{ $viewRequestCount === 1 ? '' : 's' }}
         </a>
         @endif
         @endif
-        @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff' || Auth::user()->isBarangayUser())
+
+        @if(!Auth::user()->isAdmin())
+        <a href="{{ route('farmers.my-view-requests') }}"
+           class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1 transition">
+            <i class="fa-solid fa-clock-rotate-left"></i> My View Requests
+        </a>
+        @endif
+
+        @if(Auth::user()->isBarangayUser())
+        <a href="{{ route('farmers.blank-form') }}"
+           class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+            <i class="fa-solid fa-file-arrow-down"></i> Download Blank Form
+        </a>
+        @endif
+
+        @if(Auth::user()->isAdmin())
         <a href="{{ route('farmers.create') }}"
            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
             <i class="fa-solid fa-plus"></i> Register Farmer
@@ -32,34 +47,16 @@
     </div>
 @endif
 
-@if(Auth::user()->isBarangayUser())
-{{-- Status tabs — barangay reps see their own Pending/Approved/Rejected separately --}}
-<div class="flex items-center gap-2 mb-4">
-    <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}"
-       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ !request('status') ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-        All
-    </a>
-    <a href="{{ request()->fullUrlWithQuery(['status' => 'pending']) }}"
-       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ request('status') === 'pending' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-        Pending
-    </a>
-    <a href="{{ request()->fullUrlWithQuery(['status' => 'approved']) }}"
-       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ request('status') === 'approved' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-        Approved
-    </a>
-    <a href="{{ request()->fullUrlWithQuery(['status' => 'rejected']) }}"
-       class="text-xs font-medium px-3 py-1.5 rounded-md transition {{ request('status') === 'rejected' ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-        Rejected
-    </a>
-</div>
-@endif
+@unless(Auth::user()->isAdmin())
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs rounded-md p-3 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-shield-halved"></i>
+        Only basic info is shown here to protect farmer identity. Open a farmer and request access to see their full profile.
+    </div>
+@endunless
 
 {{-- Search / Filter --}}
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-4 mb-4">
     <form method="GET" class="flex gap-3">
-        @if(Auth::user()->isBarangayUser() && request('status'))
-        <input type="hidden" name="status" value="{{ request('status') }}">
-        @endif
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Search by name..."
                class="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
@@ -84,8 +81,10 @@
             <tr>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Farmer</th>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Barangay</th>
+                @if(Auth::user()->isAdmin())
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Contact</th>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Livelihood</th>
+                @endif
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Registered</th>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Actions</th>
             </tr>
@@ -117,71 +116,31 @@
                                     @endforeach
                                 </div>
                             @endif
-                            @if(Auth::user()->isBarangayUser())
-                            <span class="text-xs px-2 py-0.5 rounded-full font-medium mt-1 inline-block
-                                {{ ($farmer->registration_status ?? 'approved') === 'approved' ? 'bg-green-100 text-green-700' :
-                                   (($farmer->registration_status ?? 'approved') === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-accent/10 text-accent border border-accent/30') }}">
-                                {{ ucfirst($farmer->registration_status ?? 'approved') }}
-                            </span>
-                            @if(($farmer->registration_status ?? '') === 'rejected' && $farmer->registration_rejection_reason)
-                            <p class="text-xs text-red-500 mt-0.5">Reason: {{ $farmer->registration_rejection_reason }}</p>
-                            @endif
-                            @endif
                         </div>
                     </div>
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $farmer->barangay?->name ?? '—' }}</td>
+                @if(Auth::user()->isAdmin())
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $farmer->mobile_number ?? '—' }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ ucfirst(str_replace('_', ' ', $farmer->main_livelihood ?? '—')) }}</td>
+                @endif
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ $farmer->created_at->format('M d, Y') }}</td>
                 <td class="px-4 py-3">
-                    <a href="{{ route('farmers.show', $farmer) }}"
-                       class="text-primary hover:underline text-xs font-medium">View</a>
-
-                    @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
-                    <a href="{{ route('farmers.edit', $farmer) }}"
-                       class="text-blue-500 hover:underline text-xs font-medium ml-2">Edit</a>
-                    @endif
-
-                    @if(Auth::user()->isAdmin() && ($farmer->registration_status ?? 'approved') === 'pending')
-                    <a href="{{ route('farmers.print', $farmer) }}" target="_blank"
-                       class="text-gray-500 hover:underline text-xs font-medium ml-2">Print</a>
-                    <form method="POST" action="{{ route('farmers.approve', $farmer) }}" class="inline">
-                        @csrf
-                        <button type="submit"
-                                class="text-green-600 hover:underline text-xs font-medium ml-2">Approve</button>
-                    </form>
-                    <button onclick="document.getElementById('reject-modal-{{ $farmer->id }}').classList.remove('hidden')"
-                            class="text-red-500 hover:underline text-xs font-medium ml-2">Reject</button>
-
-                    {{-- Reject Modal — lives inside this same <td>, no hidden <tr> wrapper.
-                         A hidden ancestor row would hide this modal permanently no
-                         matter what class the modal div itself has. --}}
-                    <div id="reject-modal-{{ $farmer->id }}"
-                         class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6">
-                            <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-3">
-                                Reject Registration — {{ $farmer->first_name }} {{ $farmer->surname }}
-                            </h3>
-                            <form method="POST" action="{{ route('farmers.reject', $farmer) }}">
-                                @csrf
-                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Reason for rejection</label>
-                                <textarea name="reason" rows="3" required
-                                          class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-                                <div class="flex gap-2">
-                                    <button type="submit"
-                                            class="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-md transition">
-                                        Confirm Reject
-                                    </button>
-                                    <button type="button"
-                                            onclick="document.getElementById('reject-modal-{{ $farmer->id }}').classList.add('hidden')"
-                                            class="flex-1 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium px-4 py-2 rounded-md transition">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    @if(Auth::user()->isAdmin())
+                        <a href="{{ route('farmers.show', $farmer) }}"
+                           class="text-primary hover:underline text-xs font-medium">View</a>
+                        <a href="{{ route('farmers.edit', $farmer) }}"
+                           class="text-blue-500 hover:underline text-xs font-medium ml-2">Edit</a>
+                    @else
+                        @if(in_array($farmer->id, $activeAccessFarmerIds ?? []))
+                            <a href="{{ route('farmers.show', $farmer) }}"
+                               class="text-green-600 hover:underline text-xs font-medium">
+                                <i class="fa-solid fa-lock-open"></i> View Full
+                            </a>
+                        @else
+                            <a href="{{ route('farmers.show', $farmer) }}"
+                               class="text-primary hover:underline text-xs font-medium">Basic Info</a>
+                        @endif
                     @endif
                 </td>
             </tr>

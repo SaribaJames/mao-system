@@ -60,6 +60,16 @@ class User extends Authenticatable
         return $this->role?->name === 'viewer';
     }
 
+    public function isStaff(): bool
+    {
+        return $this->role?->name === 'staff';
+    }
+
+    public function farmerViewRequests()
+    {
+        return $this->hasMany(FarmerViewRequest::class);
+    }
+
     public function isApproved(): bool
     {
         return $this->isAdmin() ||

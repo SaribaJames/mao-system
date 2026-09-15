@@ -50,10 +50,14 @@
                                 <p class="text-xs text-yellow-700 dark:text-yellow-300 font-medium">Farmer not in the list?</p>
                                 <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
                                     The farmer must be registered in the RSBSA first before recording a service.
+                                    @if(Auth::user()->isAdmin())
                                     <a href="{{ route('farmers.create') }}"
                                         class="text-primary font-semibold hover:underline ml-1">
                                         Register Farmer Now →
                                     </a>
+                                    @else
+                                    Ask an Admin to register them.
+                                    @endif
                                 </p>
                             </div>
                         </div>

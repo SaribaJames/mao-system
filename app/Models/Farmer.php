@@ -192,4 +192,9 @@ class Farmer extends Model
     {
         return $this->hasMany(FarmParcel::class)->orderBy('parcel_number');
     }
+
+    public function viewRequests()
+    {
+        return $this->hasMany(FarmerViewRequest::class);
+    }
 }

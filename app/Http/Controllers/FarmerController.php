@@ -4,35 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Farmer;
 use App\Models\Barangay;
+use App\Models\FarmerViewRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FarmerController extends Controller
 {
+    /**
+     * How long an approved view request stays usable before the requester
+     * is locked out of the full profile again.
+     */
+    const VIEW_ACCESS_MINUTES = 10;
+
     public function index(Request $request)
     {
         // activePrograms is eager-loaded so the program badge on each row
         // doesn't fire a query per farmer.
-        $query = Farmer::with(['barangay', 'activePrograms']);
+        $query = Farmer::with(['barangay', 'activePrograms'])
+            ->where('registration_status', 'approved');
 
         if (Auth::user()->isBarangayUser()) {
-            // Barangay user can only see their own barangay's farmers,
-            // and can filter by registration status via tabs (default: all)
+            // Barangay rep only ever sees farmers registered under their
+            // own barangay.
             $barangayId = Auth::user()->barangayAccount?->barangay_id;
             if ($barangayId) {
                 $query->where('barangay_id', $barangayId);
             } else {
                 $query->whereRaw('1 = 0');
             }
-
-            if ($request->status && in_array($request->status, ['pending', 'approved', 'rejected'])) {
-                $query->where('registration_status', $request->status);
-            }
-        } else {
-            // Admin/staff only see approved farmers in the official registry.
-            // Pending/rejected registrations are reviewed separately via
-            // the Pending Registrations page.
-            $query->where('registration_status', 'approved');
         }
 
         // Search
@@ -50,11 +49,25 @@ class FarmerController extends Controller
         }
 
         $farmers = $query->latest()->paginate(15);
-        return view('farmers.index', compact('farmers'));
+
+        // Staff/Brgy Rep only see basic info by default — this is which
+        // farmer IDs they currently have an active (approved & unexpired)
+        // view request for, so the table can offer "View Full" vs "Request".
+        $activeAccessFarmerIds = [];
+        if (!Auth::user()->isAdmin()) {
+            $activeAccessFarmerIds = FarmerViewRequest::where('user_id', Auth::id())
+                ->where('status', 'approved')
+                ->where('expires_at', '>', now())
+                ->pluck('farmer_id')
+                ->all();
+        }
+
+        return view('farmers.index', compact('farmers', 'activeAccessFarmerIds'));
     }
 
     public function create()
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
         $barangays = Barangay::orderBy('name')->get();
         return view('farmers.create', compact('barangays'));
     }
@@ -87,6 +100,8 @@ class FarmerController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
+
         $this->cleanNumericFields($request);
 
         $validated = $request->validate([
@@ -100,14 +115,11 @@ class FarmerController extends Controller
             'barangay_id' => 'nullable|exists:barangays,id',
         ]);
 
-        // If barangay rep, automatically assign their barangay
-        // and set registration as pending (requires admin/DA approval)
+        // Only Admin registers farmers now (typed, RSBSA-by-hand is the
+        // path for everyone else), so every record is auto-approved —
+        // there's no one left to submit a "pending" registration.
         $barangayId = $request->barangay_id;
         $registrationStatus = 'approved';
-        if (Auth::user()->isBarangayUser()) {
-            $barangayId = Auth::user()->barangayAccount?->barangay_id;
-            $registrationStatus = 'pending';
-        }
 
         $photoPath = null;
         if ($request->hasFile('photo')) {
@@ -121,6 +133,8 @@ class FarmerController extends Controller
                 'registered_by' => Auth::id(),
                 'barangay_id' => $barangayId,
                 'registration_status' => $registrationStatus,
+                'approved_by' => Auth::id(),
+                'approved_at' => now(),
                 'religion' => $request->religion === 'others' ? $request->religion_other : $request->religion,
                 'is_household_head' => $request->boolean('is_household_head'),
                 'is_pwd' => $request->boolean('is_pwd'),
@@ -163,14 +177,155 @@ class FarmerController extends Controller
 
     public function show(Farmer $farmer)
     {
+        $user = Auth::user();
+        $canViewFull = $user->isAdmin() || $this->hasActiveViewAccess($user, $farmer);
+
+        if (!$canViewFull) {
+            // Brgy Rep only ever gets basic info for their own barangay's
+            // farmers — Staff can see basic info for any farmer, scoped
+            // for nobody.
+            if ($user->isBarangayUser()) {
+                $barangayId = $user->barangayAccount?->barangay_id;
+                abort_unless($barangayId && $farmer->barangay_id === $barangayId, 403);
+            }
+
+            $farmer->load('barangay');
+            $pendingRequest = FarmerViewRequest::where('user_id', $user->id)
+                ->where('farmer_id', $farmer->id)
+                ->where('status', 'pending')
+                ->latest()
+                ->first();
+
+            return view('farmers.show', [
+                'farmer' => $farmer,
+                'restricted' => true,
+                'pendingRequest' => $pendingRequest,
+            ]);
+        }
+
         $farmer->load(['barangay', 'registeredBy', 'farmParcels',
             'coconutFarmProfile.coconutTreeRecords', 'coconutFarmProfile.farmIncomeRecords',
             'enrollments.program', 'enrollments.processedBy']);
-        return view('farmers.show', compact('farmer'));
+
+        $accessExpiresAt = $user->isAdmin() ? null : $this->activeViewAccessExpiry($user, $farmer);
+
+        return view('farmers.show', [
+            'farmer' => $farmer,
+            'restricted' => false,
+            'accessExpiresAt' => $accessExpiresAt,
+        ]);
+    }
+
+    /** Does this user currently have an approved, unexpired request to view this farmer? */
+    protected function hasActiveViewAccess($user, Farmer $farmer): bool
+    {
+        return FarmerViewRequest::where('user_id', $user->id)
+            ->where('farmer_id', $farmer->id)
+            ->where('status', 'approved')
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
+    protected function activeViewAccessExpiry($user, Farmer $farmer)
+    {
+        return FarmerViewRequest::where('user_id', $user->id)
+            ->where('farmer_id', $farmer->id)
+            ->where('status', 'approved')
+            ->where('expires_at', '>', now())
+            ->value('expires_at');
+    }
+
+    /**
+     * Staff/Brgy Rep ask Admin for a time-limited look at one farmer's
+     * full profile. Admin never needs this — always full access.
+     */
+    public function requestView(Farmer $farmer)
+    {
+        $user = Auth::user();
+        abort_if($user->isAdmin(), 403);
+
+        if ($user->isBarangayUser()) {
+            $barangayId = $user->barangayAccount?->barangay_id;
+            abort_unless($barangayId && $farmer->barangay_id === $barangayId, 403);
+        }
+
+        $alreadyPending = FarmerViewRequest::where('user_id', $user->id)
+            ->where('farmer_id', $farmer->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if (!$alreadyPending) {
+            FarmerViewRequest::create([
+                'farmer_id' => $farmer->id,
+                'user_id' => $user->id,
+                'status' => 'pending',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Request sent. An admin will review it shortly — check "My View Requests" for the outcome.');
+    }
+
+    /** Staff/Brgy Rep: the status of every view request they've submitted. */
+    public function myViewRequests()
+    {
+        abort_if(Auth::user()->isAdmin(), 403);
+        $requests = FarmerViewRequest::with('farmer', 'decidedBy')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->paginate(15);
+        return view('farmers.my-requests', compact('requests'));
+    }
+
+    /** Admin: the queue of view requests waiting on a decision. */
+    public function viewRequestsQueue()
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        $requests = FarmerViewRequest::with(['farmer', 'user'])
+            ->where('status', 'pending')
+            ->latest()
+            ->paginate(15);
+        return view('farmers.view-requests-queue', compact('requests'));
+    }
+
+    public function approveViewRequest(FarmerViewRequest $viewRequest)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        $viewRequest->update([
+            'status' => 'approved',
+            'decided_by' => Auth::id(),
+            'decided_at' => now(),
+            'expires_at' => now()->addMinutes(self::VIEW_ACCESS_MINUTES),
+        ]);
+        return redirect()->back()->with('success', 'Access approved for ' . self::VIEW_ACCESS_MINUTES . ' minutes.');
+    }
+
+    public function denyViewRequest(FarmerViewRequest $viewRequest)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        $viewRequest->update([
+            'status' => 'denied',
+            'decided_by' => Auth::id(),
+            'decided_at' => now(),
+        ]);
+        return redirect()->back()->with('success', 'Request denied.');
+    }
+
+    /**
+     * Brgy Rep no longer types a farmer into the system — they print this
+     * blank template and fill it out by hand, per DA/MAO rules. No farmer
+     * data is overlaid onto it.
+     */
+    public function downloadBlankForm()
+    {
+        abort_unless(Auth::user()->isBarangayUser(), 403);
+        $path = resource_path('pdf/rsbsa_template.pdf');
+        abort_unless(file_exists($path), 404);
+        return response()->download($path, 'RSBSA-Blank-Form.pdf');
     }
 
     public function edit(Farmer $farmer)
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
         $barangays = Barangay::orderBy('name')->get();
         $farmer->load('coconutFarmProfile.coconutTreeRecords', 'coconutFarmProfile.farmIncomeRecords');
         return view('farmers.edit', compact('farmer', 'barangays'));
@@ -178,6 +333,7 @@ class FarmerController extends Controller
 
     public function update(Request $request, Farmer $farmer)
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
         $this->cleanNumericFields($request);
 
         $updateData = $request->except('_token', '_method', 'photo');
@@ -230,6 +386,7 @@ class FarmerController extends Controller
 
     public function destroy(Farmer $farmer)
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
         $farmer->delete();
         return redirect()->route('farmers.index')
             ->with('success', 'Farmer record deleted successfully!');
@@ -783,41 +940,8 @@ class FarmerController extends Controller
 
     public function createDb()
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
         $barangays = Barangay::orderBy('name')->get();
         return view('farmers.create_db', compact('barangays'));
-    }
-
-    public function pendingRegistrations()
-    {
-        abort_unless(Auth::user()->isAdmin(), 403);
-        $farmers = Farmer::where('registration_status', 'pending')
-            ->with(['barangay', 'registeredBy'])
-            ->latest()
-            ->paginate(15);
-        return view('farmers.pending', compact('farmers'));
-    }
-
-    public function approveRegistration(Farmer $farmer)
-    {
-        abort_unless(Auth::user()->isAdmin(), 403);
-        $farmer->update([
-            'registration_status' => 'approved',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
-        return redirect()->back()->with('success', "Farmer {$farmer->full_name} registration approved.");
-    }
-
-    public function rejectRegistration(Request $request, Farmer $farmer)
-    {
-        abort_unless(Auth::user()->isAdmin(), 403);
-        $request->validate(['reason' => 'required|string|max:500']);
-        $farmer->update([
-            'registration_status' => 'rejected',
-            'registration_rejection_reason' => $request->reason,
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
-        return redirect()->back()->with('success', "Farmer {$farmer->full_name} registration rejected.");
     }
 }
