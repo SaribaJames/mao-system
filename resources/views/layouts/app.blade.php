@@ -311,9 +311,26 @@
                             $pendingUsers = \App\Models\User::where('status', 'inactive')->whereHas('barangayAccount', fn($q) => $q->where('approval_status', 'pending'))->count();
                             if ($pendingUsers > 0)
                                 $notifications->push(['icon' => 'fa-user-clock', 'color' => 'text-orange-500', 'bg' => 'bg-orange-100', 'text' => "{$pendingUsers} pending user registration(s)", 'link' => route('users.index')]);
+
+                            $pendingViewRequests = \App\Models\FarmerViewRequest::where('status', 'pending')->count();
+                            if ($pendingViewRequests > 0)
+                                $notifications->push(['icon' => 'fa-user-lock', 'color' => 'text-accent', 'bg' => 'bg-accent/10', 'text' => "{$pendingViewRequests} farmer view request(s) awaiting review", 'link' => route('farmers.view-requests')]);
+                        } else {
+                            // Staff: let them know when their own request to view a
+                            // farmer's full profile has been approved — the 10-minute
+                            // window is short, so this needs to be easy to spot.
+                            $myActiveAccess = \App\Models\FarmerViewRequest::where('user_id', Auth::id())
+                                ->where('status', 'approved')->where('expires_at', '>', now())->count();
+                            if ($myActiveAccess > 0)
+                                $notifications->push(['icon' => 'fa-unlock', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$myActiveAccess} farmer profile(s) unlocked for you right now", 'link' => route('farmers.my-view-requests')]);
                         }
 
                     } elseif (Auth::user()->role?->name === 'barangay_user') {
+                        $myActiveAccess = \App\Models\FarmerViewRequest::where('user_id', Auth::id())
+                            ->where('status', 'approved')->where('expires_at', '>', now())->count();
+                        if ($myActiveAccess > 0)
+                            $notifications->push(['icon' => 'fa-unlock', 'color' => 'text-green-500', 'bg' => 'bg-green-100', 'text' => "{$myActiveAccess} farmer profile(s) unlocked for you right now", 'link' => route('farmers.my-view-requests')]);
+
                         $barangayId = Auth::user()->barangayAccount?->barangay_id;
 
                         $myPending = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'pending')->count();

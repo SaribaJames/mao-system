@@ -21,14 +21,10 @@
             </div>
         </div>
         <div class="flex gap-2">
-            @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
+            @if(Auth::user()->isAdmin())
             <a href="{{ route('farmers.edit', $farmer) }}"
             class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-md transition">
                 <i class="fa-solid fa-pen mr-1"></i> Edit
-            </a>
-            <a href="{{ route('farmers.print', $farmer) }}" target="_blank"
-            class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-md transition">
-                <i class="fa-solid fa-print mr-1"></i> Print
             </a>
             @endif
             <a href="{{ route('farmers.index') }}"
@@ -37,6 +33,61 @@
             </a>
         </div>
     </div>
+
+    @if($restricted ?? false)
+        {{-- Staff/Brgy Rep without an approved, unexpired view request only
+             ever see this basic-info card — full profile is server-side
+             hidden, not just visually blurred, to actually protect the
+             farmer's identity. --}}
+        <div class="max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-6">
+            <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-semibold mb-4">
+                <i class="fa-solid fa-eye-slash"></i> Full profile is hidden to protect this farmer's identity
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-sm mb-5">
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Sex</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100 capitalize">{{ $farmer->sex }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Date of Birth</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">
+                        {{ \Carbon\Carbon::parse($farmer->date_of_birth)->format('F d, Y') }}
+                        ({{ \Carbon\Carbon::parse($farmer->date_of_birth)->age }} years old)
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Barangay</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $farmer->barangay?->name ?? '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Status</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100 capitalize">{{ $farmer->status }}</p>
+                </div>
+            </div>
+
+            @if($pendingRequest ?? null)
+                <div class="bg-accent/10 text-accent border border-accent/30 text-sm rounded-md p-3 flex items-center gap-2">
+                    <i class="fa-solid fa-clock"></i> Your request to view this farmer's full profile is pending admin review.
+                </div>
+            @else
+                <form method="POST" action="{{ route('farmers.request-view', $farmer) }}">
+                    @csrf
+                    <button type="submit"
+                        class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
+                        <i class="fa-solid fa-unlock mr-1"></i> Request to View Full Profile
+                    </button>
+                </form>
+            @endif
+        </div>
+    @else
+
+    @if(!(Auth::user()->isAdmin()) && ($accessExpiresAt ?? null))
+        <div class="max-w-3xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm rounded-md p-3 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-unlock"></i>
+            Full profile access approved — this expires at {{ $accessExpiresAt->format('g:i:s A') }}
+            ({{ $accessExpiresAt->diffForHumans() }}).
+        </div>
+    @endif
 
     <div class="grid grid-cols-3 gap-4">
 
@@ -647,5 +698,6 @@
 
         </div>
     </div>
+    @endif
 
 @endsection
