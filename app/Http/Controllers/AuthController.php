@@ -24,6 +24,7 @@ class AuthController extends Controller
             'admin' => ['admin'],
             'staff' => ['staff'],
             'barangay' => ['barangay_user'],
+            'association' => ['association'],
         ];
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
@@ -62,10 +63,45 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $accountType = $request->input('account_type', 'barangay');
+
         $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
+            'account_type' => 'required|in:barangay,association',
+        ]);
+
+        if ($accountType === 'association') {
+            $request->validate([
+                'association_name' => 'required|string|max:150',
+                'contact_number' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:255',
+            ]);
+
+            $role = \App\Models\Role::where('name', 'association')->first();
+
+            $user = \App\Models\User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'role_id' => $role->id,
+                'status' => 'inactive',
+            ]);
+
+            \App\Models\AssociationAccount::create([
+                'user_id' => $user->id,
+                'association_name' => $request->association_name,
+                'contact_number' => $request->contact_number,
+                'address' => $request->address,
+                'approval_status' => 'pending',
+            ]);
+
+            return redirect()->route('login')
+                ->with('success', 'Registration submitted! Please wait for admin approval before logging in.');
+        }
+
+        $request->validate([
             'barangay_id' => 'required|exists:barangays,id',
         ]);
 

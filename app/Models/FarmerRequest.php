@@ -47,6 +47,36 @@ class FarmerRequest extends Model
         return $this->belongsTo(User::class, 'submitted_by');
     }
 
+    /**
+     * Who/what this request is for, in one label — a farmer's name for a
+     * Barangay Rep submission, or the organization's name for an
+     * Association submission (these have no farmer_id at all).
+     */
+    public function getRequesterNameAttribute(): string
+    {
+        if ($this->farmer) {
+            return trim($this->farmer->first_name . ' ' . $this->farmer->surname);
+        }
+
+        if ($this->farmer_id) {
+            return 'Deleted farmer';
+        }
+
+        return $this->submittedBy?->associationAccount?->association_name
+            ?? $this->submittedBy?->name
+            ?? 'Unknown';
+    }
+
+    /** Barangay for a farmer request, or "Association" tag otherwise. */
+    public function getRequesterSubtitleAttribute(): ?string
+    {
+        if ($this->farmer) {
+            return $this->farmer->barangay?->name;
+        }
+
+        return $this->farmer_id ? null : 'Association';
+    }
+
     public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by');

@@ -18,6 +18,10 @@ class FarmerController extends Controller
 
     public function index(Request $request)
     {
+        // Association accounts only ever submit/track their own requests —
+        // they have no reason to see the farmer registry at all.
+        abort_if(Auth::user()->isAssociation(), 403);
+
         // activePrograms is eager-loaded so the program badge on each row
         // doesn't fire a query per farmer.
         $query = Farmer::with(['barangay', 'activePrograms'])
@@ -177,6 +181,11 @@ class FarmerController extends Controller
 
     public function show(Farmer $farmer)
     {
+        // Association accounts have no reason to open any farmer's profile,
+        // restricted or otherwise — block it rather than let them page
+        // through farmer IDs to see even the basic-info view.
+        abort_if(Auth::user()->isAssociation(), 403);
+
         $user = Auth::user();
         $canViewFull = $user->isAdmin() || $this->hasActiveViewAccess($user, $farmer);
 
@@ -549,7 +558,7 @@ class FarmerController extends Controller
     public function requestView(Farmer $farmer)
     {
         $user = Auth::user();
-        abort_if($user->isAdmin(), 403);
+        abort_if($user->isAdmin() || $user->isAssociation(), 403);
 
         if ($user->isBarangayUser()) {
             $barangayId = $user->barangayAccount?->barangay_id;

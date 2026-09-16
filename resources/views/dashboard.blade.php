@@ -23,7 +23,7 @@
             <p class="text-green-50 text-sm mt-1.5 font-medium">
                 @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'superadmin')
                     System monitoring and overview
-                @elseif(Auth::user()->role?->name === 'barangay_user')
+                @elseif(Auth::user()->role?->name === 'barangay_user' || Auth::user()->isAssociation())
                     Your submitted requests and updates
                 @else
                     Overview of MAO operations
@@ -44,6 +44,31 @@
                     $myPending = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'pending')->count();
                     $myApproved = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'approved')->count();
                     $myCompleted = \App\Models\FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId))->where('status', 'completed')->whereMonth('updated_at', now()->month)->count();
+                @endphp
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-primary shadow-sm">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">My Submitted Requests</p>
+                        <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ $myRequests }}</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-accent shadow-sm">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Pending Requests</p>
+                        <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ $myPending }}</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-blue-500 shadow-sm">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Approved Requests</p>
+                        <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ $myApproved }}</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-primary shadow-sm">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Completed This Month</p>
+                        <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ $myCompleted }}</p>
+                    </div>
+                </div>
+            @elseif(Auth::user()->isAssociation())
+                @php
+                    $myRequests = \App\Models\FarmerRequest::where('submitted_by', Auth::id())->count();
+                    $myPending = \App\Models\FarmerRequest::where('submitted_by', Auth::id())->where('status', 'pending')->count();
+                    $myApproved = \App\Models\FarmerRequest::where('submitted_by', Auth::id())->where('status', 'approved')->count();
+                    $myCompleted = \App\Models\FarmerRequest::where('submitted_by', Auth::id())->where('status', 'completed')->whereMonth('updated_at', now()->month)->count();
                 @endphp
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-primary shadow-sm">
@@ -145,9 +170,11 @@
                     <a href="{{ route('requests.index') }}" class="text-xs font-semibold text-primary hover:text-primary-dark">View all →</a>
                 </div>
                 @php
-                    $recentRequestsQuery = \App\Models\FarmerRequest::with('farmer')->latest();
+                    $recentRequestsQuery = \App\Models\FarmerRequest::with(['farmer', 'submittedBy.associationAccount'])->latest();
                     if (Auth::user()->role?->name === 'barangay_user') {
                         $recentRequestsQuery->whereHas('farmer', fn($q) => $q->where('barangay_id', Auth::user()->barangayAccount?->barangay_id));
+                    } elseif (Auth::user()->isAssociation()) {
+                        $recentRequestsQuery->where('submitted_by', Auth::id());
                     }
                     $recentRequests = $recentRequestsQuery->take(5)->get();
                 @endphp
@@ -163,7 +190,7 @@
                                     <p class="text-sm text-gray-800 dark:text-gray-100 font-semibold">
                                         {{ $req->request_type_label ?? ucfirst(str_replace('_', ' ', $req->request_type)) }}
                                     </p>
-                                    <p class="text-xs text-gray-400">{{ $req->farmer->first_name }} {{ $req->farmer->surname }}</p>
+                                    <p class="text-xs text-gray-400">{{ $req->requester_name }}</p>
                                 </div>
                             </div>
                             <div class="text-right">

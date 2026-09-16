@@ -7,10 +7,11 @@
         <h2 class="text-3xl font-bold tracking-tight text-gray-900">Requests Management</h2>
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Track and process farmer requests</p>
     </div>
-    {{-- Only barangay representatives raise requests — they act on behalf of
-         the farmer. Staff and admins serving a walk-in log a Service Record or
-         release stock directly instead. --}}
-    @if(Auth::user()->isBarangayUser())
+    {{-- Barangay reps and associations raise requests — a rep acts on behalf
+         of a farmer, an association requests for its own organization. Staff
+         and admins serving a walk-in log a Service Record or release stock
+         directly instead. --}}
+    @if(Auth::user()->isBarangayUser() || Auth::user()->isAssociation())
         <a href="{{ route('requests.create') }}"
            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
             <i class="fa-solid fa-plus"></i> New Request
@@ -80,7 +81,7 @@
         <thead class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Request ID</th>
-                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Farmer Name</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Farmer / Requester</th>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Program</th>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Request Type</th>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Item/Service</th>
@@ -95,8 +96,10 @@
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">{{ $req->request_number }}</td>
                 <td class="px-4 py-3">
-                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $req->farmer?->first_name }} {{ $req->farmer?->surname ?? 'Deleted farmer' }}</p>
-                    <p class="text-xs text-gray-400">{{ $req->farmer?->barangay?->name }}</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $req->requester_name }}</p>
+                    @if($req->requester_subtitle)
+                        <p class="text-xs text-gray-400">{{ $req->requester_subtitle }}</p>
+                    @endif
                 </td>
                 <td class="px-4 py-3">
                     @if($req->program)

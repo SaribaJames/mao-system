@@ -68,7 +68,8 @@
             </div>
         </div>
 
-        {{-- Farmer Info --}}
+        {{-- Farmer or Association Info --}}
+        @if($request->farmer_id)
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
             <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Farmer Information</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
@@ -94,6 +95,26 @@
                 </div>
             </div>
         </div>
+        @else
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
+            <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Requesting Organization</h3>
+            @php $assoc = $request->submittedBy?->associationAccount; @endphp
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Association Name</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $assoc?->association_name ?? $request->submittedBy?->name ?? '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Contact Number</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $assoc?->contact_number ?? '—' }}</p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-1">Address</p>
+                    <p class="font-medium text-gray-800 dark:text-gray-100">{{ $assoc?->address ?? '—' }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Status & Actions --}}
@@ -206,7 +227,7 @@
         @endif
 
         {{-- Withdraw (own pending request only) --}}
-        @if(Auth::user()->isBarangayUser() && $request->status === 'pending' && $request->submitted_by === Auth::id())
+        @if((Auth::user()->isBarangayUser() || Auth::user()->isAssociation()) && $request->status === 'pending' && $request->submitted_by === Auth::id())
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5 mt-4">
             <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Withdraw Request</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">

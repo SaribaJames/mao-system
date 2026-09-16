@@ -92,6 +92,17 @@
                     Dashboard
                 </a>
 
+                {{-- Association accounts get nothing but a plain Requests link —
+                     they only ever submit/track their own requests, nothing
+                     else in the system (no farmer list, no other modules). --}}
+                @if(Auth::user()->isAssociation())
+                    <a href="{{ route('requests.index') }}"
+                        class="px-4 py-2.5 text-sm font-medium transition
+                              {{ request()->routeIs('requests.*') ? 'bg-accent text-primary-dark font-bold' : 'text-white/90 hover:bg-white/10' }}">
+                        Requests
+                    </a>
+                @else
+
                 {{-- Records dropdown: Farmers, Service Records, Requests --}}
                 @php $recordsActive = request()->routeIs('farmers.*') || request()->routeIs('service-records.*') || request()->routeIs('requests.*'); @endphp
                 <div class="relative nav-dropdown">
@@ -224,6 +235,8 @@
                         User Management
                     </a>
                 @endif
+
+                @endif {{-- @unless association --}}
 
             </nav>
 

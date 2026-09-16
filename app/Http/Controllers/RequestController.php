@@ -16,7 +16,7 @@ class RequestController extends Controller
     {
         $this->blockProgramStaff();
 
-        $query = FarmerRequest::with(['farmer', 'farmer.barangay', 'submittedBy', 'program.assignedUser']);
+        $query = FarmerRequest::with(['farmer', 'farmer.barangay', 'submittedBy.associationAccount', 'program.assignedUser']);
 
         // Barangay rep can only see requests from their own barangay
         if (Auth::user()->isBarangayUser()) {
@@ -26,6 +26,13 @@ class RequestController extends Controller
             } else {
                 $query->whereRaw('1 = 0');
             }
+        }
+
+        // Association accounts only ever see their own submitted requests —
+        // they have no barangay to scope by, and no business seeing anyone
+        // else's request history.
+        if (Auth::user()->isAssociation()) {
+            $query->where('submitted_by', Auth::id());
         }
 
         if (request('status')) {
@@ -56,10 +63,17 @@ class RequestController extends Controller
 
         $requests = $query->latest()->paginate(15)->withQueryString();
 
-        // Stats also filtered by barangay for barangay reps
+        // Stats also filtered by barangay for barangay reps, or by their own
+        // submissions for an association account.
         if (Auth::user()->isBarangayUser()) {
             $barangayId = Auth::user()->barangayAccount?->barangay_id;
             $baseQuery  = FarmerRequest::whereHas('farmer', fn($q) => $q->where('barangay_id', $barangayId));
+            $total     = $baseQuery->count();
+            $pending   = (clone $baseQuery)->where('status', 'pending')->count();
+            $approved  = (clone $baseQuery)->where('status', 'approved')->count();
+            $completed = (clone $baseQuery)->where('status', 'completed')->count();
+        } elseif (Auth::user()->isAssociation()) {
+            $baseQuery = FarmerRequest::where('submitted_by', Auth::id());
             $total     = $baseQuery->count();
             $pending   = (clone $baseQuery)->where('status', 'pending')->count();
             $approved  = (clone $baseQuery)->where('status', 'approved')->count();
@@ -86,6 +100,14 @@ class RequestController extends Controller
         $this->blockProgramStaff();
         $this->authorizeSubmit();
 
+        // Association accounts request for their organization, not on
+        // behalf of one registered farmer — no farmer picker needed.
+        if (Auth::user()->isAssociation()) {
+            $stocks   = Stock::where('remaining_stock', '>', 0)->orderBy('item_name')->get();
+            $programs = \App\Models\Program::orderBy('name')->get();
+            return view('requests.create', ['farmers' => collect(), 'stocks' => $stocks, 'programs' => $programs]);
+        }
+
         $farmersQuery = Farmer::with('activePrograms')->orderBy('surname');
 
         if (Auth::user()->isBarangayUser()) {
@@ -106,7 +128,7 @@ class RequestController extends Controller
         $this->authorizeSubmit();
 
         $request->validate([
-            'farmer_id'    => 'required|exists:farmers,id',
+            'farmer_id'    => Auth::user()->isAssociation() ? 'nullable|exists:farmers,id' : 'required|exists:farmers,id',
             'program_id'   => 'nullable|exists:programs,id',
             'request_type' => 'required',
             'item_service' => 'required|string|max:100',
@@ -116,7 +138,7 @@ class RequestController extends Controller
 
         FarmerRequest::create([
             'request_number' => $reqNumber,
-            'farmer_id'      => $request->farmer_id,
+            'farmer_id'      => Auth::user()->isAssociation() ? null : $request->farmer_id,
             'program_id'     => $request->program_id,
             'request_type'   => $request->request_type,
             'stock_id'       => $request->stock_id,
@@ -136,7 +158,13 @@ class RequestController extends Controller
     {
         $this->blockProgramStaff();
 
-        $farmerRequest->load(['farmer', 'farmer.barangay', 'stock', 'submittedBy', 'processedBy', 'program.assignedUser']);
+        // An association account may only open its own requests — it has
+        // no barangay/program scoping to fall back on like other roles do.
+        if (Auth::user()->isAssociation()) {
+            abort_unless($farmerRequest->submitted_by === Auth::id(), 403);
+        }
+
+        $farmerRequest->load(['farmer', 'farmer.barangay', 'stock', 'submittedBy.associationAccount', 'processedBy', 'program.assignedUser']);
         return view('requests.show', ['request' => $farmerRequest]);
     }
 
@@ -311,7 +339,7 @@ class RequestController extends Controller
     public function destroy(FarmerRequest $farmerRequest)
     {
         $this->blockProgramStaff();
-        abort_unless(Auth::user()->isBarangayUser(), 403);
+        abort_unless(Auth::user()->isBarangayUser() || Auth::user()->isAssociation(), 403);
         abort_unless($farmerRequest->submitted_by === Auth::id(), 403, 'You can only withdraw requests you submitted.');
 
         if ($farmerRequest->status !== 'pending') {
@@ -326,21 +354,18 @@ class RequestController extends Controller
     }
 
     /**
-     * No longer restricts anyone — see the body. Left in place so the
-     * intent of the original design stays visible in history.
-     */
-    /**
-     * Only barangay representatives raise requests — they submit on behalf of
-     * a farmer in their barangay. MAO staff and admins process requests; when
-     * they serve a farmer directly they log a Service Record or release stock
-     * from Stocks, which is the same outcome without the request round-trip.
+     * Barangay representatives submit on behalf of a farmer in their
+     * barangay; association accounts submit for their own organization.
+     * MAO staff and admins process requests; when they serve a farmer
+     * directly they log a Service Record or release stock from Stocks,
+     * which is the same outcome without the request round-trip.
      */
     protected function authorizeSubmit(): void
     {
         abort_unless(
-            Auth::user()->isBarangayUser(),
+            Auth::user()->isBarangayUser() || Auth::user()->isAssociation(),
             403,
-            'Only barangay representatives can submit requests. To serve a farmer directly, use Service Records or release stock from Stocks.'
+            'Only barangay representatives and associations can submit requests. To serve a farmer directly, use Service Records or release stock from Stocks.'
         );
     }
 

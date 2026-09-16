@@ -13,6 +13,7 @@ class RoleSeeder extends Seeder
             ['name' => 'admin',         'description' => 'MAO Administrator'],
             ['name' => 'staff',         'description' => 'Agricultural Technician'],
             ['name' => 'barangay_user', 'description' => 'Authorized Barangay Secretary'],
+            ['name' => 'association',   'description' => 'Farmers\' Association / Organization Representative'],
         ];
 
         foreach ($roles as $role) {

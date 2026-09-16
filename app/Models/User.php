@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->hasOne(BarangayAccount::class);
     }
 
+    public function associationAccount()
+    {
+        return $this->hasOne(AssociationAccount::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role?->name === 'admin';
@@ -65,6 +70,11 @@ class User extends Authenticatable
         return $this->role?->name === 'staff';
     }
 
+    public function isAssociation(): bool
+    {
+        return $this->role?->name === 'association';
+    }
+
     public function farmerViewRequests()
     {
         return $this->hasMany(FarmerViewRequest::class);
@@ -73,7 +83,8 @@ class User extends Authenticatable
     public function isApproved(): bool
     {
         return $this->isAdmin() ||
-            $this->barangayAccount?->approval_status === 'approved';
+            $this->barangayAccount?->approval_status === 'approved' ||
+            $this->associationAccount?->approval_status === 'approved';
     }
 
     public function sentMessages()

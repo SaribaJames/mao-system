@@ -24,6 +24,7 @@
     <h3 class="text-base font-bold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Request Details</h3>
 
     <div class="grid grid-cols-2 gap-4 mb-4">
+        @unless(Auth::user()->isAssociation())
         <div>
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Farmer <span class="text-red-500">*</span></label>
             <select name="farmer_id" id="farmerSelect" required onchange="showFarmerPrograms()"
@@ -42,6 +43,7 @@
             </select>
             <p id="farmerProgramHint" class="text-xs mt-1 hidden"></p>
         </div>
+        @endunless
         <div>
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Request Type <span class="text-red-500">*</span></label>
             <select name="request_type" required
@@ -133,6 +135,7 @@
 <script>
 function showFarmerPrograms() {
     var sel  = document.getElementById('farmerSelect');
+    if (!sel) return;
     var hint = document.getElementById('farmerProgramHint');
     var opt  = sel.options[sel.selectedIndex];
     var names = opt ? (opt.dataset.programs || '') : '';

@@ -91,6 +91,7 @@
                     <option value="admin">Admin / Agriculturist</option>
                     <option value="staff">Staff Member</option>
                     <option value="barangay">Barangay Representative</option>
+                    <option value="association">Farmers' Association</option>
                 </select>
             </div>
 
@@ -114,7 +115,7 @@
 
         {{-- Sign Up --}}
         <div class="mt-4 border-t border-border-soft dark:border-gray-700 pt-4 text-center">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Are you a Barangay Representative?</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Barangay Representative or Farmers' Association?</p>
             <a href="{{ route('register') }}"
                 class="w-full block border border-primary text-primary hover:bg-primary-light font-semibold py-2 rounded-md transition text-sm text-center">
                 Request Access / Sign Up

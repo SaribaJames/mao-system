@@ -26,7 +26,7 @@
 @endif
 
 {{-- Stat Cards --}}
-<div class="grid grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-5 gap-4 mb-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-border-soft dark:border-gray-700">
         <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Users</p>
         <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $totalUsers }}</p>
@@ -43,6 +43,10 @@
         <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Barangay Reps</p>
         <p class="text-2xl font-bold text-primary">{{ $barangayReps }}</p>
     </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-border-soft dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Associations</p>
+        <p class="text-2xl font-bold text-teal-500">{{ $associations }}</p>
+    </div>
 </div>
 
 {{-- Search --}}
@@ -56,6 +60,7 @@
             <option value="admin"         {{ request('role') == 'admin'         ? 'selected' : '' }}>Admin</option>
             <option value="staff"         {{ request('role') == 'staff'         ? 'selected' : '' }}>Staff</option>
             <option value="barangay_user" {{ request('role') == 'barangay_user' ? 'selected' : '' }}>Barangay Rep</option>
+            <option value="association"   {{ request('role') == 'association'   ? 'selected' : '' }}>Association</option>
         </select>
         <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary-dark transition">
             Search
@@ -64,7 +69,11 @@
 </div>
 
 {{-- Pending Approvals Notice --}}
-@php $pendingCount = $users->filter(fn($u) => $u->status === 'inactive' && $u->barangayAccount?->approval_status === 'pending')->count(); @endphp
+@php
+    $isPendingApproval = fn($u) => $u->status === 'inactive'
+        && (($u->barangayAccount?->approval_status === 'pending') || ($u->associationAccount?->approval_status === 'pending'));
+    $pendingCount = $users->filter($isPendingApproval)->count();
+@endphp
 @if($pendingCount > 0)
 <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300 text-sm rounded-md p-3 mb-4 flex items-center gap-2">
     <i class="fa-solid fa-clock"></i>
@@ -87,10 +96,10 @@
         </thead>
         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             @forelse($users as $user)
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition {{ $user->status === 'inactive' && $user->barangayAccount?->approval_status === 'pending' ? 'bg-yellow-50 dark:bg-yellow-900/20' : '' }}">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition {{ $isPendingApproval($user) ? 'bg-yellow-50 dark:bg-yellow-900/20' : '' }}">
                 <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">
                     {{ $user->name }}
-                    @if($user->status === 'inactive' && $user->barangayAccount?->approval_status === 'pending')
+                    @if($isPendingApproval($user))
                         <span class="ml-1 px-1.5 py-0.5 bg-accent/10 text-accent border border-accent/30 text-xs rounded-full">Pending</span>
                     @endif
                 </td>
@@ -102,6 +111,7 @@
                             'superadmin'    => 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
                             'staff'         => 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
                             'barangay_user' => 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+                            'association'   => 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300',
                             'viewer'        => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
                         ];
                         $roleName = $user->role?->name ?? 'none';
@@ -110,6 +120,7 @@
                             'superadmin'    => 'Super Admin',
                             'staff'         => 'Staff',
                             'barangay_user' => 'Barangay Rep',
+                            'association'   => 'Association',
                             'viewer'        => 'Viewer',
                         ];
                     @endphp
@@ -120,19 +131,19 @@
                 <td class="px-4 py-3">
                     <span class="px-2 py-1 rounded-full text-xs font-medium
                         {{ $user->status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-accent/10 text-accent border border-accent/30' }}">
-                        {{ $user->status === 'inactive' && $user->barangayAccount?->approval_status === 'pending' ? 'Pending Approval' : ucfirst($user->status) }}
+                        {{ $isPendingApproval($user) ? 'Pending Approval' : ucfirst($user->status) }}
                     </span>
                 </td>
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ $user->created_at->format('M d, Y') }}</td>
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-2 flex-wrap">
 
-                        {{-- Approve button for pending barangay reps --}}
-                        @if($user->status === 'inactive' && $user->barangayAccount?->approval_status === 'pending')
+                        {{-- Approve button for pending barangay reps / associations --}}
+                        @if($isPendingApproval($user))
                         <form method="POST" action="{{ route('users.approve', $user) }}">
                             @csrf
                             <button type="submit"
-                                    onclick="return confirm('Approve {{ $user->name }} as Barangay Representative?')"
+                                    onclick="return confirm('Approve {{ $user->name }} as {{ $roleLabels[$roleName] ?? 'user' }}?')"
                                     class="text-primary hover:underline text-xs font-bold">
                                 ✓ Approve
                             </button>
@@ -221,6 +232,24 @@
                     </select>
                 </div>
 
+                <div id="associationField" style="display:none;" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Association / Organization Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="association_name"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Contact Number</label>
+                        <input type="text" name="contact_number"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Address</label>
+                        <input type="text" name="address"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+
                 {{-- Program Assignment: optional. Stocks & Activities are open to every staff member — no assignment needed. --}}
                 <div id="moduleField" style="display:none;">
                     <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Assigned Program(s) <span class="text-gray-400 font-normal">(optional)</span></label>
@@ -287,6 +316,7 @@ function toggleRoleFields() {
     const roleName = selectedOption.getAttribute('data-name');
 
     document.getElementById('barangayField').style.display = (roleName === 'barangay_user') ? 'block' : 'none';
+    document.getElementById('associationField').style.display = (roleName === 'association') ? 'block' : 'none';
     document.getElementById('moduleField').style.display = (roleName === 'staff') ? 'block' : 'none';
 }
 

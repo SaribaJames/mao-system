@@ -31,7 +31,7 @@ class UserController extends Controller
     {
         $this->authorizeAdmin();
 
-        $query = User::with(['role', 'barangayAccount']);
+        $query = User::with(['role', 'barangayAccount', 'associationAccount']);
 
         // Search by name or email
         if (request('search')) {
@@ -54,8 +54,9 @@ class UserController extends Controller
         $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->count();
         $staff = User::whereHas('role', fn($q) => $q->where('name', 'staff'))->count();
         $barangayReps = User::whereHas('role', fn($q) => $q->where('name', 'barangay_user'))->count();
+        $associations = User::whereHas('role', fn($q) => $q->where('name', 'association'))->count();
 
-        return view('users.index', compact('users', 'totalUsers', 'admins', 'staff', 'barangayReps'));
+        return view('users.index', compact('users', 'totalUsers', 'admins', 'staff', 'barangayReps', 'associations'));
     }
 
     public function create()
@@ -93,6 +94,12 @@ class UserController extends Controller
             ], [], ['barangay_id' => 'barangay']);
         }
 
+        if ($role->name === 'association') {
+            $request->validate([
+                'association_name' => 'required|string|max:150',
+            ], [], ['association_name' => 'association name']);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -106,6 +113,18 @@ class UserController extends Controller
             \App\Models\BarangayAccount::create([
                 'user_id' => $user->id,
                 'barangay_id' => $request->barangay_id,
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+        }
+
+        if ($role->name === 'association' && $request->filled('association_name')) {
+            \App\Models\AssociationAccount::create([
+                'user_id' => $user->id,
+                'association_name' => $request->association_name,
+                'contact_number' => $request->contact_number,
+                'address' => $request->address,
                 'approval_status' => 'approved',
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),
@@ -223,6 +242,14 @@ class UserController extends Controller
 
         if ($user->barangayAccount) {
             $user->barangayAccount->update([
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+        }
+
+        if ($user->associationAccount) {
+            $user->associationAccount->update([
                 'approval_status' => 'approved',
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),

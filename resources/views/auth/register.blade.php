@@ -37,14 +37,29 @@
         {{-- Header --}}
         <div class="text-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Municipal Agriculture Office</h1>
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Barangay Representative Registration</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Account Registration</p>
         </div>
 
         {{-- Info Box --}}
         <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300 text-xs rounded-md p-3 mb-4">
             <i class="fa-solid fa-triangle-exclamation mr-1"></i>
             Your registration will be reviewed by the MAO Admin before you can login.
-            This is to ensure only authorized Barangay Representatives can access the system.
+            This is to ensure only authorized accounts can access the system.
+        </div>
+
+        {{-- Account Type --}}
+        <div class="mb-4">
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">I am registering as a...</label>
+            <div class="grid grid-cols-2 gap-2">
+                <label class="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm text-center cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:dark:bg-primary/10 has-[:checked]:text-primary-dark has-[:checked]:font-semibold text-gray-600 dark:text-gray-300">
+                    <input type="radio" name="account_type" value="barangay" checked onchange="toggleAccountType()" class="hidden">
+                    Barangay Representative
+                </label>
+                <label class="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm text-center cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:dark:bg-primary/10 has-[:checked]:text-primary-dark has-[:checked]:font-semibold text-gray-600 dark:text-gray-300">
+                    <input type="radio" name="account_type" value="association" onchange="toggleAccountType()" class="hidden">
+                    Farmers' Association
+                </label>
+            </div>
         </div>
 
         {{-- Error Messages --}}
@@ -77,9 +92,9 @@
                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
 
-                <div>
+                <div id="barangayField">
                     <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Barangay <span class="text-red-500">*</span></label>
-                    <select name="barangay_id" required
+                    <select name="barangay_id" id="barangaySelect"
                             class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Select your Barangay</option>
                         @foreach(\App\Models\Barangay::orderBy('name')->get() as $barangay)
@@ -88,6 +103,25 @@
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div id="associationFields" class="space-y-3" style="display:none;">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Association / Organization Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="association_name" value="{{ old('association_name') }}"
+                               placeholder="e.g. Guinobatan Rice Farmers Association"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Contact Number</label>
+                        <input type="text" name="contact_number" value="{{ old('contact_number') }}"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Address</label>
+                        <input type="text" name="address" value="{{ old('address') }}"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
                 </div>
 
                 <div>
@@ -118,6 +152,17 @@
         </div>
 
     </div>
+
+    <script>
+        function toggleAccountType() {
+            var isAssociation = document.querySelector('input[name="account_type"]:checked').value === 'association';
+            document.getElementById('barangayField').style.display = isAssociation ? 'none' : 'block';
+            document.getElementById('barangaySelect').required = !isAssociation;
+            document.getElementById('associationFields').style.display = isAssociation ? 'block' : 'none';
+            document.querySelector('input[name="association_name"]').required = isAssociation;
+        }
+        document.addEventListener('DOMContentLoaded', toggleAccountType);
+    </script>
 
 @include('partials.password-toggle')
 </body>
