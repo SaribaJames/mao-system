@@ -365,7 +365,7 @@ class RequestController extends Controller
         abort_unless(
             Auth::user()->isBarangayUser() || Auth::user()->isAssociation(),
             403,
-            'Only barangay representatives and associations can submit requests. To serve a farmer directly, use Service Records or release stock from Stocks.'
+            'Only barangay representatives and associations can submit requests. To serve a farmer directly, use Service (Walk-in) or release stock from Stocks.'
         );
     }
 

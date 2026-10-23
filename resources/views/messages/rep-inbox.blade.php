@@ -2,9 +2,12 @@
 
 @section('content')
 
-<div class="mb-6">
-    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Messages</h2>
-    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Municipal Agriculture Office — Guinobatan</p>
+<div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Messages</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Municipal Agriculture Office — Guinobatan</p>
+    </div>
+    @include('messages.partials.new-message')
 </div>
 
 @if(session('success'))
@@ -55,7 +58,7 @@
     <div class="px-5 py-12 text-center text-gray-400">
         <i class="fa-solid fa-comments text-3xl mb-3"></i>
         <p class="text-sm">No conversations yet.</p>
-        <p class="text-xs mt-1">MAO Admin will appear here once you send a message.</p>
+        <p class="text-xs mt-1">Click <strong>New Message</strong> to message the MAO Admin or a coordinator.</p>
     </div>
     @endforelse
 </div>

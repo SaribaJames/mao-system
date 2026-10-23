@@ -91,6 +91,8 @@ class ReportController extends Controller
             $serviceData[] = $monthlyServices->get($month)?->total ?? 0;
         }
 
+        $barangays = \App\Models\Barangay::orderBy('name')->get();
+
         return view('reports.index', compact(
             'totalFarmers',
             'activeFarmers',
@@ -112,7 +114,8 @@ class ReportController extends Controller
             'servicesByType',
             'months',
             'registrationData',
-            'serviceData'
+            'serviceData',
+            'barangays'
         ));
     }
     public function exportPDF()
@@ -125,12 +128,22 @@ class ReportController extends Controller
         return $pdf->download('MAO-Guinobatan-Report-' . date('Y-m-d') . '.pdf');
     }
 
-    public function exportFarmersPDF()
+    public function exportFarmersPDF(Request $request)
     {
-        $farmers = \App\Models\Farmer::with('barangay')->orderBy('surname')->get();
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.farmers-pdf', compact('farmers'))
+        $barangay = $request->filled('barangay_id')
+            ? \App\Models\Barangay::findOrFail($request->barangay_id)
+            : null;
+
+        $farmers = \App\Models\Farmer::with('barangay')
+            ->when($barangay, fn ($q) => $q->where('barangay_id', $barangay->id))
+            ->orderBy('surname')
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.farmers-pdf', compact('farmers', 'barangay'))
             ->setPaper('a4', 'landscape');
-        return $pdf->download('MAO-Farmers-List-' . date('Y-m-d') . '.pdf');
+
+        $suffix = $barangay ? '-' . \Illuminate\Support\Str::slug($barangay->name) : '';
+        return $pdf->download('MAO-Farmers-List' . $suffix . '-' . date('Y-m-d') . '.pdf');
     }
 
     public function exportRequestsPDF()

@@ -40,16 +40,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/farmers/view-requests/{viewRequest}/deny', [FarmerController::class, 'denyViewRequest'])->name('farmers.view-requests.deny');
     Route::get('/farmers/blank-form', [FarmerController::class, 'downloadBlankForm'])->name('farmers.blank-form');
     Route::resource('farmers', FarmerController::class);
-    // Filled-PDF printing is retired — DA/MAO rules require the RSBSA form
-    // to be handwritten, not system-printed. Brgy Rep downloads a blank
-    // template instead (see farmers.blank-form above).
+    // Admin prints the farmer's filled RSBSA form. Brgy Reps still download
+    // the blank template (see farmers.blank-form above).
+    Route::get('/farmers/{farmer}/print', [FarmerController::class, 'print'])->name('farmers.print');
     Route::post('/farmers/{farmer}/request-view', [FarmerController::class, 'requestView'])->name('farmers.request-view');
 
     // Stocks
-    Route::resource('stocks', StockController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('stocks', StockController::class)->only(['index', 'store']);
     Route::post('/stocks/{stock}/release', [StockController::class, 'release'])->name('stocks.release');
     Route::get('/stocks/receipts', [StockController::class, 'receipts'])->name('stocks.receipts.index');
     Route::get('/stocks/receipts/{transaction}/print', [StockController::class, 'printReceipt'])->name('stocks.receipts.print');
+    Route::get('/stocks/releases', [StockController::class, 'releases'])->name('stocks.releases.index');
+    Route::get('/stocks/releases/{transaction}/print', [StockController::class, 'printRelease'])->name('stocks.releases.print');
 
     // Requests
     Route::get('/requests', [RequestController::class, 'index'])->name('requests.index');
@@ -104,7 +106,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/forms/pcic-adss', [FormController::class, 'pcicAdssPDF'])->name('forms.pcic-adss.pdf');
 
     // Programs
-    Route::resource('programs', ProgramController::class)->only(['index', 'show']);
+    Route::resource('programs', ProgramController::class)->only(['index', 'show', 'store', 'update']);
     Route::post('/programs/{program}/unlock', [ProgramController::class, 'unlock'])->name('programs.unlock');
     Route::post('/programs/{program}/enroll', [ProgramController::class, 'enroll'])->name('programs.enroll');
     Route::post('/program-enrollments/{enrollment}/status', [ProgramController::class, 'updateEnrollment'])->name('program-enrollments.status');

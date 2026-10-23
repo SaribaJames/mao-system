@@ -13,6 +13,10 @@
            class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
             <i class="fa-solid fa-clock-rotate-left"></i> Receiving History
         </a>
+        <a href="{{ route('stocks.releases.index') }}"
+           class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
+            <i class="fa-solid fa-truck-ramp-box"></i> Release History
+        </a>
         <button onclick="document.getElementById('addStockModal').classList.remove('hidden')"
                 class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
             <i class="fa-solid fa-plus"></i> Add Stock
@@ -42,6 +46,12 @@
                 <a href="{{ route('stocks.receipts.print', session('newReceiptId')) }}" target="_blank"
                    class="text-primary dark:text-accent hover:underline font-semibold flex items-center gap-1 flex-shrink-0 ml-3">
                     <i class="fa-solid fa-print"></i> Print Receipt
+                </a>
+            @endif
+            @if(session('newReleaseId'))
+                <a href="{{ route('stocks.releases.print', session('newReleaseId')) }}" target="_blank"
+                   class="text-primary dark:text-accent hover:underline font-semibold flex items-center gap-1 flex-shrink-0 ml-3">
+                    <i class="fa-solid fa-print"></i> Print Release Slip
                 </a>
             @endif
         </div>
@@ -146,11 +156,6 @@
                                 class="text-primary hover:underline text-xs font-medium">
                             Release
                         </button>
-                        <form method="POST" action="{{ route('stocks.destroy', $stock) }}"
-                              onsubmit="return confirm('Delete this stock item?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-red-500 hover:underline text-xs font-medium">Delete</button>
-                        </form>
                     </td>
                 </tr>
                 @empty

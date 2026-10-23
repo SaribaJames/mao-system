@@ -131,6 +131,8 @@
                            class="text-primary hover:underline text-xs font-medium">View</a>
                         <a href="{{ route('farmers.edit', $farmer) }}"
                            class="text-blue-500 hover:underline text-xs font-medium ml-2">Edit</a>
+                        <a href="{{ route('farmers.print', $farmer) }}" target="_blank"
+                           class="text-gray-600 dark:text-gray-300 hover:underline text-xs font-medium ml-2">Print</a>
                     @else
                         @if(in_array($farmer->id, $activeAccessFarmerIds ?? []))
                             <a href="{{ route('farmers.show', $farmer) }}"

@@ -103,7 +103,7 @@
                     </a>
                 @else
 
-                {{-- Records dropdown: Farmers, Service Records, Requests --}}
+                {{-- Records dropdown: Farmers, Service (Walk-in), Requests --}}
                 @php $recordsActive = request()->routeIs('farmers.*') || request()->routeIs('service-records.*') || request()->routeIs('requests.*'); @endphp
                 <div class="relative nav-dropdown">
                     <button type="button" onclick="toggleNavGroup('navGroupRecords')"
@@ -121,7 +121,7 @@
                         @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
                             <a href="{{ route('service-records.index') }}"
                                 class="block px-4 py-2.5 text-sm transition {{ request()->routeIs('service-records.*') ? 'font-semibold text-primary bg-primary-light dark:bg-gray-700' : 'text-gray-700 dark:text-gray-300 hover:bg-primary-light dark:hover:bg-gray-700 hover:text-primary-dark' }}">
-                                Service Records
+                                Service (Walk-in)
                             </a>
                         @endif
                         {{-- Coordinators used to be hidden from Requests entirely. Requests
@@ -300,7 +300,7 @@
 
                         $newServices = \App\Models\ServiceRecord::whereDate('created_at', today())->count();
                         if ($newServices > 0)
-                            $notifications->push(['icon' => 'fa-clipboard-list', 'color' => 'text-purple-500', 'bg' => 'bg-purple-100', 'text' => "{$newServices} service record(s) created today", 'link' => route('service-records.index')]);
+                            $notifications->push(['icon' => 'fa-clipboard-list', 'color' => 'text-purple-500', 'bg' => 'bg-purple-100', 'text' => "{$newServices} walk-in service(s) recorded today", 'link' => route('service-records.index')]);
 
                         $newEnrollments = \App\Models\ProgramEnrollment::whereDate('created_at', today())->count();
                         if ($newEnrollments > 0)

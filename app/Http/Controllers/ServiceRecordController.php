@@ -83,7 +83,7 @@ class ServiceRecordController extends Controller
         ]);
 
         return redirect()->route('service-records.index')
-            ->with('success', "Service Record {$svcNumber} created successfully!");
+            ->with('success', "Walk-in Service {$svcNumber} created successfully!");
     }
 
     public function show(ServiceRecord $serviceRecord)
@@ -105,7 +105,7 @@ class ServiceRecordController extends Controller
         ]);
 
         return redirect()->route('service-records.show', $serviceRecord)
-            ->with('success', "Service Record {$serviceRecord->service_number} status updated to {$request->status}!");
+            ->with('success', "Walk-in Service {$serviceRecord->service_number} status updated to {$request->status}!");
     }
 
 

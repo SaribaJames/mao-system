@@ -123,7 +123,7 @@ class StockController extends Controller
         $stock->remaining_stock -= $request->quantity;
         $stock->updateStatus();
 
-        StockTransaction::create([
+        $transaction = StockTransaction::create([
             'stock_id'     => $stock->id,
             'type'         => 'release',
             'quantity'     => $request->quantity,
@@ -134,16 +134,8 @@ class StockController extends Controller
         ]);
 
         return redirect()->route('stocks.index')
-            ->with('success', "Stock released to {$request->recipient} successfully!");
-    }
-
-    public function destroy(Stock $stock)
-    {
-        $this->authorizeAccess();
-
-        $stock->delete();
-        return redirect()->route('stocks.index')
-            ->with('success', 'Stock item deleted successfully!');
+            ->with('success', "Stock released to {$request->recipient} successfully!")
+            ->with('newReleaseId', $transaction->id);
     }
 
     /**
@@ -196,6 +188,57 @@ class StockController extends Controller
             ->setPaper('a4', 'portrait');
 
         return $pdf->stream('MAO-Goods-Received-' . $transaction->id . '.pdf');
+    }
+
+    /**
+     * Release history — every "release" transaction, whether released
+     * directly from Stocks, through a fulfilled request, or through a
+     * program activity. Mirrors the receiving history.
+     */
+    public function releases(Request $request)
+    {
+        $this->authorizeAccess();
+
+        $query = StockTransaction::with(['stock', 'processedBy'])
+            ->where('type', 'release');
+
+        if ($request->filled('recipient')) {
+            $query->where('recipient', 'like', '%' . $request->recipient . '%');
+        }
+
+        if ($request->filled('category')) {
+            $query->whereHas('stock', fn ($q) => $q->where('category', $request->category));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $releases = $query->latest()->paginate(15)->withQueryString();
+
+        return view('stocks.releases', compact('releases'));
+    }
+
+    /**
+     * Printable release slip for a single release transaction — proof that
+     * the office released a specific item to a specific recipient.
+     */
+    public function printRelease(StockTransaction $transaction)
+    {
+        $this->authorizeAccess();
+
+        abort_unless($transaction->type === 'release', 404);
+
+        $transaction->load(['stock', 'processedBy', 'farmer']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.stock-release-pdf', compact('transaction'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('MAO-Release-Slip-' . $transaction->id . '.pdf');
     }
 
     protected function authorizeAccess(): void

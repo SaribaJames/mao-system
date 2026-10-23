@@ -20,6 +20,7 @@
 <div class="header">
     <h1>Municipal Agriculture Office — Guinobatan, Albay</h1>
     <p>Farmers Registry List | Generated: {{ date('F d, Y h:i A') }}</p>
+    <p>Barangay: {{ $barangay?->name ?? 'All Barangays' }}</p>
     <p>Total Farmers: {{ $farmers->count() }}</p>
 </div>
 

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>MAO Guinobatan — Service Records Report</title>
+    <title>MAO Guinobatan — Service (Walk-in) Report</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 10px; color: #333; margin: 0; padding: 15px; }
         .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #2D7A2D; padding-bottom: 8px; }
@@ -19,7 +19,7 @@
 
 <div class="header">
     <h1>Municipal Agriculture Office — Guinobatan, Albay</h1>
-    <p>Service Records Report | Generated: {{ date('F d, Y h:i A') }}</p>
+    <p>Service (Walk-in) Report | Generated: {{ date('F d, Y h:i A') }}</p>
     <p>Total Services: {{ $services->count() }}</p>
 </div>
 

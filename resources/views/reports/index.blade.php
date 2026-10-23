@@ -97,22 +97,38 @@
                     <i class="fa-solid fa-chevron-down text-xs"></i>
                 </button>
                 <div id="exportMenu"
-                    class="hidden absolute right-0 mt-1 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-border-soft dark:border-gray-700 z-50">
+                    class="hidden absolute right-0 mt-1 w-72 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-border-soft dark:border-gray-700 z-50">
                     <a href="{{ route('reports.export.pdf') }}"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-border-soft dark:border-gray-700">
                         <i class="fa-solid fa-file-pdf text-red-500"></i> Summary Report
                     </a>
-                    <a href="{{ route('reports.export.farmers') }}"
-                        class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-border-soft dark:border-gray-700">
-                        <i class="fa-solid fa-file-pdf text-red-500"></i> Farmers List
-                    </a>
+                    {{-- Farmers List: pick a barangay (or all) before downloading --}}
+                    <form method="GET" action="{{ route('reports.export.farmers') }}"
+                        class="px-4 py-2.5 border-b border-border-soft dark:border-gray-700">
+                        <p class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i> Farmers List
+                        </p>
+                        <div class="flex items-center gap-2">
+                            <select name="barangay_id"
+                                class="flex-1 min-w-0 text-xs border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded px-2 py-1.5">
+                                <option value="">All barangays</option>
+                                @foreach ($barangays as $b)
+                                    <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit"
+                                class="bg-primary hover:bg-primary-dark text-white text-xs font-semibold px-2.5 py-1.5 rounded">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        </div>
+                    </form>
                     <a href="{{ route('reports.export.requests') }}"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-border-soft dark:border-gray-700">
                         <i class="fa-solid fa-file-pdf text-red-500"></i> Requests Report
                     </a>
                     <a href="{{ route('reports.export.services') }}"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <i class="fa-solid fa-file-pdf text-red-500"></i> Service Records
+                        <i class="fa-solid fa-file-pdf text-red-500"></i> Service (Walk-in)
                     </a>
                 </div>
             </div>
@@ -177,7 +193,7 @@
             <canvas id="registrationChart" height="200"></canvas>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-border-soft dark:border-gray-700 p-5">
-            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1">Monthly Service Records</h3>
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1">Monthly Service (Walk-in)</h3>
             <p class="text-xs text-gray-400 mb-4">{{ now()->year }} — Services rendered per month</p>
             <canvas id="serviceChart" height="200"></canvas>
         </div>
@@ -335,9 +351,9 @@
             type: 'bar',
             data: {
                 labels: months,
-                datasets: [{ label: 'Services Rendered', data: @json($serviceData), backgroundColor: 'rgba(45,122,45,0.7)', borderColor: primaryColor, borderWidth: 1, borderRadius: 4 }]
+                datasets: [{ label: 'Monthly service rendered', data: @json($serviceData), backgroundColor: 'rgba(45,122,45,0.7)', borderColor: primaryColor, borderWidth: 1, borderRadius: 4 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => 'Monthly service rendered: ' + ctx.parsed.y } } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
 
         new Chart(document.getElementById('sexChart'), {

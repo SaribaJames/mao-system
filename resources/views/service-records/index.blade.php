@@ -4,13 +4,13 @@
 
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900">Service Records</h2>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900">Service (Walk-in)</h2>
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Record and track agricultural services rendered to farmers</p>
     </div>
     @if(Auth::user()->isAdmin() || Auth::user()->role?->name === 'staff')
     <a href="{{ route('service-records.create') }}"
        class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition">
-        <i class="fa-solid fa-plus"></i> New Service Record
+        <i class="fa-solid fa-plus"></i> New Service (Walk-in)
     </a>
     @endif
 </div>
@@ -117,7 +117,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No service records yet.</td>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No walk-in services yet.</td>
             </tr>
             @endforelse
         </tbody>

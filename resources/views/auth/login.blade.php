@@ -122,14 +122,6 @@
             </a>
         </div>
 
-        {{-- Demo Access Info --}}
-        <div class="mt-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md p-4 text-xs text-gray-600 dark:text-gray-300">
-            <p class="font-semibold mb-1">Demo Access:</p>
-            <p><span class="font-medium">Admin:</span> admin@mao-guinobatan.gov.ph / Admin@1234</p>
-            <p><span class="font-medium">Staff:</span> Process transactions, manage farmers</p>
-            <p><span class="font-medium">Barangay Rep:</span> Submit requests, view activities</p>
-        </div>
-
     </div>
 
 @include('partials.password-toggle')

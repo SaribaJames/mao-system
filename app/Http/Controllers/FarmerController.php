@@ -711,6 +711,7 @@ class FarmerController extends Controller
 
     public function print(Farmer $farmer)
     {
+        abort_unless(Auth::user()->isAdmin(), 403);
         $farmer->load(['barangay']);
 
         $pdf = new \setasign\Fpdi\Tcpdf\Fpdi('P', 'pt', [595, 893]);
@@ -726,10 +727,29 @@ class FarmerController extends Controller
         if ($farmer->photo_url) {
             $tmpPhoto = null;
             try {
-                $imageContents = @file_get_contents($farmer->photo_url);
+                // Ask Cloudinary for a JPG. A PNG with an alpha channel makes
+                // TCPDF fail unless GD/Imagick is set up for it.
+                $photoUrl = $farmer->photo_url;
+                if (str_contains($photoUrl, 'res.cloudinary.com') && !str_contains($photoUrl, '/upload/f_jpg')) {
+                    $photoUrl = preg_replace('#/upload/#', '/upload/f_jpg/', $photoUrl, 1);
+                }
+                $imageContents = @file_get_contents($photoUrl);
                 if ($imageContents !== false && $imageContents !== '') {
                     $tmpPhoto = tempnam(sys_get_temp_dir(), 'farmer_photo_') . '.jpg';
                     file_put_contents($tmpPhoto, $imageContents);
+
+                    // Not a Cloudinary photo and still a PNG: flatten it onto
+                    // white and save it as a real JPG.
+                    $info = @getimagesize($tmpPhoto);
+                    if ($info && $info[2] === IMAGETYPE_PNG && function_exists('imagecreatefrompng')) {
+                        $png = imagecreatefrompng($tmpPhoto);
+                        $jpg = imagecreatetruecolor(imagesx($png), imagesy($png));
+                        imagefill($jpg, 0, 0, imagecolorallocate($jpg, 255, 255, 255));
+                        imagecopy($jpg, $png, 0, 0, 0, 0, imagesx($png), imagesy($png));
+                        imagejpeg($jpg, $tmpPhoto, 90);
+                        imagedestroy($png);
+                        imagedestroy($jpg);
+                    }
                     // Box coordinates (pt) measured off the template: x 435.6-572.4, y 25.2-147.6
                     $pdf->Image($tmpPhoto, 435.6, 25.2, 136.8, 122.4, '', '', '', true, 300, '', false, false, 0, 'CM', false, false, false);
                 }
@@ -779,7 +799,7 @@ class FarmerController extends Controller
             $dateAdminLefts = [211.5, 223.2, 235.3, 247.0, 258.8, 271.0, 282.5, 294.5];
             $dateAdminDigits = str_split($farmer->date_administered->format('mdY'));
             foreach ($dateAdminDigits as $i => $d) {
-                $writeBoxed($dateAdminLefts[$i], 112.2, $d, 8);
+                $writeBoxed($dateAdminLefts[$i] + 1.8, 112.2, $d, 8);
             }
         }
 
@@ -788,7 +808,7 @@ class FarmerController extends Controller
         $refDigits = str_split(preg_replace('/\D/', '', $farmer->reference_number ?? ''));
         foreach ($refDigits as $i => $d) {
             if (isset($refLefts[$i])) {
-                $writeBoxed($refLefts[$i], 130.7, $d, 8);
+                $writeBoxed($refLefts[$i] + 1.8, 130.7, $d, 8);
             }
         }
 
@@ -938,24 +958,36 @@ class FarmerController extends Controller
             $write(326.1, 689.5, $farmer->fishing_others_specify, 7);
         }
 
+        // The agri youth boxes are smaller than the rest of page 1
+        $markSmall = function ($x, $y) use ($pdf) {
+            $pdf->SetFont('helvetica', 'B', 7);
+            $pdf->SetXY($x, $y);
+            $pdf->Cell(6.0, 7.0, 'X', 0, 0, 'C');
+        };
         if ($farmer->agri_youth_farming_household)
-            $mark(468.5, 626.5);
+            $markSmall(472.6, 627.6);
         if ($farmer->agri_youth_formal_course)
-            $mark(468.5, 636.5);
+            $markSmall(472.6, 637.7);
         if ($farmer->agri_youth_nonformal_course)
-            $mark(468.5, 652.5);
+            $markSmall(472.6, 653.9);
         if ($farmer->agri_youth_participated_program)
-            $mark(468.5, 670.5);
+            $markSmall(472.6, 671.6);
         if ($farmer->agri_youth_others) {
-            $mark(468.5, 687.5);
-            $write(468.5, 695.3, $farmer->agri_youth_others_specify, 6);
+            $markSmall(472.6, 689.1);
+            $write(528.0, 680.2, $farmer->agri_youth_others_specify, 6);
         }
 
         $write(218.3, 709.3, $farmer->gross_annual_income_farming ? number_format($farmer->gross_annual_income_farming, 2) : '', 7);
         $write(438.3, 709.3, $farmer->gross_annual_income_non_farming ? number_format($farmer->gross_annual_income_non_farming, 2) : '', 7);
 
-        $write(130.0, 812.6, strtoupper($farmer->surname ?? ''));
-        $write(410.0, 812.6, strtoupper($farmer->first_name ?? ''));
+        // Client's copy (bottom strip of page 1)
+        foreach ($refDigits as $i => $d) {
+            if (isset($refLefts[$i])) {
+                $writeBoxed($refLefts[$i] + 0.9, 786.3, $d, 8);
+            }
+        }
+        $write(130.0, 810.6, strtoupper($farmer->surname ?? ''));
+        $write(410.0, 810.6, strtoupper($farmer->first_name ?? ''));
         $write(135.0, 837.0, strtoupper($farmer->middle_name ?? ''));
         $write(320.8, 837.0, strtoupper($farmer->extension_name ?? ''));
 
@@ -971,10 +1003,10 @@ class FarmerController extends Controller
         $P2 = [
             'no_parcels' => [114.3, 24.3],
             1 => [
-                'brgy' => [100.0, 98.3],
-                'muni' => [100.0, 108.7],
-                'area' => [142.4, 124.7],
-                'doc' => [136.0, 144.2],
+                'brgy' => [100.0, 96.5],
+                'muni' => [100.0, 106.7],
+                'area' => [142.6, 122.7],
+                'doc' => [136.0, 142.2],
                 'anc_y' => [179.1, 137.1],
                 'anc_n' => [220.8, 137.2],
                 'arb_y' => [179.1, 156.4],
@@ -983,9 +1015,9 @@ class FarmerController extends Controller
                 'oth' => [61.7, 172.5],
                 'ten' => [61.6, 182.6],
                 'les' => [61.7, 193.4],
-                'oth_t' => [175.2, 168.2],
-                'ten_t' => [156.3, 178.3],
-                'les_t' => [156.5, 189.0],
+                'oth_t' => [176.0, 166.5],
+                'ten_t' => [156.3, 176.9],
+                'les_t' => [156.5, 187.2],
                 'crop' => [274.1, 96.7],
                 'size' => [346.9, 97.5],
                 'head' => [386.4, 97.3],
@@ -994,10 +1026,10 @@ class FarmerController extends Controller
                 'rem' => [513.4, 97.0]
             ],
             2 => [
-                'brgy' => [99.7, 204.7],
-                'muni' => [99.7, 215.4],
-                'area' => [142.1, 231.6],
-                'doc' => [136.0, 250.8],
+                'brgy' => [99.7, 203.2],
+                'muni' => [99.7, 213.5],
+                'area' => [142.6, 229.5],
+                'doc' => [136.0, 248.9],
                 'anc_y' => [179.0, 244.1],
                 'anc_n' => [220.9, 243.8],
                 'arb_y' => [179.3, 263.1],
@@ -1006,9 +1038,9 @@ class FarmerController extends Controller
                 'oth' => [61.8, 279.3],
                 'ten' => [61.6, 289.5],
                 'les' => [61.6, 300.1],
-                'oth_t' => [174.9, 275.4],
-                'ten_t' => [156.0, 285.8],
-                'les_t' => [155.0, 295.9],
+                'oth_t' => [176.0, 273.2],
+                'ten_t' => [156.0, 283.7],
+                'les_t' => [155.5, 293.9],
                 'crop' => [274.6, 202.7],
                 'size' => [347.0, 202.7],
                 'head' => [387.3, 203.5],
@@ -1017,10 +1049,10 @@ class FarmerController extends Controller
                 'rem' => [514.0, 203.2]
             ],
             3 => [
-                'brgy' => [103.5, 312.2],
-                'muni' => [103.5, 322.2],
-                'area' => [145.6, 339.0],
-                'doc' => [138.4, 358.2],
+                'brgy' => [103.5, 308.2],
+                'muni' => [103.5, 318.7],
+                'area' => [146.0, 334.7],
+                'doc' => [138.4, 354.2],
                 'anc_y' => [182.2, 349.2],
                 'anc_n' => [224.0, 349.1],
                 'arb_y' => [182.3, 368.4],
@@ -1029,9 +1061,9 @@ class FarmerController extends Controller
                 'oth' => [64.8, 384.5],
                 'ten' => [64.9, 394.7],
                 'les' => [64.9, 405.3],
-                'oth_t' => [178.4, 382.7],
-                'ten_t' => [159.5, 393.1],
-                'les_t' => [158.1, 403.2],
+                'oth_t' => [179.0, 378.5],
+                'ten_t' => [159.5, 388.9],
+                'les_t' => [158.5, 399.2],
                 'crop' => [274.3, 308.9],
                 'size' => [348.0, 309.0],
                 'head' => [387.5, 309.5],
@@ -1059,7 +1091,7 @@ class FarmerController extends Controller
 
             $write($g['brgy'][0], $g['brgy'][1], $parcel->farm_location_barangay, 7);
             $write($g['muni'][0], $g['muni'][1], $parcel->farm_location_municipality, 7);
-            $write($g['area'][0], $g['area'][1], $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 2) : '', 7);
+            $write($g['area'][0], $g['area'][1], $parcel->total_farm_area_ha ? number_format($parcel->total_farm_area_ha, 2) : '', 6);
             $write($g['doc'][0], $g['doc'][1], $parcel->ownership_document_code, 7);
 
             $parcel->within_ancestral_domain

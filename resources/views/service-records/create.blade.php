@@ -4,7 +4,7 @@
 
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900">New Service Record</h2>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">New Service (Walk-in)</h2>
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Record an agricultural service rendered to a farmer</p>
         </div>
         <a href="{{ route('service-records.index') }}"
@@ -143,7 +143,7 @@
             <div class="flex items-center gap-3">
                 <button type="submit"
                     class="bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-2.5 rounded-md transition text-sm">
-                    Save Service Record
+                    Save Service (Walk-in)
                 </button>
                 <a href="{{ route('service-records.index') }}"
                     class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium px-6 py-2.5 rounded-md transition text-sm">

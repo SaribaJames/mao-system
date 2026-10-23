@@ -4,7 +4,7 @@
 
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900">Service Record Details</h2>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">Service (Walk-in) Details</h2>
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 font-mono">{{ $serviceRecord->service_number }}</p>
         </div>
         <a href="{{ route('service-records.index') }}"

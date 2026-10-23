@@ -23,8 +23,53 @@ class ProgramController extends Controller
 
         $totalPrograms = $programs->count();
         $totalActiveEnrollments = ProgramEnrollment::where('status', 'active')->count();
+        $staffUsers = User::whereHas('role', fn($q) => $q->where('name', 'staff'))->orderBy('name')->get(['id', 'name']);
 
-        return view('programs.index', compact('programs', 'totalPrograms', 'totalActiveEnrollments'));
+        return view('programs.index', compact('programs', 'totalPrograms', 'totalActiveEnrollments', 'staffUsers'));
+    }
+
+    // Admin: add a new program
+    public function store(Request $request)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Only the admin can add programs.');
+
+        $program = Program::create($this->validateProgram($request));
+
+        return redirect()->route('programs.index')
+            ->with('success', "Program '{$program->name}' added successfully!");
+    }
+
+    // Admin: edit a program's details. Programs are never deleted, because
+    // enrollments, activities and reports point to them. Set the status to
+    // Inactive to retire one.
+    public function update(Request $request, Program $program)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Only the admin can edit programs.');
+
+        $program->update($this->validateProgram($request, $program));
+
+        return redirect()->back()
+            ->with('success', "Program '{$program->name}' updated successfully!");
+    }
+
+    protected function validateProgram(Request $request, ?Program $program = null): array
+    {
+        return $request->validate([
+            'name' => 'required|string|max:255|unique:programs,name' . ($program ? ',' . $program->id : ''),
+            'coordinator_name' => 'required|string|max:255',
+            'assigned_user_id' => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('users', 'id')->where(fn($q) => $q->whereIn(
+                    'role_id',
+                    \App\Models\Role::where('name', 'staff')->pluck('id')
+                )),
+            ],
+            'description' => 'nullable|string|max:2000',
+            'status' => 'required|in:active,inactive',
+        ], [
+            'name.unique' => 'A program with this name already exists.',
+            'assigned_user_id.exists' => 'The assigned personnel must be a staff account.',
+        ]);
     }
 
     public function show(Program $program)

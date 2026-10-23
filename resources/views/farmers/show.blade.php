@@ -26,6 +26,10 @@
             class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-md transition">
                 <i class="fa-solid fa-pen mr-1"></i> Edit
             </a>
+            <a href="{{ route('farmers.print', $farmer) }}" target="_blank"
+            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-md transition">
+                <i class="fa-solid fa-print mr-1"></i> Print RSBSA Form
+            </a>
             @endif
             <a href="{{ route('farmers.index') }}"
             class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium px-4 py-2 rounded-md transition">

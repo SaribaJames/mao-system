@@ -18,7 +18,7 @@
         @endif
         <div>
             <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">{{ $user->name }}</h2>
-            <p class="text-xs text-gray-400">{{ $user->barangayAccount?->barangay?->name ?? 'Barangay Rep' }}</p>
+            <p class="text-xs text-gray-400">{{ \App\Http\Controllers\MessageController::roleLabel($user) }}</p>
         </div>
     </div>
 </div>
