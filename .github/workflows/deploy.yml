@@ -1,0 +1,60 @@
+name: Build deploy branch
+
+# Builds the app on GitHub (vendor + compiled assets) and pushes it to the
+# `deploy` branch, so Hostinger only copies files and never runs composer.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, gd, zip, pdo_mysql, bcmath, exif
+          tools: composer:v2
+
+      - name: Composer install (production)
+        run: composer install --no-dev --no-scripts --prefer-dist --optimize-autoloader --no-interaction
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build assets
+        run: npm ci && npm run build
+
+      - name: Assemble deploy folder
+        run: |
+          mkdir -p ../deploy
+          rsync -a ./ ../deploy/ \
+            --exclude .git --exclude .github --exclude node_modules \
+            --exclude tests --exclude 'Claude outputs' \
+            --exclude '*.bundle' --exclude mao-deploy.zip \
+            --exclude '.env*' --exclude Dockerfile
+          cd ../deploy
+          # No composer.json => Hostinger skips its own composer install
+          rm -f composer.json composer.lock
+          rm -f bootstrap/cache/*.php
+          # Send every request into public/ (also keeps .env unreachable)
+          printf '<IfModule mod_rewrite.c>\n  RewriteEngine On\n  RewriteRule ^(.*)$ public/$1 [L]\n</IfModule>\n' > .htaccess
+          printf '/node_modules\n' > .gitignore
+
+      - name: Push to deploy branch
+        run: |
+          cd ../deploy
+          git init -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Build from ${GITHUB_SHA::7}"
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" deploy
